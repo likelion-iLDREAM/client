@@ -1,0 +1,40 @@
+.Button {
+  background-color: var(--Foundation-Green-Normal);
+  cursor: pointer;
+  border: none;
+  border-radius: 7px;
+  padding: 10px 20px;
+  text-wrap: nowrap;
+  color: white;
+  display: flex;
+  width: 340px;
+  height: 45px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 20px;
+}
+
+.Button_White {
+  background-color: white;
+  cursor: pointer;
+  border: none;
+  border-radius: 7px;
+  border: 1px solid var(--Foundation-Green-Normal);
+  padding: 10px 20px;
+  text-wrap: nowrap;
+  color: var(--Foundation-Green-Normal);
+  display: flex;
+  width: 340px;
+  height: 45px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 20px;
+}

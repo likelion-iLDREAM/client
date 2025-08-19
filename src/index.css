@@ -1,0 +1,49 @@
+/*
+Thin → 100
+ExtraLight → 200
+Light → 300
+
+Regular → 400
+
+Medium → 500
+SemiBold → 600
+
+Bold → 700
+
+ExtraBold → 800
+Black → 900
+*/
+
+@font-face {
+  font-family: "Pretendard Variable";
+  src: url("/PretendardVariable.woff2") foramt("woff2");
+  font-style: normal;
+  font-weight: 45 920;
+  font-display: swap;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  background-color: rgb(246, 246, 246);
+}
+
+html {
+  font-synthesis-weight: none;
+}
+
+#root {
+  background-color: #ebf8ed;
+  max-width: 400px;
+  width: 100%;
+  margin: 0 auto;
+  min-height: 100dvh;
+  /* height: 100; */
+  box-shadow: rgba(100, 100, 100, 0.2) 0px 0px 29px 0px;
+}
+
+body * {
+  font-family: "Pretendard Variable";
+}

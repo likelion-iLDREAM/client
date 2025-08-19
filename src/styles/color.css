@@ -1,0 +1,25 @@
+:root {
+    /*TEXT*/
+    /* colors-mode-1.css */
+	--Foundation-Black-black-1: rgb(255 255 255);
+	--Foundation-Black-black-10: rgb(38 38 38);
+	--Foundation-Black-black-11: rgb(31 31 31);
+	--Foundation-Black-black-12: rgb(20 20 20);
+	--Foundation-Black-black-13: rgb(0 0 0);
+	--Foundation-Black-black-2: rgb(252 252 252);
+	--Foundation-Black-black-3: rgb(245 245 245);
+	--Foundation-Black-black-4: rgb(240 240 240);
+	--Foundation-Black-black-5: rgb(217 217 217);
+	--Foundation-Black-black-6: rgb(191 191 191);
+	--Foundation-Black-black-7: rgb(140 140 140);
+	--Foundation-Black-black-8: rgb(89 89 89);
+	--Foundation-Black-black-9: rgb(69 69 69);
+	--Foundation-Green-Dark: rgb(32 131 77);
+	--Foundation-Green-Darker: rgb(15 61 36);
+	--Foundation-Green-Light: rgb(234 247 240);
+	--Foundation-Green-Normal: rgb(43 175 102);
+	--Foundation-surface-Dark: rgb(246 248 249);
+	--Foundation-surface-Light: rgb(252 253 253);
+	--Foundation-surface-Normal: rgb(249 250 251);
+	--Foundation-surface-White: rgb(255 255 255);
+}
