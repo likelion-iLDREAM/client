@@ -5,7 +5,7 @@ import LoginStart from "./pages/auth/login/LoginStart";
 import Opt from "./pages/auth/login/Opt";
 import Phonenum from "./pages/auth/login/Phonenum";
 import SelectRole from "./pages/auth/signup/SelectRole";
-
+import * as Employer from "./index.js";
 const router = createBrowserRouter([
   {
     path: "",
@@ -26,7 +26,86 @@ const router = createBrowserRouter([
         path: "/selectrole",
         element: <SelectRole />,
       },
+      {path: "/employer",
+        children: [
+          {
+          path: "",
+          element : <Employer.HomeEmployer />,
+          },
+          {
+          path: "postjobs",
+          children : [
+            {
+              path : "",
+              element : <Employer.ApplyMethod />,
+            },
+            {
+              path : "TitleCategory",
+              element : <Employer.TitleCategory/>,
+            },
+            {
+              path : "PayLocation",
+              element : <Employer.PayLocation/>,
+            },
+            {
+              path : "RequirementType",
+              element : <Employer.RequirementType/>,
+            },
+            {
+              path : "WorkingRest",
+              element : <Employer.WorkingRest/>,
+            },
+            {
+              path : "JobDescription",
+              element : <Employer.JobDescription/>,
+            },
+            {
+              path : "AddQuestions",
+              element : <Employer.AddQuestions/>,
+            },
+            {
+              path : "PostComplete",
+              element : <Employer.PostComplete/>,
+            },
+          ],
+          },
+          {
+          path: "profile",
+          children : [
+              {
+                path : "",
+                element : <Employer.ProfileEmployer />,
+              },
+              {
+                path : "Edit",
+                element : <Employer.ProfileEmployerEdit/>,
+              },
+            ],
+          },
+          {
+          path: "seekerlist",
+          children : [
+            {
+              path : "",
+              element : <Employer.FinalAccept />,
+            },
+            {
+              path : "Resume",
+              element : <Employer.Resume/>,
+            },
+            {
+              path : "SeekerList",
+              element : <Employer.SeekerList/>,
+            },
+            {
+              path : "WriteContract",
+              element : <Employer.WriteContract/>,
+            },
+          ],
+          },
+      ],},
     ],
+    
   },
 ]);
 
