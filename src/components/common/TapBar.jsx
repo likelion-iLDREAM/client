@@ -20,5 +20,5 @@ const TapBarContainer = styled.div`
   z-index: 1000;
   left: 0;
   right: 0; /* = width: 100% */
-  bottom: 10%;
+  bottom: 0%;
 `;
