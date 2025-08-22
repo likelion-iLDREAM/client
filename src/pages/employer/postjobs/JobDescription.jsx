@@ -4,6 +4,8 @@ import ProgressBar from "../../../components/common/Progressbar";
 import styled from "styled-components";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { IoIosArrowBack } from "react-icons/io";
+import Alert_post from "../../../components/employer/Alert_post";
 
 export default function JobDescription() {
   const navigate = useNavigate();
@@ -11,26 +13,48 @@ export default function JobDescription() {
     navigate("../AddQuestions");
   };
   const [content, setContent] = useState("");
+  const [backAlertOpen, setBackAlertOpen] = useState(false);
   const onChangeContent = (e) => {
     setContent(e.target.value);
   };
   return (
     <>
-      <Header text="새공고" />
+      <Headersection>
+        <HeaderContainer>
+          <BackButton
+            type="button"
+            aria-label="뒤로가기"
+            onClick={() => setBackAlertOpen(true)}
+          >
+            <IoIosArrowBack />
+          </BackButton>
+          {"새 공고"}
+        </HeaderContainer>
+      </Headersection>
+      <Alert_post
+        open={backAlertOpen}
+        onConfirm={() => {
+          setBackAlertOpen(false);
+        }}
+        onCancel={() => setBackAlertOpen(false)}
+        onClose={() => setBackAlertOpen(false)}
+      />
       <ApplyWrapper>
         <ProgressBar value={"75"} max={"100"} />
         <Question>
           직무 내용을 <br />
           입력해 주세요.
         </Question>
-        <OptionsWrapper>
-          직무내용
-          <Title
-            placeholder="직무 내용을 자유롭게 입력해주세요.(100자 이상)"
-            onChange={onChangeContent}
-          />
-          <div>{content.length}자 / 100자</div>
-        </OptionsWrapper>
+        <Tag>
+          <OptionsWrapper>
+            <p>직무내용</p>
+            <Title
+              placeholder="직무 내용을 자유롭게 입력해주세요.(100자 이상)"
+              onChange={onChangeContent}
+            />
+            <div>{content.length}자 / 100자</div>
+          </OptionsWrapper>
+        </Tag>
       </ApplyWrapper>
       <Footer>
         <Button text="다음" type="White" onClick={handleNext} />
@@ -39,6 +63,53 @@ export default function JobDescription() {
   );
 }
 
+const Tag = styled.div`
+  p {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+  }
+`;
+// 변경: position 추가
+const HeaderContainer = styled.div`
+  position: relative;
+  width: 400px;
+  height: 70px;
+  background-color: #eaf7f0;
+  font-size: 30px;
+  font-weight: 700;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+`;
+
+// 추가: 뒤로가기 버튼 스타일
+const BackButton = styled.button`
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  background: transparent;
+  border: 0;
+  padding: 10px;
+  cursor: pointer;
+
+  svg {
+    width: 32px;
+    height: 32px;
+  }
+`;
+
+const Headersection = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid var(--Foundation-Black-black-5, #d9d9d9);
+`;
 const ApplyWrapper = styled.div`
   display: flex;
   padding: 30px;

@@ -6,6 +6,8 @@ import styled from "styled-components";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Icons } from "../../../components/icons/index";
+import { IoIosArrowBack } from "react-icons/io";
+import Alert_post from "../../../components/employer/Alert_post";
 
 export default function TitleCategory() {
   const navigate = useNavigate();
@@ -45,9 +47,51 @@ export default function TitleCategory() {
     });
   };
 
+  // 직무 분야
+  const mainTags = [
+    { id: "farm", label: "🌱 농사·원예·어업" },
+    { id: "drive", label: "🚚 운전·배달" },
+    { id: "craft", label: "🪵 목공·공예·제조" },
+  ];
+  const otherTags = [
+    "요리·주방",
+    "청소·미화",
+    "경비·보안",
+    "간병·돌봄",
+    "판매·서비스",
+    "사무·행정",
+  ];
+
+  const [selectedTags, setSelectedTags] = useState([]);
+  const [showOther, setShowOther] = useState(false);
+  const toggleTag = (key) =>
+    setSelectedTags((prev) =>
+      prev.includes(key) ? prev.filter((t) => t !== key) : [...prev, key]
+    );
+  const [backAlertOpen, setBackAlertOpen] = useState(false);
+
   return (
     <>
-      <Header text="새공고" />
+      <Headersection>
+        <HeaderContainer>
+          <BackButton
+            type="button"
+            aria-label="뒤로가기"
+            onClick={() => setBackAlertOpen(true)}
+          >
+            <IoIosArrowBack />
+          </BackButton>
+          {"새 공고"}
+        </HeaderContainer>
+      </Headersection>
+      <Alert_post
+        open={backAlertOpen}
+        onConfirm={() => {
+          setBackAlertOpen(false);
+        }}
+        onCancel={() => setBackAlertOpen(false)}
+        onClose={() => setBackAlertOpen(false)}
+      />
       <ApplyWrapper>
         <ProgressBar value={"25"} max={"100"} />
         <Question>
@@ -56,12 +100,12 @@ export default function TitleCategory() {
           구인기간을 알려주세요.
         </Question>
         <OptionsWrapper>
-          <SubWrapper>
-            공고제목
+          <Tag>
+            <p>공고제목</p>
             <Enter text="제목을 입력해주세요" />
-          </SubWrapper>
-          <SubWrapper>
-            구인기간
+          </Tag>
+          <Tag>
+            <p>구인기간</p>
             <Period>
               <Inputdate
                 type="date"
@@ -92,8 +136,40 @@ export default function TitleCategory() {
               )}
               채용시 마감
             </Selectcheckbox>
-          </SubWrapper>
-          <SubWrapper>구인분야</SubWrapper>
+          </Tag>
+          <Tag>
+            <p>구인분야</p>
+            <TagList>
+              {mainTags.map((t) => (
+                <TagPill
+                  key={t.id}
+                  data-selected={selectedTags.includes(t.id)}
+                  onClick={() => toggleTag(t.id)}
+                >
+                  {t.label}
+                </TagPill>
+              ))}
+              <TagPill
+                data-variant="outline"
+                onClick={() => setShowOther((s) => !s)}
+              >
+                다른 분야 ▾
+              </TagPill>
+            </TagList>
+            {showOther && (
+              <OtherWrap>
+                {otherTags.map((label) => (
+                  <TagPill
+                    key={label}
+                    data-selected={selectedTags.includes(label)}
+                    onClick={() => toggleTag(label)}
+                  >
+                    {label}
+                  </TagPill>
+                ))}
+              </OtherWrap>
+            )}
+          </Tag>
         </OptionsWrapper>
       </ApplyWrapper>
       <Footer>
@@ -102,6 +178,87 @@ export default function TitleCategory() {
     </>
   );
 }
+
+// 변경: position 추가
+const HeaderContainer = styled.div`
+  position: relative;
+  width: 400px;
+  height: 70px;
+  background-color: #eaf7f0;
+  font-size: 30px;
+  font-weight: 700;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+`;
+
+// 추가: 뒤로가기 버튼 스타일
+const BackButton = styled.button`
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  background: transparent;
+  border: 0;
+  padding: 10px;
+  cursor: pointer;
+
+  svg {
+    width: 32px;
+    height: 32px;
+  }
+`;
+
+const Headersection = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid var(--Foundation-Black-black-5, #d9d9d9);
+`;
+const Tag = styled.div`
+  p {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+  }
+`;
+
+const TagList = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+`;
+
+const TagPill = styled.button`
+  all: unset;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  border: 1px solid #bfbfbf;
+  background: #ffffff;
+
+  &[data-selected="true"] {
+    background: var(--Foundation-Green-Light, #eaf7f0);
+    border-color: #7cc9a5;
+    font-weight: 600;
+  }
+
+  &[data-variant="outline"] {
+    background: #ffffff;
+  }
+`;
+
+const OtherWrap = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+`;
 
 const ApplyWrapper = styled.div`
   display: flex;
