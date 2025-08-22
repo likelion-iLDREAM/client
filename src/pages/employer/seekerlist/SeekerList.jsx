@@ -5,10 +5,13 @@ import StatsRow from "../../../components/employer/StatsRow";
 import styled from "styled-components";
 import { Icons } from "../../../components/icons/index";
 import { useState } from "react";
+import Alert_emp from "../../../components/employer/Alert_emp";
 
 export default function SeekerList() {
   // 탭 상태
   const [currentTab, setCurrentTab] = useState("지원 완료"); // 기본값
+  const [backAlertOpen, setBackAlertOpen] = useState(false);
+  const [isClosed, setIsClosed] = useState(false);
 
   // 탭에 따라 하단 버튼 문구와 카드 내용 등 변경
   let buttonText;
@@ -30,7 +33,18 @@ export default function SeekerList() {
   }
   return (
     <>
-      <Header text="지원자 현황" />
+      <Headersection>
+        <Header text={"지원자 현황"} showBack />
+      </Headersection>
+      <Alert_emp
+        open={backAlertOpen}
+        onConfirm={() => {
+          setBackAlertOpen(false);
+          setIsClosed(true);
+        }}
+        onCancel={() => setBackAlertOpen(false)}
+        onClose={() => setBackAlertOpen(false)}
+      />
       <SummarySection>
         <div className="title">
           지원자 통계 <span className="subtitle">총 지원자 8명</span>
@@ -61,50 +75,24 @@ export default function SeekerList() {
             </InfoBlock>
             <Icons.ArrowForward size={32} />
           </NameRow>
-          <ConfirmBtn>{buttonText}</ConfirmBtn>
+          <Button text={buttonText} />
         </ApplicantCard>
       </List>
       <Footer>
-        <Button text="채용 마감하기" type="White"></Button>
+        <ConfirmBtn disabled={isClosed} onClick={() => setBackAlertOpen(true)}>
+          {isClosed ? "채용 마감" : "채용 마감하기"}
+        </ConfirmBtn>
       </Footer>
     </>
   );
 }
 
-const Wrapper = styled.div`
-  width: 100vw;
-  max-width: 375px;
-  margin: 0 auto;
-  background: #fff;
-  min-height: 100vh;
-  font-family: Pretendard, sans-serif;
+const Headersection = styled.div`
+  position: relative;
   display: flex;
-  flex-direction: column;
-`;
-
-const StatusTabBar = styled.div`
-  display: flex;
-  justify-content: space-between;
-  padding: 0 12px;
-  background: #fff;
-  position: sticky; /* sticky 속성! */
-  top: 54px; /* 헤더 높이에 맞게 조정 */
-  z-index: 10;
-  border-bottom: 1px solid #ebebeb;
-`;
-
-const Tab = styled.button`
-  flex: 1;
-  border: none;
-  background: none;
-  font-size: 16px;
-  font-weight: 600;
-  color: ${({ active }) =>
-    active ? "var(--Foundation-Green-Normal, #23c163)" : "#888"};
-  border-bottom: 2px solid
-    ${({ active }) =>
-      active ? "var(--Foundation-Green-Normal, #23c163)" : "transparent"};
-  padding: 16px 0 8px;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid var(--Foundation-Black-black-5, #d9d9d9);
 `;
 
 const SummarySection = styled.section`
@@ -117,32 +105,6 @@ const SummarySection = styled.section`
       font-weight: 400;
     }
   }
-`;
-
-const RoundStat = styled.div`
-  /* 적당한 크기의 원형 차트 or 숫자 영역 */
-`;
-
-const Circle = styled.div`
-  width: 78px;
-  height: 78px;
-  border-radius: 50%;
-  border: 4px solid #2363e0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: white;
-  color: #333;
-`;
-
-const AgeGraph = styled.div`
-  flex: 1;
-  display: flex;
-  align-items: flex-end;
-  gap: 8px;
-  height: 60px;
-  /* bar별 width, height, color 직접 지정 */
 `;
 
 // 지원자 카드 전체 박스
@@ -207,13 +169,30 @@ const Summary = styled.span`
 // 오른쪽 화살표는 이미 있는 컴포넌트 사용
 
 const ConfirmBtn = styled.button`
-  background: var(--Foundation-Green-Normal, #23c163);
-  color: #fff;
+  background-color: white;
+  cursor: pointer;
   border: none;
   border-radius: 7px;
-  font-size: 18px;
+  border: 1px solid var(--Foundation-Green-Normal);
+  padding: 10px 20px;
+  text-wrap: nowrap;
+  color: var(--Foundation-Green-Normal);
+  display: flex;
+  width: 340px;
+  height: 45px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
   font-weight: 700;
-  padding: 12px 0;
+  font-size: 20px;
+  &:disabled {
+    background: #bfbfbf;
+    cursor: not-allowed;
+    color: #fff;
+    border: none;
+  }
 `;
 
 const Footer = styled.div`

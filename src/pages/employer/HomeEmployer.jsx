@@ -1,4 +1,4 @@
-import Header from "../../components/common/Header";
+import ildream from "../../assets/ildream.svg";
 import TapBar from "../../components/common/TapBar";
 import Search from "../../components/employer/Search";
 import JobPostItem from "../../components/employer/JobPostItem";
@@ -122,7 +122,7 @@ export default function HomeEmployer() {
 
   return (
     <>
-      <Header Islogo />
+      <HeaderImg />
       <FilterTab onChange={(newStatus) => setStatusFilter(newStatus)} />
 
       <Search text="검색어를 입력하세요." onChange={onChangeSearch} />
@@ -149,6 +149,31 @@ export default function HomeEmployer() {
     </>
   );
 }
+
+function HeaderImg() {
+  return (
+    <HeaderImgContainer>
+      <img src={ildream} />
+    </HeaderImgContainer>
+  );
+}
+
+const HeaderImgContainer = styled.div`
+  width: 400px;
+  height: 70px;
+  background-color: #eaf7f0;
+  font-size: 30px;
+  font-weight: 700;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  > img {
+    width: 93px;
+    height: 57px;
+    flex-shrink: 0;
+  }
+`;
 
 const JobPostsWrapper = styled.div`
   display: flex;

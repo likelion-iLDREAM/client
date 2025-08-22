@@ -1,7 +1,8 @@
 // 변경: import 추가
 import { IoIosArrowBack } from "react-icons/io";
 import styled from "styled-components";
-import ildream from "../../assets/ildream.svg"
+import ildream from "../../assets/ildream.svg";
+
 
 // 변경: 컴포넌트 시그니처 & 조건부 렌더링
 // Header.jsx — 함수 시그니처 & children 렌더링으로 교체

@@ -5,31 +5,13 @@ import Opt from "./pages/auth/login/Opt";
 import Phonenum from "./pages/auth/login/Phonenum";
 import SelectRole from "./pages/auth/signup/SelectRole";
 import Terms from "./pages/auth/signup/Terms";
-import NameBirth from "./pages/seeker/signupseeker/NameBirth";
-import Address from "./pages/seeker/signupseeker/Address";
-import Interests from "./pages/seeker/signupseeker/Interests";
-import SignupEnd from "./pages/seeker/signupseeker/SignupEnd";
-import HomeSeeker from "./pages/Seeker/HomeSeeker";
-import Jobs from "./pages/seeker/jobs/jobs";
-import JobsDetails from "./pages/seeker/jobs/JobsDetail";
-import QuickApply from "./pages/seeker/quickapply/QuickApply";
-import QuickApplyEnd from "./pages/seeker/quickapply/QuickApplyEnd";
-import CareerGuide from "./pages/seeker/careerguide/CareerGuide";
-import PosGuide from "./pages/seeker/careerguide/PosGuide";
-import PublicJobs from "./pages/seeker/careerguide/PublicJobs";
-import Certificates from "./pages/seeker/careerguide/Certificates";
-import ProfileSeeker from "./pages/seeker/profile/ProfileSeeker";
-import ProfileSeekerEdit from "./pages/seeker/profile/ProfileSeekerEdit";
-import ReviewStart from "./pages/seeker/review/ReviewStart";
-import ReviewTag from "./pages/seeker/review/ReviewTag";
-import CheckFail from "./pages/seeker/result/CheckFail";
-import CheckSuccess from "./pages/seeker/result/CheckSuccess";
-import ContractSummary from "./pages/seeker/result/ContractSummary";
-import Resume from "./pages/seeker/resume/Resume";
-import ResumeAdd from "./pages/seeker/resume/ResumeAdd";
-import ResumeEdit from "./pages/seeker/resume/ResumeEdit";
-import Question from "./pages/seeker/quickapply/Question";
-import * as Employer from "./index.js";
+// Signup
+import NameBirth from "./pages/seeker/signupseeker/namebirth";
+import Address from "./pages/seeker/signupseeker/address";
+import Interests from "./pages/seeker/signupseeker/interests";
+import SignupEnd from "./pages/seeker/signupseeker/signupend";
+import * as Employer from "./EmployerIndex.js";
+import * as Seeker from "./SeekerIndex.js";
 
 const router = createBrowserRouter([
   {
@@ -40,12 +22,12 @@ const router = createBrowserRouter([
         element: <LoginStart />,
       },
       {
-        path: "/opt",
-        element: <Opt />,
-      },
-      {
         path: "/phone",
         element: <Phonenum />,
+      },
+      {
+        path: "/opt",
+        element: <Opt />,
       },
       {
         path: "/terms",
@@ -58,6 +40,7 @@ const router = createBrowserRouter([
             path: "selectrole",
             element: <SelectRole />,
           },
+
           {
             path: "namebirth",
             element: <NameBirth />,
@@ -81,30 +64,26 @@ const router = createBrowserRouter([
         children: [
           {
             path: "",
-            element: <HomeSeeker />,
-          },
-          {
-            path: "jobs",
-            element: <Jobs />,
+            element: <Seeker.Jobs />,
           },
           {
             path: "jobsdetail",
-            element: <JobsDetails />,
+            element: <Seeker.JobsDetails />,
           },
           {
             path: "quickapply",
             children: [
               {
                 path: "",
-                element: <QuickApply />,
+                element: <Seeker.QuickApply />,
               },
               {
                 path: "question",
-                element: <Question />,
+                element: <Seeker.Question />,
               },
               {
                 path: "end",
-                element: <QuickApplyEnd />,
+                element: <Seeker.QuickApplyEnd />,
               },
             ],
           },
@@ -113,19 +92,19 @@ const router = createBrowserRouter([
             children: [
               {
                 path: "",
-                element: <CareerGuide />,
+                element: <Seeker.CareerGuide />,
               },
               {
                 path: "pos",
-                element: <PosGuide />,
+                element: <Seeker.PosGuide />,
               },
               {
                 path: "gov",
-                element: <PublicJobs />,
+                element: <Seeker.PublicJobs />,
               },
               {
                 path: "cert",
-                element: <Certificates />,
+                element: <Seeker.Certificates />,
               },
             ],
           },
@@ -134,11 +113,11 @@ const router = createBrowserRouter([
             children: [
               {
                 path: "",
-                element: <ProfileSeeker />,
+                element: <Seeker.ProfileSeeker />,
               },
               {
                 path: "edit",
-                element: <ProfileSeekerEdit />,
+                element: <Seeker.ProfileSeekerEdit />,
               },
             ],
           },
@@ -147,11 +126,11 @@ const router = createBrowserRouter([
             children: [
               {
                 path: "",
-                element: <ReviewStart />,
+                element: <Seeker.ReviewStart />,
               },
               {
                 path: "tag",
-                element: <ReviewTag />,
+                element: <Seeker.ReviewTag />,
               },
             ],
           },
@@ -160,15 +139,15 @@ const router = createBrowserRouter([
             children: [
               {
                 path: "fail",
-                element: <CheckFail />,
+                element: <Seeker.CheckFail />,
               },
               {
                 path: "success",
-                element: <CheckSuccess />,
+                element: <Seeker.CheckSuccess />,
               },
               {
                 path: "summary",
-                element: <ContractSummary />,
+                element: <Seeker.ContractSummary />,
               },
             ],
           },
@@ -177,15 +156,15 @@ const router = createBrowserRouter([
             children: [
               {
                 path: "",
-                element: <Resume />,
+                element: <Seeker.Resume />,
               },
               {
                 path: "add",
-                element: <ResumeAdd />,
+                element: <Seeker.ResumeAdd />,
               },
               {
                 path: "edit",
-                element: <ResumeEdit />,
+                element: <Seeker.ResumeEdit />,
               },
             ],
           },
