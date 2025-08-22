@@ -1,7 +1,7 @@
 import Header from "../../../components/common/Header";
 import TapBar from "../../../components/common/TapBar";
 
-const HiringFields = () => {
+export default function HiringFields() {
     return (
     <>
         <Header/>
@@ -10,5 +10,3 @@ const HiringFields = () => {
     </>
     )
 }
-
-export default HiringFields

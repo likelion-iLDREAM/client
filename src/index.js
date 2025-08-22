@@ -1,6 +1,6 @@
 export {default as HomeEmployer} from "./pages/employer/HomeEmployer";
 export {default as CheckReview} from "./pages/employer/CheckReview";
-
+export {default as QuestionList} from "./pages/employer/QuestionList";
 // postjobs
 export {default as ApplyMethod}  from "./pages/employer/postjobs/ApplyMethod";
 export {default as TitleCategory}  from "./pages/employer/postjobs/TitleCategory";
@@ -21,6 +21,6 @@ export {default as SeekerList} from "./pages/employer/seekerlist/SeekerList";
 export {default as WriteContract } from "./pages/employer/seekerlist/WriteContract";
 
 // // singupemployer
-// export {default as HiringFields}  from "./pages/employer/singupemployer/HiringFields";
-// export {default as InfoEmployer}  from "./pages/employer/singupemployer/InfoEmployer";
-// export {default as SignupEndEmployer } from "./pages/employer/singupemployer/SignupEndEmployer";
+export {default as HiringFields}  from "./pages/employer/singupemployer/HiringFields";
+export {default as InfoEmployer}  from "./pages/employer/singupemployer/InfoEmployer";
+export {default as SignupEndEmployer } from "./pages/employer/singupemployer/SignupEndEmployer";

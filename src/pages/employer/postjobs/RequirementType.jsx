@@ -1,14 +1,151 @@
 import Header from "../../../components/common/Header";
-import TapBar from "../../../components/common/TapBar";
+import Button from "../../../components/common/Button";
+import Enter from "../../../components/common/Button";
+import ProgressBar from "../../../components/common/Progressbar";
+import styled from "styled-components";
+import { Icons } from "../../../components/icons/index";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-const RequirementType = () => {
-    return (
+export default function RequirementType() {
+  const navigate = useNavigate();
+  const handleNext = () => {
+    navigate("../WorkingRest");
+  };
+  const [selectedCareer, setSelectedCareer] = useState(null);
+  const [selectedEducation, setSelectedEducation] = useState(null);
+  const [selectedEmployment, setSelectedEmployment] = useState(null);
+
+  const handleSelect = (groupSetter, value) => {
+    groupSetter(value);
+  };
+  return (
     <>
-        <Header/>
-        RequirementType
-        <TapBar/>
+      <Header text="새공고" />
+      <ApplyWrapper>
+        <ProgressBar value={"50"} max={"100"} />
+        <Question>
+          자격 요건과 <br />
+          고용형태를 <br />
+          알려주세요.
+        </Question>
+        <OptionsWrapper>
+          <GroupTitle>경력조건</GroupTitle>
+          <SubWrapper>
+            {["신입가능", "경력필요"].map((item) => (
+              <Filter
+                key={item}
+                active={selectedCareer === item}
+                onClick={() => handleSelect(setSelectedCareer, item)}
+              >
+                {item}
+              </Filter>
+            ))}
+          </SubWrapper>
+          <GroupTitle>학력</GroupTitle>
+          <SubWrapper>
+            {["학력무관", "고졸 이상", "초대졸 이상", "대졸 이상"].map(
+              (item) => (
+                <Filter
+                  key={item}
+                  active={selectedEducation === item}
+                  onClick={() => handleSelect(setSelectedEducation, item)}
+                >
+                  {item}
+                </Filter>
+              )
+            )}
+          </SubWrapper>
+          <GroupTitle>고용형태</GroupTitle>
+          <SubWrapper>
+            {["정규직", "시간제 정규직", "계약직", "시간제 계약직"].map(
+              (item) => (
+                <Filter
+                  key={item}
+                  active={selectedEmployment === item}
+                  onClick={() => handleSelect(setSelectedEmployment, item)}
+                >
+                  {item}
+                </Filter>
+              )
+            )}
+          </SubWrapper>
+        </OptionsWrapper>
+      </ApplyWrapper>
+      <Footer>
+        <Button text="다음" type="White" onClick={handleNext} />
+      </Footer>
     </>
-    )
+  );
 }
+const ApplyWrapper = styled.div`
+  display: flex;
+  padding: 30px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 45px;
+  flex: 1 0 0;
+  align-self: stretch;
+  background-color: var(--Foundation-Black-black-1);
+`;
 
-export default RequirementType
+const Question = styled.div`
+  font-size: 30px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+`;
+
+const OptionsWrapper = styled.div`
+  display: flex;
+  width: 311px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+  font-size: 20px;
+`;
+
+const Footer = styled.div`
+  background-color: White;
+  display: flex;
+  padding: 10px;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+`;
+
+const SubWrapper = styled.div`
+  display: flex;
+  width: 294px;
+  align-items: flex-start;
+  align-content: flex-start;
+  gap: 5px;
+  flex-wrap: wrap;
+`;
+
+const Filter = styled.button`
+  display: flex;
+  padding: 10px;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  border-radius: 7px;
+  border: #8d8d8d;
+  background: ${({ active }) =>
+    active
+      ? "var(--Foundation-Green-Normal)"
+      : "var(--Foundation-Green-Light)"};
+  color: ${({ active }) => (active ? "#FFF" : "8D8D8D")};
+  font-family: "Pretendard Variable";
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+  cursor: pointer;
+  &:hover {
+    background: ${({ active }) =>
+      active ? "var(--Foundation-Green-Normal)" : "#e1f4e4"};
+  }
+`;
+
+const GroupTitle = styled.div``;
