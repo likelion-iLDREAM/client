@@ -3,7 +3,7 @@ import Header from "../../../components/common/Header";
 import Button from "../../../components/common/Button";
 import { useState } from "react";
 
-export default function ResumeEdit() {
+export default function ResumeAdd() {
   // 입력값
   const [company, setCompany] = useState("");
   const [duty, setDuty] = useState("");
@@ -185,7 +185,7 @@ export default function ResumeEdit() {
       </Info>
 
       <Tap>
-        <Button type={"White"} text={"수정하기"} />
+        <Button type={"White"} text={"추가하기"} />
       </Tap>
     </AddContainer>
   );

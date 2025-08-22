@@ -36,6 +36,7 @@ export default function Opt() {
 }
 
 const OptContainer = styled.div`
+  background-color: #ebf8ed;
   width: 100%;
   display: flex;
   flex-direction: column;
