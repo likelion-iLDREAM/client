@@ -5,8 +5,7 @@ import Alert from "../quickapply/Alert";
 
 export default function JobList() {
   const [callAlertOpen, setCallAlertOpen] = useState(false);
-  const companyName = "구인업체명"; // 실제 데이터로 교체
-
+  const companyName = "구인업체명";
   return (
     <RecommendContainer>
       <div>
