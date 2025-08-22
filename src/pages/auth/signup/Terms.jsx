@@ -3,6 +3,8 @@ import Header from "../../../components/common/Header";
 import Button from "../../../components/common/Button";
 import { IoCheckboxOutline, IoCheckbox } from "react-icons/io5";
 import { IoIosArrowForward } from "react-icons/io";
+import ProgressBar from "../../../components/common/Progressbar";
+
 /*
 체크 박스, 이동 구현
 */
@@ -10,8 +12,8 @@ import { IoIosArrowForward } from "react-icons/io";
 export default function Terms() {
   return (
     <TermsContainer>
-      <Header />
-
+      <Header text={"회원가입"} />
+      <ProgressBar value={"20"} max={"100"} />
       <div className="Text1">
         <div>약관 동의가</div>
         <div>필요해요.</div>
@@ -54,7 +56,7 @@ const TermsContainer = styled.div`
   flex-direction: column;
   align-items: center;
   > .Text1 {
-    font-size: 25px;
+    font-size: 30px;
     font-weight: 700;
     margin-top: 30px;
     margin-left: 45px;

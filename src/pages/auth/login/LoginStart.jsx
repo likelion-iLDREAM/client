@@ -17,6 +17,7 @@ export default function LoginStart() {
 }
 
 const LoginContainer = styled.div`
+  background-color: #ebf8ed;
   width: 100%;
   display: flex;
   flex-direction: column;

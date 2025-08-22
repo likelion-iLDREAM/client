@@ -21,6 +21,7 @@ export default function Phonenum() {
 }
 
 const PhonenumContainer = styled.div`
+  background-color: #ebf8ed;
   width: 100%;
   display: flex;
   flex-direction: column;

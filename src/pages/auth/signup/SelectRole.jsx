@@ -7,7 +7,7 @@ import Button from "../../../components/common/Button";
 export default function SelectRole() {
   return (
     <SelectRoleContainer>
-      <Header />
+      <Header text={"회원가입"} />
       <div className="Text1">
         <div>회원 정보가 없어</div>
         <div>회원가입을 진행할게요.</div>
