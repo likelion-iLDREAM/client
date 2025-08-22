@@ -6,6 +6,8 @@ import styled from "styled-components";
 import { Icons } from "../../../components/icons/index";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { IoIosArrowBack } from "react-icons/io";
+import Alert_post from "../../../components/employer/Alert_post";
 
 export default function RequirementType() {
   const navigate = useNavigate();
@@ -19,9 +21,30 @@ export default function RequirementType() {
   const handleSelect = (groupSetter, value) => {
     groupSetter(value);
   };
+  const [backAlertOpen, setBackAlertOpen] = useState(false);
+
   return (
     <>
-      <Header text="새공고" />
+      <Headersection>
+        <HeaderContainer>
+          <BackButton
+            type="button"
+            aria-label="뒤로가기"
+            onClick={() => setBackAlertOpen(true)}
+          >
+            <IoIosArrowBack />
+          </BackButton>
+          {"새 공고"}
+        </HeaderContainer>
+      </Headersection>
+      <Alert_post
+        open={backAlertOpen}
+        onConfirm={() => {
+          setBackAlertOpen(false);
+        }}
+        onCancel={() => setBackAlertOpen(false)}
+        onClose={() => setBackAlertOpen(false)}
+      />
       <ApplyWrapper>
         <ProgressBar value={"50"} max={"100"} />
         <Question>
@@ -30,46 +53,52 @@ export default function RequirementType() {
           알려주세요.
         </Question>
         <OptionsWrapper>
-          <GroupTitle>경력조건</GroupTitle>
-          <SubWrapper>
-            {["신입가능", "경력필요"].map((item) => (
-              <Filter
-                key={item}
-                active={selectedCareer === item}
-                onClick={() => handleSelect(setSelectedCareer, item)}
-              >
-                {item}
-              </Filter>
-            ))}
-          </SubWrapper>
-          <GroupTitle>학력</GroupTitle>
-          <SubWrapper>
-            {["학력무관", "고졸 이상", "초대졸 이상", "대졸 이상"].map(
-              (item) => (
+          <Tag>
+            <p>경력조건</p>
+            <SubWrapper>
+              {["신입가능", "경력필요"].map((item) => (
                 <Filter
                   key={item}
-                  active={selectedEducation === item}
-                  onClick={() => handleSelect(setSelectedEducation, item)}
+                  active={selectedCareer === item}
+                  onClick={() => handleSelect(setSelectedCareer, item)}
                 >
                   {item}
                 </Filter>
-              )
-            )}
-          </SubWrapper>
-          <GroupTitle>고용형태</GroupTitle>
-          <SubWrapper>
-            {["정규직", "시간제 정규직", "계약직", "시간제 계약직"].map(
-              (item) => (
-                <Filter
-                  key={item}
-                  active={selectedEmployment === item}
-                  onClick={() => handleSelect(setSelectedEmployment, item)}
-                >
-                  {item}
-                </Filter>
-              )
-            )}
-          </SubWrapper>
+              ))}
+            </SubWrapper>
+          </Tag>
+          <Tag>
+            <p>학력</p>
+            <SubWrapper>
+              {["학력무관", "고졸 이상", "초대졸 이상", "대졸 이상"].map(
+                (item) => (
+                  <Filter
+                    key={item}
+                    active={selectedEducation === item}
+                    onClick={() => handleSelect(setSelectedEducation, item)}
+                  >
+                    {item}
+                  </Filter>
+                )
+              )}
+            </SubWrapper>{" "}
+          </Tag>
+          <Tag>
+            <p>고용형태</p>
+            <SubWrapper>
+              {["정규직", "시간제 정규직", "계약직", "시간제 계약직"].map(
+                (item) => (
+                  <Filter
+                    key={item}
+                    active={selectedEmployment === item}
+                    onClick={() => handleSelect(setSelectedEmployment, item)}
+                  >
+                    {item}
+                  </Filter>
+                )
+              )}
+            </SubWrapper>
+          </Tag>
         </OptionsWrapper>
       </ApplyWrapper>
       <Footer>
@@ -78,6 +107,54 @@ export default function RequirementType() {
     </>
   );
 }
+
+const Tag = styled.div`
+  p {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+  }
+`;
+// 변경: position 추가
+const HeaderContainer = styled.div`
+  position: relative;
+  width: 400px;
+  height: 70px;
+  background-color: #eaf7f0;
+  font-size: 30px;
+  font-weight: 700;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+`;
+
+// 추가: 뒤로가기 버튼 스타일
+const BackButton = styled.button`
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  background: transparent;
+  border: 0;
+  padding: 10px;
+  cursor: pointer;
+
+  svg {
+    width: 32px;
+    height: 32px;
+  }
+`;
+
+const Headersection = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid var(--Foundation-Black-black-5, #d9d9d9);
+`;
 const ApplyWrapper = styled.div`
   display: flex;
   padding: 30px;

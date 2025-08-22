@@ -1,11 +1,13 @@
 import styled from "styled-components";
 import Header from "../../../components/common/Header";
 import ButtonSmall from "../../../components/common/ButtonSmall";
+import { Icons } from "../../../components/icons/index";
 import { IoPersonCircleOutline } from "react-icons/io5";
 import { AiOutlineEdit } from "react-icons/ai";
 import { FaUserEdit } from "react-icons/fa";
 import { IoIosArrowForward } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
+import TapBar from "../../../components/common/TapBar";
 
 // (추후) 별도 리스트 컴포넌트를 만들면 아래 import만 활성화해서 교체하면 됩니다.
 // import AppliedJobProgressList from "../../../components/seeker/AppliedJobProgressList";
@@ -60,14 +62,9 @@ export default function ProfileSeeker() {
               ))}
             </TagRow>
             <EditRow>
-              <ButtonSmall
-                onClick={() => navigate("/homeseeker/profile/edit")}
-                text={
-                  <span className="edit-label">
-                    <FaUserEdit size={18} />내 정보 수정
-                  </span>
-                }
-              />
+              <SmallButton onClick={() => navigate("./edit")}>
+                <Icons.UserEdit />내 정보 수정
+              </SmallButton>
             </EditRow>
           </TopRight>
         </TopCard>
@@ -157,17 +154,33 @@ export default function ProfileSeeker() {
         )}
 
         {/* 지원 현황 */}
-        <Card>
-          <RowBetween onClick={() => navigate("/homeseeker/resume")}>
-            <span>내 이력 확인하기</span>
-            <IoIosArrowForward />
-          </RowBetween>
-          <CountBox>0회</CountBox>
-        </Card>
+        <Submenu onClick={() => navigate("/homeseeker/resume")}>
+          <div>
+            내 이력 확인하기<span>{0}회</span>
+          </div>
+          <IoIosArrowForward />
+        </Submenu>
       </Section>
+      <TapBar />
     </ProfileContainer>
   );
 }
+
+const SmallButton = styled.button`
+  display: flex;
+  padding: 5px 10px;
+  align-items: center;
+  gap: 5px;
+  border-radius: 7px;
+  background: var(--Foundation-Green-Normal, #2baf66);
+  border: none;
+  color: var(--Foundation-surface-White, #fff);
+  font-size: 15px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+  cursor: pointer;
+`;
 const Section = styled.div`
   padding: 20px;
 `;
@@ -343,4 +356,33 @@ const CountBox = styled.div`
   font-weight: 700;
   font-size: 20px;
   color: var(--Foundation-Green-Normal, #2baf66);
+`;
+
+const Submenu = styled.div`
+  display: flex;
+  padding: 10px 20px;
+  align-items: center;
+  gap: 15px;
+  align-self: stretch;
+  border-radius: 7px;
+  background: var(--Foundation-Green-Light, #eaf7f0);
+  div {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+    flex: 1 0 0;
+    align-self: stretch;
+    color: #000;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+    height: 78px;
+  }
+
+  span {
+    align-self: stretch;
+    color: var(--Foundation-Green-Normal, #2baf66);
+  }
 `;

@@ -6,6 +6,8 @@ import styled from "styled-components";
 import { Icons } from "../../../components/icons/index";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { IoIosArrowBack } from "react-icons/io";
+import Alert_post from "../../../components/employer/Alert_post";
 
 const paymentOptions = [
   { label: "시급", value: "HOURLY" },
@@ -25,6 +27,7 @@ export default function PayLocation() {
     if (!value) return "";
     return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
+  const [backAlertOpen, setBackAlertOpen] = useState(false);
 
   const handleInputChange = (e) => {
     const rawValue = e.target.value.replace(/,/g, "").replace(/[^0-9]/g, "");
@@ -32,15 +35,34 @@ export default function PayLocation() {
   };
   return (
     <>
-      <Header text="새공고" />
+      <Headersection>
+        <HeaderContainer>
+          <BackButton
+            type="button"
+            aria-label="뒤로가기"
+            onClick={() => setBackAlertOpen(true)}
+          >
+            <IoIosArrowBack />
+          </BackButton>
+          {"새 공고"}
+        </HeaderContainer>
+      </Headersection>
+      <Alert_post
+        open={backAlertOpen}
+        onConfirm={() => {
+          setBackAlertOpen(false);
+        }}
+        onCancel={() => setBackAlertOpen(false)}
+        onClose={() => setBackAlertOpen(false)}
+      />
       <ApplyWrapper>
         <ProgressBar value={"37.5"} max={"100"} />
         <Question>
           급여와 <br /> 근무예정지를 <br /> 알려주세요.
         </Question>
         <OptionsWrapper>
-          <SubWrapper>
-            급여
+          <Tag>
+            <p>급여</p>
             <PayWrapper>
               <PaymentType
                 value={paymentType}
@@ -64,16 +86,16 @@ export default function PayLocation() {
               {" "}
               2025년 최저시급은 10,030원입니다.
             </div>
-          </SubWrapper>
+          </Tag>
 
-          <SubWrapper>
-            근무지
+          <Tag>
+            <p>근무지</p>
             <InputWrapper>
               <Inputaddress placeholder="주소 입력" />
               <Icons.Map color="var(--Foundation-Green-Normal)" size={24} />
             </InputWrapper>
             <Enter text="상세주소" />
-          </SubWrapper>
+          </Tag>
         </OptionsWrapper>
       </ApplyWrapper>
       <Footer>
@@ -82,6 +104,53 @@ export default function PayLocation() {
     </>
   );
 }
+const Tag = styled.div`
+  p {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+  }
+`;
+// 변경: position 추가
+const HeaderContainer = styled.div`
+  position: relative;
+  width: 400px;
+  height: 70px;
+  background-color: #eaf7f0;
+  font-size: 30px;
+  font-weight: 700;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+`;
+
+// 추가: 뒤로가기 버튼 스타일
+const BackButton = styled.button`
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  background: transparent;
+  border: 0;
+  padding: 10px;
+  cursor: pointer;
+
+  svg {
+    width: 32px;
+    height: 32px;
+  }
+`;
+
+const Headersection = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid var(--Foundation-Black-black-5, #d9d9d9);
+`;
 
 const ApplyWrapper = styled.div`
   display: flex;
