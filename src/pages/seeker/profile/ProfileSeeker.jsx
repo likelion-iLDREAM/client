@@ -7,13 +7,15 @@ import { AiOutlineEdit } from "react-icons/ai";
 import { FaUserEdit } from "react-icons/fa";
 import { IoIosArrowForward } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
+import TapBarSeeker from "../../../components/common/TapBarSeeker";
+import { useState } from "react";
 import TapBar from "../../../components/common/TapBar";
-
 // (추후) 별도 리스트 컴포넌트를 만들면 아래 import만 활성화해서 교체하면 됩니다.
 // import AppliedJobProgressList from "../../../components/seeker/AppliedJobProgressList";
 // import AppliedJobResultList from "../../../components/seeker/AppliedJobResultList";
 
 export default function ProfileSeeker() {
+  const [activeTab, setActiveTab] = useState("guide");
   const navigate = useNavigate();
   const hasDraft = true;
   const name = "홍길동";
@@ -161,26 +163,14 @@ export default function ProfileSeeker() {
           <IoIosArrowForward />
         </Submenu>
       </Section>
-      <TapBar />
+      <Homebar></Homebar>
+
     </ProfileContainer>
   );
 }
 
-const SmallButton = styled.button`
-  display: flex;
-  padding: 5px 10px;
-  align-items: center;
-  gap: 5px;
-  border-radius: 7px;
-  background: var(--Foundation-Green-Normal, #2baf66);
-  border: none;
-  color: var(--Foundation-surface-White, #fff);
-  font-size: 15px;
-  font-style: normal;
-  font-weight: 700;
-  line-height: normal;
-  cursor: pointer;
-`;
+const Homebar = styled(TapBarSeeker)``;
+
 const Section = styled.div`
   padding: 20px;
 `;

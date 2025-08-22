@@ -48,11 +48,15 @@ function Section() {
   return (
     <SectionContainer>
       <p className="p">주소입력</p>
-      <Enter text={"아이콘으로 주소 검색하기"} />
-      <Enter text={"상세 주소"} />
+      <SectionInfo>
+        <Enter text={"아이콘으로 주소 검색하기"} />
+        <Enter text={"상세 주소"} />
+      </SectionInfo>
     </SectionContainer>
   );
 }
+
+const SectionInfo = styled.div``;
 
 const SectionContainer = styled.div`
   padding-top: 80px;

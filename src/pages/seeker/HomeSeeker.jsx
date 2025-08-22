@@ -1,7 +1,7 @@
 import ildream from "../../assets/ildream.svg";
 import styled from "styled-components";
 import Recommend from "../../components/seeker/home/Recommend";
-import TapBar from "../../components/common/TapBar";
+import TapBarSeeker from "../../components/common/TapBarSeeker";
 
 export default function HomeSeeker() {
   return (
@@ -14,7 +14,7 @@ export default function HomeSeeker() {
   );
 }
 
-const Homebar = styled(TapBar)``;
+const Homebar = styled(TapBarSeeker)``;
 
 const HomeSeekerContainer = styled.div`
   display: flex;

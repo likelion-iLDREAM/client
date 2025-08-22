@@ -2,9 +2,10 @@ import styled from "styled-components";
 import Header from "../../../components/common/Header";
 import { BsBuilding } from "react-icons/bs";
 import { IoPeople } from "react-icons/io5";
-import Button from "../../../components/common/Button";
+import { useNavigate } from "react-router-dom";
 
 export default function SelectRole() {
+  const navigate = useNavigate();
   return (
     <SelectRoleContainer>
       <Header text={"회원가입"} />
@@ -18,19 +19,16 @@ export default function SelectRole() {
       </div>
 
       <div className="Select">
-        <div className="select1">
+        <div className="select1" onClick={() => navigate("/signupemployer")}>
           <BsBuilding size="100" color="#0F3D24" />
           <div className="text1">기업</div>
           <div>구인공고를 올리고 싶어요</div>
         </div>
-        <div className="select2">
+        <div className="select2" onClick={() => navigate("/terms/namebirth")}>
           <IoPeople size="100" color="#0F3D24" />
           <div className="text2">구직자</div>
           <div>원하는 기업에 취직하고 싶어요</div>
         </div>
-      </div>
-      <div className="Bottom">
-        <Button text={"다음"} type={"White"} />
       </div>
     </SelectRoleContainer>
   );

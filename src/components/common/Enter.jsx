@@ -10,7 +10,7 @@ export default function Enter({ type, text }) {
 
 const EnterContainer = styled.div`
   display: flex;
-  width: 294px;
+  width: 100%;
   height: 44px;
   justify-content: center;
   align-items: center;
