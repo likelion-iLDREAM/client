@@ -2,6 +2,7 @@ import Button from "../../../components/common/Button";
 import styled from "styled-components";
 import ildreamText from "../../../assets/ildreamText.svg";
 import Enter from "../../../components/common/Enter";
+import { useNavigate } from "react-router-dom";
 
 /*
 전화 번호 입력 후
@@ -9,6 +10,7 @@ import Enter from "../../../components/common/Enter";
 */
 
 export default function Opt() {
+  const navigate = useNavigate();
   return (
     <OptContainer>
       <div className="Logo">
@@ -28,7 +30,7 @@ export default function Opt() {
           <Button text={"재전송하기"} type={"White"} />
         </div>
         <div>
-          <Button text={"인증번호 요청하기"} />
+          <Button text={"인증하기"} onClick={() => navigate("/terms")} />
         </div>
       </div>
     </OptContainer>

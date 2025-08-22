@@ -6,12 +6,14 @@ import { AiOutlineEdit } from "react-icons/ai";
 import { FaUserEdit } from "react-icons/fa";
 import { IoIosArrowForward } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
-
+import TapBarSeeker from "../../../components/common/TapBarSeeker";
+import { useState } from "react";
 // (추후) 별도 리스트 컴포넌트를 만들면 아래 import만 활성화해서 교체하면 됩니다.
 // import AppliedJobProgressList from "../../../components/seeker/AppliedJobProgressList";
 // import AppliedJobResultList from "../../../components/seeker/AppliedJobResultList";
 
 export default function ProfileSeeker() {
+  const [activeTab, setActiveTab] = useState("guide");
   const navigate = useNavigate();
   const hasDraft = true;
   const name = "홍길동";
@@ -165,9 +167,13 @@ export default function ProfileSeeker() {
           <CountBox>0회</CountBox>
         </Card>
       </Section>
+      <Homebar></Homebar>
     </ProfileContainer>
   );
 }
+
+const Homebar = styled(TapBarSeeker)``;
+
 const Section = styled.div`
   padding: 20px;
 `;

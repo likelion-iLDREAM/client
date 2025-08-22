@@ -2,8 +2,11 @@ import Button from "../../../components/common/Button";
 import styled from "styled-components";
 import ildreamText from "../../../assets/ildreamText.svg";
 import Enter from "../../../components/common/Enter";
+import { useNavigate } from "react-router-dom";
 
 export default function Phonenum() {
+  const navigate = useNavigate();
+
   return (
     <PhonenumContainer>
       <div className="Logo">
@@ -14,7 +17,7 @@ export default function Phonenum() {
         <Enter text={"이곳에 전화번호를 입력해주세요."} />
       </div>
       <div className="Bottom">
-        <Button text={"인증번호 요청하기"} />
+        <Button text={"인증번호 요청하기"} onClick={() => navigate("/opt")} />
       </div>
     </PhonenumContainer>
   );
@@ -43,7 +46,7 @@ const PhonenumContainer = styled.div`
     align-items: center;
   }
   > .Text {
-    margin-left: 37px;
+    margin-left: 50px;
     margin-top: 85px;
     font-size: 20px;
     font-weight: 700;

@@ -1,6 +1,6 @@
 import ildream from "../../../assets/ildream.svg";
 import styled from "styled-components";
-import TapBar from "../../../components/common/TapBar";
+import TapBarSeeker from "../../../components/common/TapBarSeeker";
 import JobList from "../../../components/seeker/jobs/JobList";
 import Search from "../../../components/seeker/jobs/Search";
 
@@ -27,7 +27,7 @@ const List = styled.div`
   gap: 16px;
 `;
 
-const Homebar = styled(TapBar)``;
+const Homebar = styled(TapBarSeeker)``;
 
 const JobsContainer = styled.div`
   display: flex;

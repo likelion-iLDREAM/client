@@ -3,6 +3,7 @@ import Header from "../../../components/common/Header";
 import ildream from "../../../assets/ildream.svg";
 import Guide from "../../../components/seeker/Guide";
 import { useNavigate } from "react-router-dom";
+import TapBarSeeker from "../../../components/common/TapBarSeeker";
 
 export default function CareerGuide() {
   const navigate = useNavigate();
@@ -27,9 +28,12 @@ export default function CareerGuide() {
           onClick={() => navigate("/homeseeker/guide/cert")}
         />
       </List>
+      <Homebar></Homebar>
     </GuideContainer>
   );
 }
+
+const Homebar = styled(TapBarSeeker)``;
 
 const List = styled.div`
   display: flex;

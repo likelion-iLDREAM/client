@@ -48,15 +48,15 @@ const router = createBrowserRouter([
         element: <Phonenum />,
       },
       {
-        path: "/selectrole",
+        path: "/terms",
         children: [
           {
             path: "",
-            element: <SelectRole />,
+            element: <Terms />,
           },
           {
-            path: "terms",
-            element: <Terms />,
+            path: "selectrole",
+            element: <SelectRole />,
           },
           {
             path: "namebirth",
@@ -191,111 +191,112 @@ const router = createBrowserRouter([
           },
         ],
       },
-      {path: "/employer",
+      {
+        path: "/employer",
         children: [
           {
-          path: "",
-          element : <Employer.HomeEmployer />,
+            path: "",
+            element: <Employer.HomeEmployer />,
           },
           {
-          path: "checkreview",
-          element : <Employer.CheckReview />,
+            path: "checkreview",
+            element: <Employer.CheckReview />,
           },
           {
-          path: "questionlist",
-          element : <Employer.QuestionList />,
+            path: "questionlist",
+            element: <Employer.QuestionList />,
           },
           {
-          path: "postjobs",
-          children : [
-            {
-              path : "",
-              element : <Employer.ApplyMethod />,
-            },
-            {
-              path : "TitleCategory",
-              element : <Employer.TitleCategory/>,
-            },
-            {
-              path : "PayLocation",
-              element : <Employer.PayLocation/>,
-            },
-            {
-              path : "RequirementType",
-              element : <Employer.RequirementType/>,
-            },
-            {
-              path : "WorkingRest",
-              element : <Employer.WorkingRest/>,
-            },
-            {
-              path : "JobDescription",
-              element : <Employer.JobDescription/>,
-            },
-            {
-              path : "AddQuestions",
-              element : <Employer.AddQuestions/>,
-            },
-            {
-              path : "PostComplete",
-              element : <Employer.PostComplete/>,
-            },
-          ],
-          },
-          {
-          path: "profile",
-          children : [
+            path: "postjobs",
+            children: [
               {
-                path : "",
-                element : <Employer.ProfileEmployer />,
+                path: "",
+                element: <Employer.ApplyMethod />,
               },
               {
-                path : "Edit",
-                element : <Employer.ProfileEmployerEdit/>,
+                path: "TitleCategory",
+                element: <Employer.TitleCategory />,
+              },
+              {
+                path: "PayLocation",
+                element: <Employer.PayLocation />,
+              },
+              {
+                path: "RequirementType",
+                element: <Employer.RequirementType />,
+              },
+              {
+                path: "WorkingRest",
+                element: <Employer.WorkingRest />,
+              },
+              {
+                path: "JobDescription",
+                element: <Employer.JobDescription />,
+              },
+              {
+                path: "AddQuestions",
+                element: <Employer.AddQuestions />,
+              },
+              {
+                path: "PostComplete",
+                element: <Employer.PostComplete />,
               },
             ],
           },
           {
-          path: "seekerlist",
-          children : [
-            {
-              path : "",
-              element : <Employer.FinalAccept />,
-            },
-            {
-              path : "Resume",
-              element : <Employer.Resume/>,
-            },
-            {
-              path : "seekerlist",
-              element : <Employer.SeekerList/>,
-            },
-            {
-              path : "WriteContract",
-              element : <Employer.WriteContract/>,
-            },
-          ],
+            path: "profile",
+            children: [
+              {
+                path: "",
+                element: <Employer.ProfileEmployer />,
+              },
+              {
+                path: "Edit",
+                element: <Employer.ProfileEmployerEdit />,
+              },
+            ],
           },
           {
-          path: "singupemployer",
-          children : [
-            {
-              path : "",
-              element : <Employer.InfoEmployer />,
-            },
-            {
-              path : "hiringfields",
-              element : <Employer.HiringFields/>,
-            },
-            {
-              path : "singupendemployer",
-              element : <Employer.SignupEndEmployer/>,
-            },
-          ],
+            path: "seekerlist",
+            children: [
+              {
+                path: "",
+                element: <Employer.FinalAccept />,
+              },
+              {
+                path: "Resume",
+                element: <Employer.Resume />,
+              },
+              {
+                path: "seekerlist",
+                element: <Employer.SeekerList />,
+              },
+              {
+                path: "WriteContract",
+                element: <Employer.WriteContract />,
+              },
+            ],
           },
-      ],},
+          {
+            path: "singupemployer",
+            children: [
+              {
+                path: "",
+                element: <Employer.InfoEmployer />,
+              },
+              {
+                path: "hiringfields",
+                element: <Employer.HiringFields />,
+              },
+              {
+                path: "singupendemployer",
+                element: <Employer.SignupEndEmployer />,
+              },
+            ],
+          },
+        ],
+      },
     ],
-    
   },
 ]);
 
