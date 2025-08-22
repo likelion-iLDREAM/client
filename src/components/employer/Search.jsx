@@ -33,7 +33,12 @@ const Input = styled.input`
   outline: none;
   font-size: 20px;
   color: var(--Foundation-Green-Normal);
-  background-color: transparent;
+  background-color: white;
+  color: var(--Foundation-Green-Dark, #20834D);
+  font-size: 15px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
   &::placeholder {
   color : var(--Foundation-Green-Normal); /* placeholder 글자 색상 */
   }
@@ -43,4 +48,5 @@ const SearchContainer = styled.div`
   cursor: pointer;
   display: flex;
   align-items: center;
+  background-color: white;
 `;

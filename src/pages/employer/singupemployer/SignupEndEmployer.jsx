@@ -1,7 +1,7 @@
 import Header from "../../../components/common/Header";
 import TapBar from "../../../components/common/TapBar";
 
-const SignupEndEmployer = () => {
+export default function SignupEndEmployer() {
     return (
     <>
         <Header/>
@@ -10,5 +10,3 @@ const SignupEndEmployer = () => {
     </>
     )
 }
-
-export default SignupEndEmployer

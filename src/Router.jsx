@@ -6,6 +6,7 @@ import Opt from "./pages/auth/login/Opt";
 import Phonenum from "./pages/auth/login/Phonenum";
 import SelectRole from "./pages/auth/signup/SelectRole";
 import * as Employer from "./index.js";
+
 const router = createBrowserRouter([
   {
     path: "",
@@ -31,6 +32,14 @@ const router = createBrowserRouter([
           {
           path: "",
           element : <Employer.HomeEmployer />,
+          },
+          {
+          path: "checkreview",
+          element : <Employer.CheckReview />,
+          },
+          {
+          path: "questionlist",
+          element : <Employer.QuestionList />,
           },
           {
           path: "postjobs",
@@ -94,12 +103,29 @@ const router = createBrowserRouter([
               element : <Employer.Resume/>,
             },
             {
-              path : "SeekerList",
+              path : "seekerlist",
               element : <Employer.SeekerList/>,
             },
             {
               path : "WriteContract",
               element : <Employer.WriteContract/>,
+            },
+          ],
+          },
+          {
+          path: "singupemployer",
+          children : [
+            {
+              path : "",
+              element : <Employer.InfoEmployer />,
+            },
+            {
+              path : "hiringfields",
+              element : <Employer.HiringFields/>,
+            },
+            {
+              path : "singupendemployer",
+              element : <Employer.SignupEndEmployer/>,
             },
           ],
           },

@@ -1,7 +1,12 @@
 import styled from "styled-components";
+import ildream from "../../assets/ildream.svg"
 
-export default function Header() {
-  return <HeaderContainer>회원가입</HeaderContainer>;
+export default function Header({ Islogo, text }) {
+  return <HeaderContainer> {Islogo ? (
+        <img src={ildream} alt="logo" width="97" />
+      ) : (
+        text
+      )}</HeaderContainer>;
 }
 
 const HeaderContainer = styled.div`
