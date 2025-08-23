@@ -171,19 +171,6 @@ export default function ProfileSeeker() {
   );
 }
 
-const SmallButton = styled.button`
-  display: flex;
-  padding: 5px 10px;
-  align-items: center;
-  gap: 5px;
-  border-radius: 7px;
-  background: var(--Foundation-Green-Normal, #2baf66);
-  color: var(--Foundation-surface-White, #fff);
-  font-size: 15px;
-  font-weight: 700;
-  border: none;
-`;
-
 const Homebar = styled(TapBarSeeker)``;
 
 const Section = styled.div`
