@@ -1,30 +1,62 @@
+// pages/terms/Phonenum.jsx
 import Button from "../../../components/common/Button";
 import styled from "styled-components";
 import ildreamText from "../../../assets/ildreamText.svg";
 import Enter from "../../../components/common/Enter";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
 
 const BOTTOM_H = 90; // 하단 고정 영역 높이(필요시 조정)
 
 export default function Phonenum() {
   const navigate = useNavigate();
 
+  // 입력값 추적 (Enter.jsx 수정 없이 내부 input을 찾아 바인딩)
+  const rootRef = useRef(null);
+  const [phone, setPhone] = useState(
+    () => sessionStorage.getItem("signup.phone") || ""
+  );
+
+  useEffect(() => {
+    const input =
+      rootRef.current?.querySelector("input.Input_phone") ||
+      rootRef.current?.querySelector("input");
+    if (!input) return;
+
+    // 초기값 주입(뒤로가기/새로고침 대비)
+    if (phone && input.value !== phone) input.value = phone;
+
+    const onInput = (e) => {
+      const v = e.target.value;
+      setPhone(v);
+      sessionStorage.setItem("signup.phone", v);
+    };
+    input.addEventListener("input", onInput);
+    return () => input.removeEventListener("input", onInput);
+  }, [phone]);
+
+  const goNext = () => {
+    // state로도 넘기고, 세션에도 저장되어 있어 Opt에서 둘 다 활용 가능
+    navigate("/opt", { state: { phone } });
+  };
+
   return (
     <PhonenumContainer>
       {/* 스크롤되더라도 하단 버튼과의 간격은 고정 */}
-      <Content>
+      <Content ref={rootRef}>
         <div className="Logo">
           <img src={ildreamText} />
         </div>
         <div className="Text">전화번호를 입력해주세요.</div>
         <div className="Input">
-          <Enter text={"이곳에 전화번호를 입력해주세요."} />
+          {/* type 부여해서 선택자 고정 (Input_phone 클래스 생성) */}
+          <Enter type={"phone"} text={"이곳에 전화번호를 입력해주세요."} />
         </div>
       </Content>
 
       {/* 하단 버튼 고정 */}
       <BottomFixed>
-        <Button text={"인증번호 요청하기"} onClick={() => navigate("/opt")} />
+        <Button text={"인증번호 요청하기"} onClick={goNext} />
       </BottomFixed>
     </PhonenumContainer>
   );
