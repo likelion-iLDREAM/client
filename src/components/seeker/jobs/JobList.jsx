@@ -2,8 +2,10 @@ import styled from "styled-components";
 import { IoIosArrowForward } from "react-icons/io";
 import { useState } from "react";
 import Alert from "../quickapply/Alert";
+import { useNavigate } from "react-router-dom";
 
 export default function JobList() {
+  const navigate = useNavigate();
   const [callAlertOpen, setCallAlertOpen] = useState(false);
   const companyName = "구인업체명";
   return (
@@ -15,7 +17,7 @@ export default function JobList() {
             <div className="Title">[지역] 구인공고명</div>
             <div className="Address">서울 특별시 00로 00구 000</div>
           </div>
-          <Arrow />
+          <Arrow onClick={() => navigate("/homeseeker/jobsdetail")} />
         </Section12>
         <Section3>
           <div className="Tag">~채용시마감</div>
@@ -29,7 +31,12 @@ export default function JobList() {
           <button className="Call" onClick={() => setCallAlertOpen(true)}>
             전화 지원
           </button>
-          <button className="Simple">간편 지원</button>
+          <button
+            className="Simple"
+            onClick={() => navigate("/homeseeker/quickapply")}
+          >
+            간편 지원
+          </button>
         </Apply>
       </div>
       <Alert
@@ -91,16 +98,6 @@ const Apply = styled.div`
   }
 `;
 
-const Section4 = styled.div`
-  padding: 10px;
-  h3 {
-    margin: 0 0 10px;
-  }
-  > .Contents {
-    margin: 0 0 10px;
-  }
-`;
-
 const Section3 = styled.div`
   display: flex;
   flex-direction: row;
@@ -127,6 +124,7 @@ const Arrow = styled(IoIosArrowForward)`
   width: 25px;
   height: 25px;
   margin-top: 10px;
+  cursor: pointer;
 `;
 
 const Section12 = styled.div`

@@ -1,15 +1,17 @@
-// Interests.jsx
-import { useState } from "react";
+// pages/terms/Interests.jsx
+import { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import Header from "../../../components/common/Header";
 import ProgressBar from "../../../components/common/Progressbar";
 import Button from "../../../components/common/Button";
+import { useNavigate } from "react-router-dom";
 
 export default function Interests() {
+  const navigate = useNavigate();
   return (
     <>
       <Header text={"회원가입"} />
-      <InterestContainer>
+      <Info>
         <ProgressBar value={"80"} max={"100"} />
         <h2 className="Text1">
           구직분야 최대 3가지를
@@ -17,15 +19,23 @@ export default function Interests() {
           선택해주세요.
         </h2>
         <Section />
-      </InterestContainer>
-      <Footer>
-        <Button text={"다음"} type={"White"} />
-      </Footer>
-    </>
+      </Info>
+      <div className="Bottom">
+        <Button
+          text={"다음"}
+          type={"White"}
+          onClick={() => navigate("/terms/signend")}
+        />
+      </div>
+    </InterestContainer>
   );
 }
+const Info = styled.div`
+  padding: 0 20px;
+`;
 
 const InterestContainer = styled.div`
+  background-color: #fff;
   display: flex;
   padding: 30px;
   flex-direction: column;
@@ -50,7 +60,53 @@ const Footer = styled.div`
 `;
 
 function Section() {
-  const [selected, setSelected] = useState(new Set());
+  const rows = useMemo(
+    () => [
+      [
+        { id: 1, label: "농사·원예·어업" },
+        { id: 2, label: "운전·배달" },
+      ],
+      [
+        { id: 3, label: "식품·옷·환경 가공" },
+        { id: 4, label: "사무·금융" },
+      ],
+      [
+        { id: 5, label: "판매" },
+        { id: 6, label: "돌봄" },
+        { id: 7, label: "청소·미화" },
+      ],
+      [
+        { id: 8, label: "음식·서비스" },
+        { id: 9, label: "목공·공예·제조" },
+      ],
+      [
+        { id: 10, label: "문화·연구·기술" },
+        { id: 11, label: "건설·시설 관리" },
+      ],
+      [
+        { id: 12, label: "전기·전자 수리" },
+        { id: 13, label: "기계·금속 제작·수리" },
+      ],
+    ],
+    []
+  );
+
+  const idToLabel = useMemo(() => {
+    const map = {};
+    rows.flat().forEach((o) => (map[o.id] = o.label));
+    return map;
+  }, [rows]);
+
+  const [selected, setSelected] = useState(() => {
+    try {
+      const saved = JSON.parse(
+        sessionStorage.getItem("signup.interestIds") || "[]"
+      );
+      return new Set(saved);
+    } catch {
+      return new Set();
+    }
+  });
 
   const toggle = (id) => {
     setSelected((prev) => {
@@ -92,6 +148,14 @@ function Section() {
       { id: 13, label: "⚙️기계·금속 제작·수리" },
     ],
   ];
+  
+  useEffect(() => {
+    const ids = Array.from(selected);
+    const labels = ids.map((id) => idToLabel[id]).filter(Boolean);
+    sessionStorage.setItem("signup.interestIds", JSON.stringify(ids));
+    sessionStorage.setItem("signup.interests", JSON.stringify(labels));
+  }, [selected, idToLabel]);
+
 
   return (
     <SectionContainer>
@@ -136,7 +200,7 @@ const SectionContainer = styled.div`
   }
   .helper {
     margin-top: 8px;
-    font-size: 13px;
+    font-size: 20px;
     color: var(--Foundation-Black-black-7, #8c8c8c);
   }
 `;
