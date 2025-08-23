@@ -60,6 +60,25 @@ const router = createBrowserRouter([
         ],
       },
       {
+        // singupemployer --> signupemployer (오타수정),
+        // /employer/singupemployer --> /signupemployer (라우터 수정)
+        path: "signupemployer",
+        children: [
+          {
+            path: "",
+            element: <Employer.InfoEmployer />,
+          },
+          {
+            path: "hiringfields",
+            element: <Employer.HiringFields />,
+          },
+          {
+            path: "signupendemployer",
+            element: <Employer.SignupEndEmployer />,
+          },
+        ],
+      },
+      {
         path: "/homeseeker",
         children: [
           {
@@ -253,23 +272,6 @@ const router = createBrowserRouter([
               {
                 path: "WriteContract",
                 element: <Employer.WriteContract />,
-              },
-            ],
-          },
-          {
-            path: "singupemployer",
-            children: [
-              {
-                path: "",
-                element: <Employer.InfoEmployer />,
-              },
-              {
-                path: "hiringfields",
-                element: <Employer.HiringFields />,
-              },
-              {
-                path: "signupendemployer",
-                element: <Employer.SignupEndEmployer />,
               },
             ],
           },

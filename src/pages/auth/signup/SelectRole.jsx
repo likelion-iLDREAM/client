@@ -70,6 +70,7 @@ const SelectRoleContainer = styled.div`
     border-radius: 8px;
     border: 1px solid var(--Foundation-Green-Normal, #2baf66);
     font-size: 15px;
+    cursor: pointer;
   }
   > .Select > .select1 > .text1 {
     font-size: 30px;
@@ -85,6 +86,7 @@ const SelectRoleContainer = styled.div`
     gap: 5px;
     border-radius: 8px;
     border: 1px solid var(--Foundation-Green-Normal, #2baf66);
+    cursor: pointer;
   }
   > .Select > .select2 > .text2 {
     font-size: 30px;

@@ -1,9 +1,14 @@
 import styled from "styled-components";
-
-export default function Enter({ type, text }) {
+// value, onChange props 추가
+export default function Enter({ type, text, value, onChange }) {
   return (
     <EnterContainer>
-      <input className={`Input Input_${type}`} placeholder={text} />
+      <input
+        className={`Input Input_${type}`}
+        placeholder={text}
+        value={value}
+        onChange={onChange}
+      />
     </EnterContainer>
   );
 }
