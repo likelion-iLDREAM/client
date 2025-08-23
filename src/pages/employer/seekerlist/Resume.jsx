@@ -3,13 +3,29 @@ import Button from "../../../components/common/Button";
 import Enter from "../../../components/common/Enter";
 import styled from "styled-components";
 import { Icons } from "../../../components/icons/index";
+import { IoIosArrowBack } from "react-icons/io";
+import { useNavigate } from "react-router-dom";
 
 export default function Resume() {
+  const navigate = useNavigate("");
+  const handleBack = () => {
+    navigate("/employer/seekerlist/seekerlist"); //navigate("/employer/seekerlist/seekerlist/${joblist.id}");
+  };
+  const savedCategory = "♥️돌봄"; // 예: 따로 저장해둔 정보
+  const currentFilter = ["♥️돌봄", "돌봄", "돌봄"]; // 예: 필터 안 내용
   return (
     <>
       <Headersection>
-        <Header text={"지원자 현황"} showBack />
+        <HeaderContainer>
+          <BackButton type="button" aria-label="뒤로가기" onClick={handleBack}>
+            <IoIosArrowBack />
+          </BackButton>
+          {"지원자 현황"}
+        </HeaderContainer>
       </Headersection>
+      {/* <Headersection>
+        <Header text={"지원자 현황"} showBack />
+      </Headersection> */}
       <Menu>
         <Submenu>
           이름
@@ -37,15 +53,15 @@ export default function Resume() {
         <Submenu>
           지원자 이력
           <ItemWrapper>
-            <TextWrapper>
-              <Information>
+            <TextWrapper isCategoryMatch={savedCategory === currentFilter[0]}>
+              <span className="Information">
                 <div>{"업체명"}</div>
                 <div>
                   <span className="title">{"직무 설명"}</span>
                 </div>
                 <div>{"서울특별시 00구 00로 00로"}</div>
                 <div>{"2020.01 ~ 2021.01 (1년 이상"}</div>
-              </Information>
+              </span>
 
               <div
                 style={{
@@ -55,18 +71,18 @@ export default function Resume() {
                   gap: "5px",
                 }}
               >
-                <Filter>♥️돌봄</Filter>
+                <Filter>{currentFilter[0]}</Filter>
               </div>
             </TextWrapper>
-            <TextWrapper>
-              <Information>
+            <TextWrapper isCategoryMatch={savedCategory === currentFilter[1]}>
+              <span className="Information">
                 <div>{"업체명"}</div>
                 <div>
                   <span className="title">{"직무 설명"}</span>
                 </div>
                 <div>{"서울특별시 00구 00로 00로"}</div>
                 <div>{"2020.01 ~ 2021.01 (1년 이상"}</div>
-              </Information>
+              </span>
 
               <div
                 style={{
@@ -76,18 +92,18 @@ export default function Resume() {
                   gap: "5px",
                 }}
               >
-                <Filter>♥️돌봄</Filter>
+                <Filter>{currentFilter[1]}</Filter>
               </div>
             </TextWrapper>
-            <TextWrapper>
-              <Information>
+            <TextWrapper isCategoryMatch={savedCategory === currentFilter[2]}>
+              <span className="Information">
                 <div>{"업체명"}</div>
                 <div>
                   <span className="title">{"직무 설명"}</span>
                 </div>
                 <div>{"서울특별시 00구 00로 00로"}</div>
                 <div>{"2020.01 ~ 2021.01 (1년 이상)"}</div>
-              </Information>
+              </span>
 
               <div
                 style={{
@@ -97,7 +113,7 @@ export default function Resume() {
                   gap: "5px",
                 }}
               >
-                <Filter>♥️돌봄</Filter>
+                <Filter>{currentFilter[2]}</Filter>
               </div>
             </TextWrapper>
           </ItemWrapper>
@@ -110,6 +126,39 @@ export default function Resume() {
   );
 }
 
+// 변경: position 추가
+const HeaderContainer = styled.div`
+  position: relative;
+  width: 400px;
+  height: 70px;
+  background-color: #eaf7f0;
+  font-size: 30px;
+  font-weight: 700;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+`;
+
+// 추가: 뒤로가기 버튼 스타일
+const BackButton = styled.button`
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  background: transparent;
+  border: 0;
+  padding: 10px;
+  cursor: pointer;
+
+  svg {
+    width: 32px;
+    height: 32px;
+  }
+`;
+
 const Headersection = styled.div`
   position: relative;
   display: flex;
@@ -119,74 +168,11 @@ const Headersection = styled.div`
 `;
 
 const Footer = styled.div`
-  background-color: White;
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-top: 1px solid #d9d9d9;
   padding: 10px;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-`;
-
-const ProfileWrapper = styled.div`
-  display: flex;
-  width: 360px;
-  padding: 20px 10px;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 20px;
-  border-bottom: 1px solid #bfbfbf;
-`;
-
-const ProfileImage = styled.div`
-  display: flex;
-  width: 60px;
-  height: 60px;
-  padding: 10px;
-  justify-content: center;
-  align-items: center;
-  border-radius: 1000px;
-  border: 5px solid var(--Foundation-Green-Normal, #2baf66);
-  background: var(--Foundation-surface-White, #fff);
-`;
-
-const ContentWrapper = styled.div`
-  display: flex;
-  width: 220px;
-  flex-direction: column;
-  align-items: center;
-  gap: 15px;
-`;
-
-const SubWrapper = styled.div`
-  display: flex;
-  width: 220px;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 5px;
-  align-self: stretch;
-  color: #000;
-  text-align: center;
-  font-size: 20px;
-  font-style: normal;
-  font-weight: 700;
-  line-height: normal;
-`;
-
-const SmallButton = styled.button`
-  display: flex;
-  padding: 5px 10px;
-  align-items: center;
-  gap: 5px;
-  border-radius: 7px;
-  background: var(--Foundation-Green-Normal, #2baf66);
-  border: none;
-  color: var(--Foundation-surface-White, #fff);
-  font-size: 15px;
-  font-style: normal;
-  font-weight: 700;
-  line-height: normal;
 `;
 
 const Submenu = styled.div`
@@ -224,8 +210,6 @@ const Submenu = styled.div`
   }
 `;
 
-const Text = styled.div``;
-
 const Menu = styled.div`
   display: flex;
   width: 360px;
@@ -262,54 +246,6 @@ const EnterWrapper = styled.div`
   }
 `;
 
-const InputWrapper = styled.div`
-  display: flex;
-  padding: 7px;
-  gap: 10px;
-  border-radius: 7px;
-  border: 1px solid var(--Foundation-Black-black-6, #bfbfbf);
-  background: var(--Foundation-surface-White, #fff);
-  width: 100%; /* 화면 너비(부모) 100%로 채움 */
-  box-sizing: border-box; /* 패딩/보더 포함 너비 계산 */
-  height: 46px;
-  align-items: center;
-`;
-
-const Inputtitle = styled.input`
-  border-radius: 7px;
-  background: var(--Foundation-surface-White, #fff);
-  font-size: 1rem;
-  border: 1px solid var(--Foundation-Black-black-6, #bfbfbf);
-  padding: 10px;
-  outline: none;
-  flex: 1;
-  display: flex;
-  width: 100%; /* 화면 너비(부모) 100%로 채움 */
-  box-sizing: border-box; /* 패딩/보더 포함 너비 계산 */
-  align-self: stretch;
-  color: var(--Foundation-Black-black-7, #8c8c8c);
-  font-size: 20px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: normal;
-  align-items: center;
-`;
-
-const Inputaddress = styled.div`
-  border-radius: 7px;
-  background: var(--Foundation-surface-White, #fff);
-  font-size: 1rem;
-  border: none;
-  outline: none;
-  flex: 1 0 0;
-  align-self: stretch;
-  color: var(--Foundation-Black-black-7, #8c8c8c);
-  font-size: 20px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: normal;
-`;
-
 const ItemWrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -320,32 +256,6 @@ const ItemWrapper = styled.div`
   color: #fff;
 `;
 
-const Information = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px; /* gap 줄임 (기존 10px → 6px) */
-  flex: 1 0 0;
-  font-weight: 400;
-
-  /* 업체명, 주소, 기간 등 일반 텍스트 */
-  > div:not(.title) {
-    font-family: "Pretendard Variable";
-    font-size: 15px; /* 폰트 사이즈 작게 */
-    line-height: normal;
-    // color: #222;       /* 선명한 색상 유지 */
-    color: #fff;
-  }
-
-  /* 직무 설명 (title 클래스) */
-  .title {
-    font-weight: 700;
-    font-size: 20px; /* 기존 크기 유지 또는 약간 크게 */
-    // color: #000;
-    color: #fff;
-  }
-`;
-
 const Filter = styled.div`
   display: flex;
   padding: 2px 5px;
@@ -353,7 +263,11 @@ const Filter = styled.div`
   align-items: center;
   gap: 10px;
   border-radius: 5px;
-  border: 1px solid var(--Foundation-surface-White);
+  border: ${(props) =>
+    props.isCategoryMatch
+      ? "1px solid var(--Foundation-Green-Normal, #fff)"
+      : "1px solid var(--Foundation-Black-black-13, #000)"};
+  // border: 1px solid var(--Foundation-surface-White);
   background: var(--Foundation-Green-Light);
   color: var(--Foundation-Black-black-13, #000);
   text-align: center;
@@ -372,5 +286,36 @@ const TextWrapper = styled.div`
   gap: 5px;
   align-self: stretch;
   border-radius: 8px;
-  background: var(--Foundation-Green-Normal, #2baf66);
+  // background: var(--Foundation-Green-Normal, #2baf66);
+  background: ${(props) =>
+    props.isCategoryMatch
+      ? "var(--Foundation-Green-Normal, #2baf66)"
+      : "var(--Foundation-Green-Light, #EAF7F0)"};
+
+  .Information {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px; /* gap 줄임 (기존 10px → 6px) */
+    flex: 1 0 0;
+    font-weight: 400;
+
+    /* 업체명, 주소, 기간 등 일반 텍스트 */
+    > div:not(.title) {
+      font-family: "Pretendard Variable";
+      font-size: 15px; /* 폰트 사이즈 작게 */
+      line-height: normal;
+      color: ${(props) =>
+        props.isCategoryMatch
+          ? "#fff"
+          : "var(--Foundation-Black-black-13, #000)"};
+    }
+
+    /* 직무 설명 (title 클래스) */
+    .title {
+      font-weight: 700;
+      font-size: 20px; /* 기존 크기 유지 또는 약간 크게 */
+      // color: #fff;
+    }
+  }
 `;

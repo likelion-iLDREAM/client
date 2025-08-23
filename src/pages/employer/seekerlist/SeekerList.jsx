@@ -6,6 +6,7 @@ import styled from "styled-components";
 import { Icons } from "../../../components/icons/index";
 import { useState } from "react";
 import Alert_emp from "../../../components/employer/Alert_emp";
+import { useNavigate } from "react-router-dom";
 
 export default function SeekerList() {
   // 탭 상태
@@ -31,6 +32,19 @@ export default function SeekerList() {
     default:
       buttonText = "전화 면접하기";
   }
+  const isButtonDisabled =
+    isClosed && !(currentTab === "채용 확정" || currentTab === "최종 합격");
+  const navigate = useNavigate();
+  const handleViewApplicants = () => navigate("/employer/seekerlist/resume"); //navigate("../resume/${resume.id}")
+  const handleViewContract = () => {
+    if (currentTab === "채용 확정") {
+      return navigate("/employer/seekerlist/writecontract");
+      // navigate("seekerlist/${job.id}")
+    } else if (currentTab === "최종 합격") {
+      return navigate("/employer/seekerlist/writecontract");
+    } else return;
+  };
+
   return (
     <>
       <Headersection>
@@ -63,7 +77,7 @@ export default function SeekerList() {
         setCurrentTab={setCurrentTab}
       />
       <List>
-        <ApplicantCard>
+        <ApplicantCard onClick={handleViewApplicants}>
           <NameRow>
             <InfoBlock>
               <Name>홍길동</Name>
@@ -75,7 +89,11 @@ export default function SeekerList() {
             </InfoBlock>
             <Icons.ArrowForward size={32} />
           </NameRow>
-          <Button text={buttonText} />
+          <Button
+            text={buttonText}
+            disabled={isButtonDisabled}
+            onClick={handleViewContract}
+          />
         </ApplicantCard>
       </List>
       <Footer>
@@ -118,6 +136,7 @@ const ApplicantCard = styled.div`
   gap: 16px;
   height 140px;
   width : 95%;
+  cursor : pointer;
   `;
 
 // 이름/세부/아이콘 row
@@ -196,12 +215,11 @@ const ConfirmBtn = styled.button`
 `;
 
 const Footer = styled.div`
-  background-color: White;
   display: flex;
-  padding: 10px;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  border-top: 1px solid #d9d9d9;
+  padding: 10px;
 `;
 
 const List = styled.div`

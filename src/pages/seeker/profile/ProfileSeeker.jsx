@@ -164,7 +164,6 @@ export default function ProfileSeeker() {
         </Submenu>
       </Section>
       <Homebar></Homebar>
-
     </ProfileContainer>
   );
 }
@@ -173,6 +172,22 @@ const Homebar = styled(TapBarSeeker)``;
 
 const Section = styled.div`
   padding: 20px;
+`;
+
+const SmallButton = styled.button`
+  display: flex;
+  padding: 5px 10px;
+  align-items: center;
+  gap: 5px;
+  border-radius: 7px;
+  background: var(--Foundation-Green-Normal, #2baf66);
+  border: none;
+  color: var(--Foundation-surface-White, #fff);
+  font-size: 15px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+  cursor: pointer;
 `;
 
 const ProfileContainer = styled.div``;
@@ -356,6 +371,8 @@ const Submenu = styled.div`
   align-self: stretch;
   border-radius: 7px;
   background: var(--Foundation-Green-Light, #eaf7f0);
+  cursor: pointer;
+
   div {
     display: flex;
     flex-direction: column;

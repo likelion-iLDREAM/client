@@ -12,7 +12,7 @@ import Alert_post from "../../../components/employer/Alert_post";
 export default function TitleCategory() {
   const navigate = useNavigate();
   const handleNext = () => {
-    navigate("../PayLocation");
+    navigate("/employer/postjobs/paylocation");
   };
   // 오늘 날짜 YYYY-MM-DD 형식 구하는 함수
   const getTodayDateString = () => {
@@ -73,6 +73,9 @@ export default function TitleCategory() {
   return (
     <>
       <Headersection>
+        <Header text={"지원자 현황"} showBack />
+      </Headersection>
+      {/* <Headersection>
         <HeaderContainer>
           <BackButton
             type="button"
@@ -83,11 +86,12 @@ export default function TitleCategory() {
           </BackButton>
           {"새 공고"}
         </HeaderContainer>
-      </Headersection>
+      </Headersection> */}
       <Alert_post
         open={backAlertOpen}
         onConfirm={() => {
           setBackAlertOpen(false);
+          navigate("/employer");
         }}
         onCancel={() => setBackAlertOpen(false)}
         onClose={() => setBackAlertOpen(false)}
@@ -219,6 +223,7 @@ const Headersection = styled.div`
   justify-content: center;
   border-bottom: 1px solid var(--Foundation-Black-black-5, #d9d9d9);
 `;
+
 const Tag = styled.div`
   p {
     font-size: 20px;
@@ -287,12 +292,11 @@ const OptionsWrapper = styled.div`
 `;
 
 const Footer = styled.div`
-  background-color: White;
   display: flex;
-  padding: 10px;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  border-top: 1px solid #d9d9d9;
+  padding: 10px;
 `;
 
 const Inputdate = styled.input`

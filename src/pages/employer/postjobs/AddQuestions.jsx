@@ -12,7 +12,7 @@ import Alert_post from "../../../components/employer/Alert_post";
 export default function AddQuestions() {
   const navigate = useNavigate();
   const handleNext = () => {
-    navigate("../postcomplete");
+    navigate("/employer/postjobs/postcomplete");
   };
   const [IsSave, setSave] = useState(false);
   const [backAlertOpen, setBackAlertOpen] = useState(false);
@@ -23,6 +23,9 @@ export default function AddQuestions() {
   return (
     <>
       <Headersection>
+        <Header text={"지원자 현황"} showBack />
+      </Headersection>
+      {/* <Headersection>
         <HeaderContainer>
           <BackButton
             type="button"
@@ -33,11 +36,12 @@ export default function AddQuestions() {
           </BackButton>
           {"새 공고"}
         </HeaderContainer>
-      </Headersection>
+      </Headersection> */}
       <Alert_post
         open={backAlertOpen}
         onConfirm={() => {
           setBackAlertOpen(false);
+          navigate("/employer");
         }}
         onCancel={() => setBackAlertOpen(false)}
         onClose={() => setBackAlertOpen(false)}
@@ -51,7 +55,7 @@ export default function AddQuestions() {
         </Question>
         <QuestionProcess />
       </ApplyWrapper>
-      <Footer>
+      <Footerwithcheckbox>
         <Savequestion onClick={toggleItem}>
           {IsSave ? (
             <Icons.CheckboxActive
@@ -66,9 +70,10 @@ export default function AddQuestions() {
           )}
           다음 공고에도 동일한 질문 사용하기
         </Savequestion>
-
-        <Button text="다음" type="White" onClick={handleNext} />
-      </Footer>
+        <Footer>
+          <Button text="다음" type="White" onClick={handleNext} />
+        </Footer>
+      </Footerwithcheckbox>
     </>
   );
 }
@@ -121,7 +126,7 @@ const ApplyWrapper = styled.div`
   flex: 1 0 0;
   align-self: stretch;
   background-color: var(--Foundation-Black-black-1);
-  height: 70vh;
+  // height: 70vh;
 `;
 
 const Question = styled.div`
@@ -131,13 +136,19 @@ const Question = styled.div`
   line-height: normal;
 `;
 
-const Footer = styled.div`
+const Footerwithcheckbox = styled.div`
   background-color: White;
   display: flex;
-  padding: 10px;
+  flex-direction: column;
+  gap: 10px;
+`;
+
+const Footer = styled.div`
+  display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  border-top: 1px solid #d9d9d9;
+  padding: 10px;
 `;
 
 const Savequestion = styled.button`

@@ -12,7 +12,7 @@ import Alert_post from "../../../components/employer/Alert_post";
 export default function WorkingRest() {
   const navigate = useNavigate();
   const handleNext = () => {
-    navigate("../JobDescription");
+    navigate("/employer/postjobs/jobdescription");
   };
   const [selectedoptions, setSelectedoptions] = useState({
     date: true,
@@ -98,6 +98,9 @@ export default function WorkingRest() {
   return (
     <>
       <Headersection>
+        <Header text={"지원자 현황"} showBack />
+      </Headersection>
+      {/* <Headersection>
         <HeaderContainer>
           <BackButton
             type="button"
@@ -108,11 +111,12 @@ export default function WorkingRest() {
           </BackButton>
           {"새 공고"}
         </HeaderContainer>
-      </Headersection>
+      </Headersection> */}
       <Alert_post
         open={backAlertOpen}
         onConfirm={() => {
           setBackAlertOpen(false);
+          navigate("/employer");
         }}
         onCancel={() => setBackAlertOpen(false)}
         onClose={() => setBackAlertOpen(false)}
@@ -294,12 +298,11 @@ const OptionsWrapper = styled.div`
 `;
 
 const Footer = styled.div`
-  background-color: White;
   display: flex;
-  padding: 10px;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  border-top: 1px solid #d9d9d9;
+  padding: 10px;
 `;
 
 const Selectdate = styled.button`

@@ -268,7 +268,7 @@ const router = createBrowserRouter([
                 element: <Employer.HiringFields />,
               },
               {
-                path: "singupendemployer",
+                path: "signupendemployer",
                 element: <Employer.SignupEndEmployer />,
               },
             ],

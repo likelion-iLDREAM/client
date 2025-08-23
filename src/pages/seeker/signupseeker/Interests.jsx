@@ -7,40 +7,46 @@ import Button from "../../../components/common/Button";
 
 export default function Interests() {
   return (
-    <InterestContainer>
+    <>
       <Header text={"회원가입"} />
-      <ProgressBar value={"80"} max={"100"} />
-      <h2 className="Text1">
-        구직분야 최대 3가지를
-        <br />
-        선택해주세요.
-      </h2>
-      <Section />
-      <div className="Bottom">
+      <InterestContainer>
+        <ProgressBar value={"80"} max={"100"} />
+        <h2 className="Text1">
+          구직분야 최대 3가지를
+          <br />
+          선택해주세요.
+        </h2>
+        <Section />
+      </InterestContainer>
+      <Footer>
         <Button text={"다음"} type={"White"} />
-      </div>
-    </InterestContainer>
+      </Footer>
+    </>
   );
 }
 
 const InterestContainer = styled.div`
-  background-color: #fff;
-  width: 400px;
-  height: 100dvh;
+  display: flex;
+  padding: 30px;
+  flex-direction: column;
+  gap: 30px;
+  flex: 1 0 0;
+  align-self: stretch;
+
+  > .Text1 {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 30px;
+    align-self: stretch;
+  }
+`;
+const Footer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  > .Text1 {
-    margin-left: 45px;
-    margin-right: auto;
-  }
-  > .Bottom {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    border-top: 1px solid #d9d9d9;
-    padding: 10px;
-  }
+  border-top: 1px solid #d9d9d9;
+  padding: 10px;
 `;
 
 function Section() {
@@ -61,29 +67,29 @@ function Section() {
 
   const rows = [
     [
-      { id: 1, label: "농사·원예·어업" },
-      { id: 2, label: "운전·배달" },
+      { id: 1, label: "🌱농사·원예·어업" },
+      { id: 2, label: "🚚운전·배달" },
     ],
     [
-      { id: 3, label: "식품·옷·환경 가공" },
-      { id: 4, label: "사무·금융" },
+      { id: 3, label: "🥬식품·옷·환경 가공" },
+      { id: 4, label: "📄사무·금융" },
     ],
     [
-      { id: 5, label: "판매" },
-      { id: 6, label: "돌봄" },
-      { id: 7, label: "청소·미화" },
+      { id: 5, label: "🛒판매" },
+      { id: 6, label: "❤️돌봄" },
+      { id: 7, label: "🧹청소·미화" },
     ],
     [
-      { id: 8, label: "음식·서비스" },
-      { id: 9, label: "목공·공예·제조" },
+      { id: 8, label: "🍲음식·서비스" },
+      { id: 9, label: "🪚목공·공예·제조" },
     ],
     [
-      { id: 10, label: "문화·연구·기술" },
-      { id: 11, label: "건설·시설 관리" },
+      { id: 10, label: "🎨문화·연구·기술" },
+      { id: 11, label: "🏗️건설·시설 관리" },
     ],
     [
-      { id: 12, label: "전기·전자 수리" },
-      { id: 13, label: "기계·금속 제작·수리" },
+      { id: 12, label: "🔌전기·전자 수리" },
+      { id: 13, label: "⚙️기계·금속 제작·수리" },
     ],
   ];
 
@@ -110,10 +116,14 @@ function Section() {
 }
 
 const SectionContainer = styled.div`
-  padding-top: 30px;
-  padding-bottom: 100px;
-  width: 300px;
-
+  //   padding-top: 30px;
+  //   padding-bottom: 100px;
+  //   width: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  //   gap: 10px;
+  align-self: stretch;
   > .p {
     color: #000;
     font-size: 20px;

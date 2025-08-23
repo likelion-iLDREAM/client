@@ -19,7 +19,7 @@ const paymentOptions = [
 export default function PayLocation() {
   const navigate = useNavigate();
   const handleNext = () => {
-    navigate("../RequirementType");
+    navigate("/employer/postjobs/requirementtype");
   };
   const [paymentType, setPaymentType] = useState(paymentOptions[0].value);
   const [payInput, setPayInput] = useState("");
@@ -36,6 +36,9 @@ export default function PayLocation() {
   return (
     <>
       <Headersection>
+        <Header text={"지원자 현황"} showBack />
+      </Headersection>
+      {/* <Headersection>
         <HeaderContainer>
           <BackButton
             type="button"
@@ -46,11 +49,12 @@ export default function PayLocation() {
           </BackButton>
           {"새 공고"}
         </HeaderContainer>
-      </Headersection>
+      </Headersection> */}
       <Alert_post
         open={backAlertOpen}
         onConfirm={() => {
           setBackAlertOpen(false);
+          navigate("/employer");
         }}
         onCancel={() => setBackAlertOpen(false)}
         onClose={() => setBackAlertOpen(false)}
@@ -179,12 +183,11 @@ const OptionsWrapper = styled.div`
 `;
 
 const Footer = styled.div`
-  background-color: White;
   display: flex;
-  padding: 10px;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  border-top: 1px solid #d9d9d9;
+  padding: 10px;
 `;
 
 const SubWrapper = styled.div`
