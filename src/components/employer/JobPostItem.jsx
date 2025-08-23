@@ -17,15 +17,16 @@ export default function JobPostItem({
   const navigate = useNavigate();
 
   const handleViewApplicants = () => {
-    navigate("seekerlist/seekerlist");
+    navigate("/employer/seekerlist/seekerlist");
     // navigate("seekerlist/${job.id}")
   };
   const { id: employerId, name, companyName, companyLocation } = employer;
   const parts = location.split(" ");
   const dong = parts.find((part) => part.endsWith("동"));
   const today = new Date();
-  const expiryDate2 = new Date(expiryDate);
-  const diffMs = expiryDate2.getTime() - today.getTime();
+  const expiryDateObj = new Date(expiryDate);
+  // console.log("expiry data", expiryDateObj);
+  const diffMs = expiryDateObj.getTime() - today.getTime();
   const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
   const ddayStr =
     diffDays > 0
@@ -33,11 +34,19 @@ export default function JobPostItem({
       : diffDays == 0
       ? "D-day"
       : `D+${Math.abs(diffDays)}`;
-  const yyyy = expiryDate2.getFullYear();
-  const mm = String(expiryDate2.getMonth() + 1).padStart(2, "0");
-  const dd = String(expiryDate2.getDate()).padStart(2, "0");
-  const hh = String(expiryDate2.getHours()).padStart(2, "0");
-  const mi = String(expiryDate2.getMinutes()).padStart(2, "0");
+  const formattedExpiryDate = new Intl.DateTimeFormat("ko-KR", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(expiryDateObj);
+  // yyyy = expiryDateObj.getFullYear();
+  // const mm = String(expiryDateObj.getMonth() + 1).padStart(2, "0");
+  // const dd = String(expiryDateObj.getDate()).padStart(2, "0");
+  // const hh = String(expiryDateObj.getHours()).padStart(2, "0");
+  // const mi = String(expiryDateObj.getMinutes()).padStart(2, "0");
 
   return (
     <ItemWrapper>
@@ -64,9 +73,7 @@ export default function JobPostItem({
             </span>
           </div>
           <div>{location}</div>
-          <div>
-            ~{yyyy}.{mm}.{dd} {hh}:{mi} 마감
-          </div>
+          <div>~{formattedExpiryDate} 마감</div>
         </Information>
 
         <div

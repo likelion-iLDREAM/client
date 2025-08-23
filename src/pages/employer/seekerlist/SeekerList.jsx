@@ -4,52 +4,82 @@ import FilterTab_SeekerList from "../../../components/employer/FilterTab_SeekerL
 import StatsRow from "../../../components/employer/StatsRow";
 import styled from "styled-components";
 import { Icons } from "../../../components/icons/index";
-import { useState } from "react";
+import { IoIosArrowBack } from "react-icons/io";
+import { useState, useEffect } from "react";
 import Alert_emp from "../../../components/employer/Alert_emp";
 import { useNavigate } from "react-router-dom";
+import ApplicantItem from "../../../components/employer/ApplicantItem";
 
+const mockData = [
+  {
+    applicationId: 1,
+    workerName: "이현서",
+    workerGender: "여성",
+    workerAge: 70,
+    workerAddress: "마포구",
+    workplace: null,
+    applicationStatus: "거부",
+  },
+  {
+    applicationId: 2,
+    workerName: "강길동",
+    workerGender: "남성",
+    workerAge: 50,
+    workerAddress: "서대문구",
+    workplace: null,
+    applicationStatus: "승인",
+  },
+  {
+    applicationId: 4,
+    workerName: "오서현",
+    workerGender: "여성",
+    workerAge: 60,
+    workerAddress: "중구",
+    workplace: null,
+    applicationStatus: "거부",
+  },
+];
 export default function SeekerList() {
   // 탭 상태
   const [currentTab, setCurrentTab] = useState("지원 완료"); // 기본값
   const [backAlertOpen, setBackAlertOpen] = useState(false);
   const [isClosed, setIsClosed] = useState(false);
+  const [applicants, setApplicants] = useState(mockData);
 
-  // 탭에 따라 하단 버튼 문구와 카드 내용 등 변경
-  let buttonText;
-  switch (currentTab) {
-    case "지원 완료":
-      buttonText = "전화 면접하기";
-      break;
-    case "면접 진행":
-      buttonText = "채용 확정하기";
-      break;
-    case "채용 확정":
-      buttonText = "계약서 작성하기";
-      break;
-    case "최종 합격":
-      buttonText = "계약서 확인하기";
-      break;
-    default:
-      buttonText = "전화 면접하기";
-  }
-  const isButtonDisabled =
-    isClosed && !(currentTab === "채용 확정" || currentTab === "최종 합격");
-  const navigate = useNavigate();
-  const handleViewApplicants = () => navigate("/employer/seekerlist/resume"); //navigate("../resume/${resume.id}")
-  const handleViewContract = () => {
-    if (currentTab === "채용 확정") {
-      return navigate("/employer/seekerlist/writecontract");
-      // navigate("seekerlist/${job.id}")
-    } else if (currentTab === "최종 합격") {
-      return navigate("/employer/seekerlist/writecontract");
-    } else return;
+  const handleBack = () => {
+    navigate("/employer"); //navigate("/employer/seekerlist/seekerlist/${joblist.id}");
   };
+
+  useEffect(() => {
+    async function fetchApplicants() {
+      try {
+        const res = await fetch("/jobPosts/{id}/applications"); // 실제 jobId 전달
+        const json = await res.json();
+        if (json.success) {
+          setApplicants(json.data);
+        }
+      } catch (error) {
+        console.error("지원자 목록 불러오기 실패", error);
+      }
+    }
+    fetchApplicants();
+  }, []);
+
+  const navigate = useNavigate();
 
   return (
     <>
       <Headersection>
-        <Header text={"지원자 현황"} showBack />
+        <HeaderContainer>
+          <BackButton type="button" aria-label="뒤로가기" onClick={handleBack}>
+            <IoIosArrowBack />
+          </BackButton>
+          {"지원자 현황"}
+        </HeaderContainer>
       </Headersection>
+      {/* <Headersection>
+        <Header text={"지원자 현황"} showBack />
+      </Headersection> */}
       <Alert_emp
         open={backAlertOpen}
         onConfirm={() => {
@@ -63,38 +93,21 @@ export default function SeekerList() {
         <div className="title">
           지원자 통계 <span className="subtitle">총 지원자 8명</span>
         </div>
-        <StatsRow>
-          {/* <RoundStat>
-                <CircleChart total={8} malePercent={25} femalePercent={75} />
-              </RoundStat>
-              <AgeGraph>
-                <AgeBarChart stats={ageStats} />
-              </AgeGraph> */}
-        </StatsRow>
+        <StatsRow></StatsRow>
       </SummarySection>
       <FilterTab_SeekerList
         currentTab={currentTab}
         setCurrentTab={setCurrentTab}
       />
       <List>
-        <ApplicantCard onClick={handleViewApplicants}>
-          <NameRow>
-            <InfoBlock>
-              <Name>홍길동</Name>
-              <SumWrap>
-                <Summary>남성</Summary>
-                <Summary>50대</Summary>
-                <Summary>00구</Summary>
-              </SumWrap>
-            </InfoBlock>
-            <Icons.ArrowForward size={32} />
-          </NameRow>
-          <Button
-            text={buttonText}
-            disabled={isButtonDisabled}
-            onClick={handleViewContract}
+        {applicants.map((applicant) => (
+          <ApplicantItem
+            key={applicant.applicationId}
+            application={applicant}
+            currentTab={currentTab}
+            isClosed={isClosed}
           />
-        </ApplicantCard>
+        ))}
       </List>
       <Footer>
         <ConfirmBtn disabled={isClosed} onClick={() => setBackAlertOpen(true)}>
@@ -104,6 +117,39 @@ export default function SeekerList() {
     </>
   );
 }
+
+// 변경: position 추가
+const HeaderContainer = styled.div`
+  position: relative;
+  width: 400px;
+  height: 70px;
+  background-color: #eaf7f0;
+  font-size: 30px;
+  font-weight: 700;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+`;
+
+// 추가: 뒤로가기 버튼 스타일
+const BackButton = styled.button`
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  background: transparent;
+  border: 0;
+  padding: 10px;
+  cursor: pointer;
+
+  svg {
+    width: 32px;
+    height: 32px;
+  }
+`;
 
 const Headersection = styled.div`
   position: relative;
@@ -123,66 +169,6 @@ const SummarySection = styled.section`
       font-weight: 400;
     }
   }
-`;
-
-// 지원자 카드 전체 박스
-const ApplicantCard = styled.div`
-  background: var(--Foundation-Green-Light);
-  border-radius: 10px;
-  padding: 5px 10px;
-  box-shadow: 0 2px 12px #ecf9f3;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  height 140px;
-  width : 95%;
-  cursor : pointer;
-  `;
-
-// 이름/세부/아이콘 row
-const NameRow = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-`;
-
-// 이름과 세부 wrap (세로)
-const InfoBlock = styled.div`
-  padding: 10px;
-  gap: 5px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  flex: 1 0 0;
-`;
-
-// 이름 (볼드, 크고)
-const Name = styled.span`
-  color: #000;
-  font-size: 20px;
-  font-weight: 700;
-`;
-
-// 세부정보 묶음 (가로)
-const SumWrap = styled.div`
-  align-items: center;
-  gap: 5px;
-  align-self: stretch;
-  display: flex;
-  gap: 8px;
-`;
-
-// 각 세부 tag 스타일
-const Summary = styled.span`
-  display: flex;
-  align-items: center;
-  padding: 2px 8px;
-  border-radius: 8px;
-  background: #fff;
-  color: #000;
-  font-size: 15px;
-  font-weight: 500;
 `;
 
 // 오른쪽 화살표는 이미 있는 컴포넌트 사용

@@ -37,7 +37,7 @@ const mockdata = [
       "본인의 경력에 대해 간단히 설명해주세요.",
       "희망 근무 요일과 시간을 알려주세요.",
     ],
-    expiryDate: "2025-09-30T15:00:00Z",
+    expiryDate: "2025-08-30T15:00:00Z",
     status: "OPEN", // OPEN | CLOSED
     createdAt: "2025-08-13T07:00:00Z",
     updatedAt: "2025-08-13T07:00:00Z",
@@ -54,7 +54,7 @@ const mockdata = [
     content: "성실하고 아이를 좋아하시는 분 모집합니다. 초보자 환영",
     paymentType: "HOURLY",
     payment: 12000,
-    location: "서울 마포구 합정동 123-45",
+    location: "서울 마포구 대흥동 123-45",
     info: "아이들 학원 등하차할 때 애들 케어해주시면 됩니다",
     applyMethod: ["QUICK", "PHONE"],
     questionList: [
@@ -69,7 +69,7 @@ const mockdata = [
       id: 44,
       name: "김사장",
       companyName: "해피카페",
-      companyLocation: "서울 마포구 합정동 123-45",
+      companyLocation: "서울 마포구 대흥동 123-45",
     },
   },
 ];
@@ -190,5 +190,5 @@ const EmptyMessage = styled.div`
   font-weight: 700;
   line-height: normal;
   text-align: center;
-  height: 70dvh;
+  margin-top: 50%;
 `;
