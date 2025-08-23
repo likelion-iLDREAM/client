@@ -18,14 +18,33 @@ const EnterContainer = styled.div`
   border: 1px solid #bfbfbf;
   background-color: #fff;
   margin-top: 10px;
+  padding: 0;
+
+  > input::placeholder {
+    text-align: start;
+  }
 
   > input {
     border: none;
     font-size: 20px;
     font-weight: 400;
+    width: 90%; /* 가로 꽉 채우기 */
 
     &:focus {
       outline: none;
     }
+  }
+
+  /* =========================
+     추가: 좌우 패딩 제거 옵션
+     사용법) <Enter type="NoPad" ... />
+     ========================= */
+  > input.Input_NoPad {
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    height: 100%;
+    box-sizing: border-box;
+    background: transparent;
   }
 `;

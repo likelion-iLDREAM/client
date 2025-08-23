@@ -54,7 +54,7 @@ export default function ProfileSeeker() {
       <Section>
         <TopCard>
           <Avatar>
-            <IoPersonCircleOutline size={72} />
+            <IoPersonCircleOutline size={83} />
           </Avatar>
           <TopRight>
             <Name>{name}</Name>
@@ -148,7 +148,10 @@ export default function ProfileSeeker() {
                     type="White"
                     text={"계약서 관리"}
                   />
-                  <ButtonSmall text={"고용주 후기 작성"} />
+                  <ButtonSmall
+                    text={"고용주 후기 작성"}
+                    onClick={() => navigate("/homeseeker/review")}
+                  />
                 </TwoCols>
               </Card>
             ))}
@@ -164,15 +167,27 @@ export default function ProfileSeeker() {
         </Submenu>
       </Section>
       <Homebar></Homebar>
-
     </ProfileContainer>
   );
 }
 
+const SmallButton = styled.button`
+  display: flex;
+  padding: 5px 10px;
+  align-items: center;
+  gap: 5px;
+  border-radius: 7px;
+  background: var(--Foundation-Green-Normal, #2baf66);
+  color: var(--Foundation-surface-White, #fff);
+  font-size: 15px;
+  font-weight: 700;
+  border: none;
+`;
+
 const Homebar = styled(TapBarSeeker)``;
 
 const Section = styled.div`
-  padding: 20px;
+  padding: 20px 30px;
 `;
 
 const ProfileContainer = styled.div``;

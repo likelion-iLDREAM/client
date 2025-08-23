@@ -1,9 +1,10 @@
+// pages/terms/NameBirth.jsx
 import styled from "styled-components";
 import Header from "../../../components/common/Header";
 import ProgressBar from "../../../components/common/Progressbar";
 import Enter from "../../../components/common/Enter";
 import Button from "../../../components/common/Button";
-import { useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function NameBirth() {
@@ -11,15 +12,16 @@ export default function NameBirth() {
   return (
     <NameBirthContainer>
       <Header text={"회원가입"} />
-      <ProgressBar value={"40"} max={"100"} />
-      <h2 className="Text1">
-        이름과
-        <br />
-        주민등록번호 앞 7자리를
-        <br />
-        입력해주세요.
-      </h2>
       <Info>
+        <ProgressBar value={"40"} max={"100"} />
+        <h2 className="Text1">
+          이름과
+          <br />
+          주민등록번호 앞 7자리를
+          <br />
+          입력해주세요.
+        </h2>
+
         <Section />
       </Info>
 
@@ -37,7 +39,7 @@ export default function NameBirth() {
 const Info = styled.div`
   width: 100%;
   box-sizing: border-box;
-  padding: 0 30px;
+  padding: 0 40px;
 `;
 
 const NameBirthContainer = styled.div`
@@ -71,9 +73,29 @@ const NameBirthContainer = styled.div`
 `;
 
 function Section() {
-  const [ridFront, setRidFront] = useState(""); // 앞 6자리
-  const [ridBack1, setRidBack1] = useState(""); // 뒤 1자리(총 7자리 수집)
-  const [phone] = useState("010-2345-6789"); // 이미 입력된 전화번호 (예시)
+  // 이름 세션 저장 (Enter.jsx 수정 없이)
+  const [name, setName] = useState(
+    () => sessionStorage.getItem("signup.name") || ""
+  );
+  const sectionRootRef = useRef(null);
+
+  useEffect(() => {
+    const nameInput = sectionRootRef.current?.querySelector("input.Input_name");
+    if (!nameInput) return;
+    if (name && nameInput.value !== name) nameInput.value = name;
+    const onInput = (e) => {
+      const v = e.target.value;
+      setName(v);
+      sessionStorage.setItem("signup.name", v);
+    };
+    nameInput.addEventListener("input", onInput);
+    return () => nameInput.removeEventListener("input", onInput);
+  }, [name]);
+
+  // 주민등록번호 → 생년월일/성별 계산
+  const [ridFront, setRidFront] = useState("");
+  const [ridBack1, setRidBack1] = useState("");
+  const [phone] = useState("010-2345-6789");
   const back1Ref = useRef(null);
 
   const onChangeRidFront = (e) => {
@@ -81,17 +103,42 @@ function Section() {
     setRidFront(onlyDigits);
     if (onlyDigits.length === 6) back1Ref.current?.focus();
   };
-
   const onChangeRidBack1 = (e) => {
     const onlyDigits = e.target.value.replace(/\D/g, "").slice(0, 1);
     setRidBack1(onlyDigits);
   };
 
+  useEffect(() => {
+    const computeBirthGender = (front6, back1) => {
+      if (front6.length !== 6 || back1.length !== 1) return null;
+      const yy = parseInt(front6.slice(0, 2), 10);
+      const mm = front6.slice(2, 4);
+      const dd = front6.slice(4, 6);
+      const g = parseInt(back1, 10);
+      let century = 1900;
+      if ([1, 2, 5, 6].includes(g)) century = 1900;
+      else if ([3, 4, 7, 8].includes(g)) century = 2000;
+      else if ([9, 0].includes(g)) century = 1800;
+      const year = century + yy;
+      const gender = g % 2 === 1 ? "남성" : "여성";
+      const birth = `${year}.${mm}.${dd}`;
+      return { birth, gender };
+    };
+
+    const res = computeBirthGender(ridFront, ridBack1);
+    if (res) {
+      sessionStorage.setItem("signup.birth", res.birth);
+      sessionStorage.setItem("signup.gender", res.gender);
+      sessionStorage.setItem("signup.ridFront", ridFront);
+      sessionStorage.setItem("signup.ridBack1", ridBack1);
+    }
+  }, [ridFront, ridBack1]);
+
   return (
-    <SectionContainer>
+    <SectionContainer ref={sectionRootRef}>
       <div className="Field">
         <div className="Label">이름</div>
-        <Enter text={"이름을 입력해주세요."} />
+        <Enter type={"name"} text={"이름을 입력해주세요."} />
       </div>
 
       <div className="Field">
@@ -113,7 +160,7 @@ function Section() {
             type="text"
             inputMode="numeric"
             pattern="[0-9]*"
-            placeholder="_ • • • • • •"
+            placeholder="_ * * * * * *"
             value={ridBack1}
             onChange={onChangeRidBack1}
             maxLength={1}
@@ -137,6 +184,7 @@ const SectionContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 20px;
+  padding: 0 10px;
 
   .Field {
     display: flex;
@@ -152,7 +200,7 @@ const SectionContainer = styled.div`
 
   .RidRow {
     display: grid;
-    grid-template-columns: 1fr auto 92px;
+    grid-template-columns: 1fr auto 1fr;
     column-gap: 8px;
     align-items: center;
     width: 100%;
@@ -199,7 +247,6 @@ const SectionContainer = styled.div`
     cursor: not-allowed;
   }
 
-  /* (이전 가이드 유지용) */
   > .Birth {
     display: flex;
     flex-direction: column;

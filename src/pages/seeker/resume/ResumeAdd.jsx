@@ -15,12 +15,14 @@ export default function ResumeAdd() {
     { id: "craft", label: "🪵 목공·공예·제조" },
   ];
   const otherTags = [
-    "요리·주방",
-    "청소·미화",
-    "경비·보안",
-    "간병·돌봄",
-    "판매·서비스",
-    "사무·행정",
+    "문화·연구·기술",
+    "식품·옷·환경 가공",
+    "사무·금융",
+    "돌봄",
+    "판매",
+    "음식·서비스",
+    "전기·전자 수리",
+    "기계·금속 제작·수리",
   ];
   const [selectedTags, setSelectedTags] = useState([]);
   const [showOther, setShowOther] = useState(false);
@@ -72,9 +74,6 @@ export default function ResumeAdd() {
     const dd = String(d.getDate()).padStart(2, "0");
     setEndDate(`${yyyy}-${mm}-${dd}`);
   };
-
-  // 근무 내용
-  const [content, setContent] = useState("");
 
   return (
     <AddContainer>
@@ -172,16 +171,6 @@ export default function ResumeAdd() {
             <SmallChip onClick={() => addMonths(12)}>1년</SmallChip>
           </Row>
         </Time>
-
-        <Text>
-          <p>근무 내용</p>
-          <TextArea
-            rows={5}
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="근무하면서 일한 내용을 자유롭게 작성해 주세요"
-          />
-        </Text>
       </Info>
 
       <Tap>

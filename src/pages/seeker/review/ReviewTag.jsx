@@ -46,7 +46,7 @@ export default function ReviewTag() {
       </TagGrid>
       <Tap>
         <Button
-          onClick={() => navigate("/homeseeker/review/tag")}
+          onClick={() => navigate("/homeseeker/profile")}
           text={"작성하기"}
         />
       </Tap>

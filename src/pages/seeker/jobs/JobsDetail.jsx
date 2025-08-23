@@ -4,8 +4,14 @@ import Employername from "../../../components/employer/Employername";
 import EmployerTitle from "../../../components/employer/EmployTitle";
 import ButtonSmall from "../../../components/common/ButtonSmall";
 import { IoShareSocial } from "react-icons/io5";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import Alert from "../../../components/seeker/quickapply/Alert";
 
 export default function JobsDetails() {
+  const navigate = useNavigate();
+  const [callAlertOpen, setCallAlertOpen] = useState(false);
+  const companyName = "구인업체명";
   return (
     <JobsContainer>
       <Headersection>
@@ -86,9 +92,25 @@ export default function JobsDetails() {
       </Section>
 
       <Tap>
-        <ButtonSmall type={"White"} text={"전화 지원"} />
-        <ButtonSmall text={"간편 지원"} />
+        <ButtonSmall
+          type={"White"}
+          text={"전화 지원"}
+          onClick={() => setCallAlertOpen(true)}
+        />
+        <ButtonSmall
+          text={"간편 지원"}
+          onClick={() => navigate("/homeseeker/quickapply")}
+        />
       </Tap>
+      <Alert
+        open={callAlertOpen}
+        companyName={companyName}
+        onConfirm={() => {
+          setCallAlertOpen(false);
+        }}
+        onCancel={() => setCallAlertOpen(false)}
+        onClose={() => setCallAlertOpen(false)}
+      />
     </JobsContainer>
   );
 }
