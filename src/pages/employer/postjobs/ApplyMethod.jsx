@@ -13,7 +13,7 @@ export default function ApplyMethod() {
   const navigate = useNavigate();
 
   const handleNext = () => {
-    navigate("TitleCategory");
+    navigate("/employer/postjobs/titlecategory");
   };
   const [selectedItems, setSelectedItems] = useState({
     all: false,
@@ -68,7 +68,10 @@ export default function ApplyMethod() {
         onConfirm={() => {
           setBackAlertOpen(false);
         }}
-        onCancel={() => setBackAlertOpen(false)}
+        onCancel={() => {
+          setBackAlertOpen(false);
+          navigate("/employer");
+        }}
         onClose={() => setBackAlertOpen(false)}
       />
       <ApplyWrapper>
@@ -238,10 +241,9 @@ const Alert = styled.div`
 `;
 
 const Footer = styled.div`
-  background-color: White;
   display: flex;
-  padding: 10px 0;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  border-top: 1px solid #d9d9d9;
+  padding: 10px;
 `;

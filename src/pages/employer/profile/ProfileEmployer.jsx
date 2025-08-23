@@ -33,26 +33,26 @@ export default function ProfileEmployer() {
               ))}
             </TagRow>
             <EditRow>
-              <SmallButton onClick={() => navigate("./edit")}>
+              <SmallButton onClick={() => navigate("/employer/profile/edit")}>
                 <Icons.UserEdit />내 기업 수정
               </SmallButton>
             </EditRow>
           </TopRight>
         </TopCard>
         <Menu>
-          <Submenu>
+          <Submenu onClick={() => navigate("/employer/checkreview")}>
             <div>
               기업 후기<span>{0}회</span>
             </div>
             <Icons.ArrowForward size={24} />
           </Submenu>
-          <Submenu>
+          <Submenu onClick={() => navigate("/employer/questionlist")}>
             <div>저장된 추가 질문</div>
             <Icons.ArrowForward size={24} />
           </Submenu>
         </Menu>
       </Section>
-      <TapBar />
+      <TapBar initialTab="emp_profile" />
     </>
   );
 }
@@ -169,6 +169,7 @@ const Submenu = styled.div`
   gap: 15px;
   align-self: stretch;
   border-radius: 7px;
+  cursor: pointer;
   background: var(--Foundation-Green-Light, #eaf7f0);
   div {
     display: flex;

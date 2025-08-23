@@ -1,5 +1,6 @@
 import styled from "styled-components";
 import Button from "../common/Button";
+import { useNavigate } from "react-router-dom";
 
 export default function JobPostItem({
   id,
@@ -13,6 +14,12 @@ export default function JobPostItem({
   updatedAt,
   employer,
 }) {
+  const navigate = useNavigate();
+
+  const handleViewApplicants = () => {
+    navigate("seekerlist/seekerlist");
+    // navigate("seekerlist/${job.id}")
+  };
   const { id: employerId, name, companyName, companyLocation } = employer;
   const parts = location.split(" ");
   const dong = parts.find((part) => part.endsWith("동"));
@@ -88,7 +95,7 @@ export default function JobPostItem({
           </Filter>
         </div>
       </TextWrapper>
-      <Button text="지원자 확인하기" />
+      <Button text="지원자 확인하기" onClick={handleViewApplicants} />
     </ItemWrapper>
   );
 }

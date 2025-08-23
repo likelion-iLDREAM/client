@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 export default function PostComplete() {
   const navigate = useNavigate();
   const handleNext = () => {
-    navigate("../../");
+    navigate("/employer");
   };
   return (
     <>
@@ -52,26 +52,10 @@ const Question = styled.div`
   line-height: normal;
 `;
 
-const OptionsWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 20px;
-  align-self: stretch;
-`;
-
 const Footer = styled.div`
-  background-color: White;
   display: flex;
-  padding: 10px;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  border-top: 1px solid #d9d9d9;
+  padding: 10px;
 `;
-
-const Title = styled.div``;
-
-const Term = styled.div``;
-
-const Period = styled.div``;
-const Category = styled.div``;

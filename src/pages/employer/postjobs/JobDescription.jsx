@@ -10,7 +10,7 @@ import Alert_post from "../../../components/employer/Alert_post";
 export default function JobDescription() {
   const navigate = useNavigate();
   const handleNext = () => {
-    navigate("../AddQuestions");
+    navigate("/employer/postjobs/AddQuestions");
   };
   const [content, setContent] = useState("");
   const [backAlertOpen, setBackAlertOpen] = useState(false);
@@ -20,6 +20,9 @@ export default function JobDescription() {
   return (
     <>
       <Headersection>
+        <Header text={"지원자 현황"} showBack />
+      </Headersection>
+      {/* <Headersection>
         <HeaderContainer>
           <BackButton
             type="button"
@@ -30,11 +33,12 @@ export default function JobDescription() {
           </BackButton>
           {"새 공고"}
         </HeaderContainer>
-      </Headersection>
+      </Headersection> */}
       <Alert_post
         open={backAlertOpen}
         onConfirm={() => {
           setBackAlertOpen(false);
+          navigate("/employer");
         }}
         onCancel={() => setBackAlertOpen(false)}
         onClose={() => setBackAlertOpen(false)}
@@ -136,11 +140,12 @@ const OptionsWrapper = styled.div`
   align-self: stretch;
   font-size: 20px;
   height: 50vh; // 높이인데 나중에 통일할 필요가 있어보임..
+  // width: 65vw;
 
   div {
     display: flex;
-    flex-direction: column;
-    justify-content: center;
+    // flex-direction: flex-end;
+    justify-content: flex-end;
     align-items: flex-end;
     gap: 5px;
     align-self: stretch;
@@ -149,12 +154,11 @@ const OptionsWrapper = styled.div`
 `;
 
 const Footer = styled.div`
-  background-color: White;
   display: flex;
-  padding: 10px;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  border-top: 1px solid #d9d9d9;
+  padding: 10px;
 `;
 
 const Title = styled.textarea`
