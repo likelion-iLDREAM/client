@@ -7,11 +7,18 @@ import Button from "../../../components/common/Button";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+const HEADER_H = 56; // 헤더 높이
+const BOTTOM_H = 90; // 하단 버튼 영역 높이
+
 export default function NameBirth() {
   const navigate = useNavigate();
   return (
     <NameBirthContainer>
-      <Header text={"회원가입"} />
+      {/* 헤더 고정 (기존 Header는 건드리지 않고 래퍼만 추가) */}
+      <HeaderWrap>
+        <Header text={"회원가입"} />
+      </HeaderWrap>
+
       <Info>
         <ProgressBar value={"40"} max={"100"} />
         <h2 className="Text1">
@@ -25,6 +32,7 @@ export default function NameBirth() {
         <Section />
       </Info>
 
+      {/* 하단 버튼 고정 (기존 .Bottom 유지) */}
       <div className="Bottom">
         <Button
           text={"다음"}
@@ -39,7 +47,7 @@ export default function NameBirth() {
 const Info = styled.div`
   width: 100%;
   box-sizing: border-box;
-  padding: 0 40px;
+  padding: 0 35px;
 `;
 
 const NameBirthContainer = styled.div`
@@ -52,6 +60,11 @@ const NameBirthContainer = styled.div`
   flex-direction: column;
   align-items: center;
 
+  /* 고정된 헤더/하단 버튼에 가려지지 않도록 패딩 확보 */
+  padding-top: ${HEADER_H}px;
+  padding-bottom: ${BOTTOM_H}px;
+  box-sizing: border-box;
+
   > .Text1 {
     width: 100%;
     max-width: 400px;
@@ -60,15 +73,45 @@ const NameBirthContainer = styled.div`
     margin: 0;
   }
 
+  /* 하단 버튼 고정 */
   > .Bottom {
-    margin-top: 99px;
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 0;
+    width: 100%;
+    max-width: 400px;
+    height: ${BOTTOM_H}px;
+    background: #fff;
+    border-top: 1px solid #d9d9d9;
+
     display: flex;
     flex-direction: column;
     align-items: center;
-    border-top: 1px solid #d9d9d9;
+    justify-content: center;
+
     padding: 10px;
-    width: 100%;
     box-sizing: border-box;
+    z-index: 50;
+  }
+`;
+
+/* 헤더 고정 래퍼 */
+const HeaderWrap = styled.div`
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 400px;
+  height: ${HEADER_H}px;
+  background: #fff;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+
+  > * {
+    width: 100%;
   }
 `;
 

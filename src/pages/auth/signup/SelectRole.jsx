@@ -38,6 +38,7 @@ const SelectRoleContainer = styled.div`
   background-color: #fff;
   width: 400px;
   height: 100dvh;
+  margin-bottom: 200px;
   > .Text1 {
     font-size: 25px;
     font-weight: 700;

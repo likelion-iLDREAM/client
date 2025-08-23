@@ -8,11 +8,18 @@ import { BiSolidMap } from "react-icons/bi";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+const HEADER_H = 56; // 헤더 높이
+const BOTTOM_H = 90; // 하단 버튼 영역 높이
+
 export default function Address() {
   const navigate = useNavigate();
   return (
     <AddressContainer>
-      <Header text={"회원가입"} />
+      {/* 헤더 고정 */}
+      <HeaderWrap>
+        <Header text={"회원가입"} />
+      </HeaderWrap>
+
       <Info>
         <ProgressBar value={"60"} max={"100"} />
 
@@ -25,6 +32,8 @@ export default function Address() {
         </h2>
         <Section />
       </Info>
+
+      {/* 하단 버튼 고정 */}
       <div className="Bottom">
         <Button
           text={"다음"}
@@ -49,17 +58,56 @@ const AddressContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin: 0 auto;
+
+  /* 고정된 헤더/하단 버튼에 가려지지 않도록 패딩 확보 */
+  padding-top: ${HEADER_H}px;
+  padding-bottom: ${BOTTOM_H}px;
+  box-sizing: border-box;
+
   > .Text1 {
     margin-left: 45px;
     margin-right: auto;
     margin-top: 30px;
   }
+
+  /* 하단 버튼 고정 */
   > .Bottom {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 0;
+    width: 400px;
+    height: ${BOTTOM_H}px;
+    background: #fff;
+    border-top: 1px solid #d9d9d9;
+
     display: flex;
     flex-direction: column;
     align-items: center;
-    border-top: 1px solid #d9d9d9;
+    justify-content: center;
+
     padding: 10px;
+    box-sizing: border-box;
+    z-index: 50;
+  }
+`;
+
+/* 헤더 고정 래퍼 */
+const HeaderWrap = styled.div`
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 400px;
+  height: ${HEADER_H}px;
+  background: #fff;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+
+  > * {
+    width: 100%;
   }
 `;
 
@@ -125,7 +173,6 @@ function Section() {
     }
   }, [address]);
 
-  // 세션 저장
   useEffect(() => {
     sessionStorage.setItem("signup.address", address);
   }, [address]);
@@ -232,6 +279,7 @@ const SectionInfo = styled.div`
 
 const SectionContainer = styled.div`
   padding: 80px 0;
+  margin-bottom: 50px;
 
   > .p {
     color: #000;
@@ -279,7 +327,7 @@ const SectionContainer = styled.div`
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
-    padding: 5px 34px 5px 12px;
+    padding: 5px 35px 5px 12px;
     border-radius: 8px;
     border: 1px solid #bfbfbf;
     background: #fff;
