@@ -82,7 +82,11 @@ export default function QuickApply() {
       </InfoCard>
 
       <Tap>
-        <Button type={"White"} text={"다음"} />
+        <Button
+          type={"White"}
+          text={"다음"}
+          onClick={() => navigate("/homeseeker/quickapply/question")}
+        />
       </Tap>
     </QuickApplyContainer>
   );

@@ -52,6 +52,7 @@ const PhonenumContainer = styled.div`
     font-weight: 700;
   }
   > .Input {
+    padding: 0 50px;
     display: flex;
     flex-direction: column;
     align-items: center;

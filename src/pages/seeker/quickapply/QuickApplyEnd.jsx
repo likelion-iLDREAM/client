@@ -3,8 +3,17 @@ import Header from "../../../components/common/Header";
 import Employername from "../../../components/employer/Employername";
 import EmployerTitle from "../../../components/employer/EmployTitle";
 import Button from "../../../components/common/Button";
+import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function QuickApplyEnd() {
+  const navigate = useNavigate();
+  const name = useMemo(
+    () => (sessionStorage.getItem("signup.name") || "").trim(),
+    []
+  );
+  const displayName = name || "고객";
+
   return (
     <QuickApplyEndContainer>
       <Header text={"간편 지원"} showBack />
@@ -23,14 +32,21 @@ export default function QuickApplyEnd() {
           </p>
           <br />
           <p>
-            000님의 새로운 출발을 <br />
+            {displayName}님의 새로운 출발을 <br />
             응원할게요!
           </p>
         </End>
       </Section>
       <Tap>
-        <Button type={"White"} text={"다른 공고 확인하기"} />
-        <Button text={"지원한 내역 확인하기"} />
+        <Button
+          type={"White"}
+          text={"다른 공고 확인하기"}
+          onClick={() => navigate("/homeseeker")}
+        />
+        <Button
+          text={"지원한 내역 확인하기"}
+          onClick={() => navigate("/homeseeker/profile")}
+        />
       </Tap>
     </QuickApplyEndContainer>
   );
