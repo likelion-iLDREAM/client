@@ -8,7 +8,7 @@ import { FaUserEdit } from "react-icons/fa";
 import { IoIosArrowForward } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
 import TapBarSeeker from "../../../components/common/TapBarSeeker";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import TapBar from "../../../components/common/TapBar";
 // (추후) 별도 리스트 컴포넌트를 만들면 아래 import만 활성화해서 교체하면 됩니다.
 // import AppliedJobProgressList from "../../../components/seeker/AppliedJobProgressList";
@@ -18,9 +18,32 @@ export default function ProfileSeeker() {
   const [activeTab, setActiveTab] = useState("guide");
   const navigate = useNavigate();
   const hasDraft = true;
-  const name = "홍길동";
-  const tags = ["돌봄", "식품·옷·환경 가공", "목공·공예·제조"];
+  const name = "홍길동"; // (요청사항 외: 그대로 둠)
+  const [tags, setTags] = useState(() => {
+    try {
+      return JSON.parse(sessionStorage.getItem("signup.interests") || "[]");
+    } catch {
+      return [];
+    }
+  });
 
+  // 화면으로 돌아왔을 때도 최신값 반영 (프로필 편집 후 복귀 시)
+  useEffect(() => {
+    const sync = () => {
+      try {
+        const next = JSON.parse(
+          sessionStorage.getItem("signup.interests") || "[]"
+        );
+        setTags(Array.isArray(next) ? next : []);
+      } catch {
+        setTags([]);
+      }
+    };
+    window.addEventListener("focus", sync);
+    // 최초 마운트 시에도 동기화 한번
+    sync();
+    return () => window.removeEventListener("focus", sync);
+  }, []);
   const workingList = [
     {
       id: 1,

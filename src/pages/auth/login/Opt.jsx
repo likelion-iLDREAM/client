@@ -1,8 +1,9 @@
+// pages/terms/Opt.jsx
 import Button from "../../../components/common/Button";
 import styled from "styled-components";
 import ildreamText from "../../../assets/ildreamText.svg";
 import Enter from "../../../components/common/Enter";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 
 /*
@@ -14,6 +15,12 @@ const BOTTOM_H = 110; // 하단 고정 영역 높이(두 개 버튼 세로 배�
 
 export default function Opt() {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Phonenum에서 state로 받은 값 우선, 없으면 세션 fallback
+  const phoneFromState =
+    location?.state?.phone ?? sessionStorage.getItem("signup.phone") ?? "";
+  const phoneInputRef = useRef(null);
 
   // === 타이머 상태/로직 ===
   const [remaining, setRemaining] = useState(300); // 5분 = 300초
@@ -46,9 +53,20 @@ export default function Opt() {
     return () => clearTimer();
   }, []);
 
+  // 전화번호 표시 전용(수정 불가)
+  useEffect(() => {
+    const input =
+      phoneInputRef.current?.querySelector("input.Input_phone") ||
+      phoneInputRef.current?.querySelector("input");
+    if (!input) return;
+    input.value = phoneFromState || "";
+    input.readOnly = true; // 수정 불가
+    input.disabled = true; // 포커스/입력 불가
+  }, [phoneFromState]);
+
   // 재전송 요청 (실제 API 연동 시 이 함수 내부만 교체)
   const requestOtpResend = async () => {
-    // 예시: await api.post("/auth/otp/resend", { phone });
+    // 예시: await api.post("/auth/otp/resend", { phone: phoneFromState });
     await new Promise((r) => setTimeout(r, 400));
   };
 
@@ -73,12 +91,13 @@ export default function Opt() {
           <img src={ildreamText} />
         </div>
         <div className="Text1">전화번호로 인증번호를 보내드렸어요.</div>
-        <div className="Input">
-          <Enter text={"전화번호 입력...."} />
+        {/* 입력이 아니라 표시만: value는 useEffect로 주입 */}
+        <div ref={phoneInputRef} className="Phone">
+          <Enter type={"phone"} text={"전화번호"} />
         </div>
         <div className="Text2">인증번호를 입력해주세요.</div>
         <div className="Input">
-          <Enter text={"이곳에 인증번호를 입력해주세요."} />
+          <Enter text={"이곳에 인증번호를 입력해주세요."} type={"otp"} />
         </div>
         <TimeSection>
           <div className="Time">남은 시간: </div>
@@ -175,6 +194,23 @@ const Content = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
+  }
+
+  > .Phone {
+    margin: 0 50px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .Phone > div {
+    border-radius: 7px;
+    background: var(--Foundation-Black-black-5, #d9d9d9);
+  }
+
+  .Phone input.Input_phone {
+    color: var(--Foundation-Black-black-7, #8c8c8c);
+    background: var(--Foundation-Black-black-5, #d9d9d9);
   }
 `;
 

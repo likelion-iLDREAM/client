@@ -138,7 +138,7 @@ function Section() {
   // 주민등록번호 → 생년월일/성별 계산
   const [ridFront, setRidFront] = useState("");
   const [ridBack1, setRidBack1] = useState("");
-  const [phone] = useState("010-2345-6789");
+  const [phone] = useState(() => sessionStorage.getItem("signup.phone") || "");
   const back1Ref = useRef(null);
 
   const onChangeRidFront = (e) => {

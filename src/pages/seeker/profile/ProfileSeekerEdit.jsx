@@ -6,8 +6,11 @@ import { Icons } from "../../../components/icons/index";
 import styled from "styled-components";
 import { IoPersonCircleOutline } from "react-icons/io5";
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function ProfileSeekerEdit() {
+  const navigate = useNavigate();
+
   const [name] = useState(() =>
     (sessionStorage.getItem("signup.name") || "").trim()
   );
@@ -18,6 +21,12 @@ export default function ProfileSeekerEdit() {
   const [address, setAddress] = useState(
     () => sessionStorage.getItem("signup.address") || ""
   );
+
+  // 상세 주소 불러오기/동기화
+  const [addressDetail, setAddressDetail] = useState(
+    () => sessionStorage.getItem("signup.addressDetail") || ""
+  );
+
   const [gus, setGus] = useState(() => {
     try {
       return JSON.parse(sessionStorage.getItem("signup.gus") || "[]");
@@ -41,6 +50,19 @@ export default function ProfileSeekerEdit() {
     sessionStorage.setItem("signup.gus", JSON.stringify(gus));
   }, [gus]);
 
+  // 상세주소 세션 저장
+  useEffect(() => {
+    sessionStorage.setItem("signup.addressDetail", addressDetail);
+  }, [addressDetail]);
+
+  const handleSave = () => {
+    sessionStorage.setItem("signup.address", address);
+    sessionStorage.setItem("signup.addressDetail", addressDetail);
+    sessionStorage.setItem("signup.gus", JSON.stringify(gus));
+    // interests는 하위 Section에서 이미 sessionStorage에 동기화됨
+    navigate("/homeseeker/profile");
+  };
+
   return (
     <>
       <Header text="내 정보 수정" />
@@ -56,7 +78,7 @@ export default function ProfileSeekerEdit() {
         <ContentWrapper>
           <SubWrapper style={{ fontWeight: "700" }}>{"기업명"}</SubWrapper>
           <SubWrapper>
-            구인분야
+            관심분야
             {interests.length > 0 && (
               <div style={{ fontWeight: 400, marginTop: 6, fontSize: 16 }}>
                 {interests.join(", ")}
@@ -89,7 +111,12 @@ export default function ProfileSeekerEdit() {
               onClick={() => console.log("주소버튼")}
             />
           </InputWrapper>
-          <Inputtitle placeholder={"상세 주소를 입력해주세요"} />
+          {/* 상세 주소를 Address.jsx에서 가져온 값으로 표시/편집 */}
+          <Inputtitle
+            placeholder={"상세 주소를 입력해주세요"}
+            value={addressDetail}
+            onChange={(e) => setAddressDetail(e.target.value)}
+          />
         </Submenu>
         <Submenu>
           <Section2 onChange={(next) => setGus(next)} initial={gus} />
@@ -99,7 +126,7 @@ export default function ProfileSeekerEdit() {
         </Submenu>
       </Menu>
       <Footer>
-        <Button text="저장하기" type="White" />
+        <Button text="저장하기" type="White" onClick={handleSave} />
       </Footer>
     </>
   );
@@ -392,6 +419,7 @@ const SectionContainer = styled.div`
     gap: 10px;
   }
   .helper {
+    font-weight: 400;
     margin-top: 8px;
     font-size: 20px;
     color: var(--Foundation-Black-black-7, #8c8c8c);

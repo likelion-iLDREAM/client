@@ -117,6 +117,12 @@ function Section() {
   const [address, setAddress] = useState(
     () => sessionStorage.getItem("signup.address") || ""
   );
+
+  // 상세주소 상태(세션 동기화)
+  const [addressDetail, setAddressDetail] = useState(
+    () => sessionStorage.getItem("signup.addressDetail") || ""
+  );
+
   const [guSelect, setGuSelect] = useState("");
   const [selectedGus, setSelectedGus] = useState(() => {
     try {
@@ -165,6 +171,7 @@ function Section() {
     return () => icon.removeEventListener("click", open);
   }, []);
 
+  // 첫 번째 입력칸(대표주소) placeholder 반영
   useEffect(() => {
     if (!sectionInfoRef.current) return;
     const inputs = sectionInfoRef.current.querySelectorAll("input");
@@ -173,6 +180,28 @@ function Section() {
     }
   }, [address]);
 
+  // 두 번째 입력칸(상세주소) 값/동기화
+  useEffect(() => {
+    if (!sectionInfoRef.current) return;
+    const inputs = sectionInfoRef.current.querySelectorAll("input");
+    const detail = inputs && inputs[1];
+    if (!detail) return;
+
+    // 초기값 주입
+    if (addressDetail && detail.value !== addressDetail) {
+      detail.value = addressDetail;
+    }
+
+    const onInput = (e) => {
+      const v = e.target.value;
+      setAddressDetail(v);
+      sessionStorage.setItem("signup.addressDetail", v);
+    };
+    detail.addEventListener("input", onInput);
+    return () => detail.removeEventListener("input", onInput);
+  }, [addressDetail]);
+
+  // 세션 저장 (대표 주소 / 희망 근무지)
   useEffect(() => {
     sessionStorage.setItem("signup.address", address);
   }, [address]);
