@@ -6,56 +6,58 @@ import FilterTab from "../../components/employer/FilterTab";
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 
-const mockdata = [
-  {
-    jobPostId: 1,
-    createdAt: null,
-    updatedAt: null,
-    title: "일할 사람을 구합니다",
-    paymentType: "시급",
-    payment: 12000,
-    location: "서울특별시 마포구 대흥동 000",
-    content: "맛있는 감자 환영",
-    workStartTime: "09:30:00",
-    workEndTime: "18:00:00",
-    workType: "요일 지정",
-    workDays: ["월요일", "화요일"],
-    workDaysCount: null,
-    status: "OPEN", // OPEN 또는 CLOSED로 맞춰주세요
-    careerRequirement: false,
-    educationRequirement: "무관",
-    employmentType: "아르바이트",
-    jobField: "기계,금속 제작, 수리",
-    applyMethods: ["간편지원", "전화지원"],
-    expiryDate: "2025-10-30T12:00:00",
-    employer: {
-      id: 44,
-      name: "안지은",
-      companyName: "안지은 회사",
-      companyLocation: "마포구",
-      phone: "+8287654321",
-    },
-    questionList: {
-      items: [
-        {
-          id: 1,
-          text: "이름이뭐에요",
-          type: "예/아니요",
-          options: ["예", "아니요"],
-        },
-        {
-          id: 2,
-          text: "전화번호뭐에요",
-          type: "서술형",
-          options: [],
-        },
-      ],
-    },
-  },
-];
+const employerToken = import.meta.env.VITE_EMPLOYER_TOKEN;
+
+// const mockdata = [
+//   {
+//     jobPostId: 1,
+//     createdAt: null,
+//     updatedAt: null,
+//     title: "일할 사람을 구합니다",
+//     paymentType: "시급",
+//     payment: 12000,
+//     location: "서울특별시 마포구 대흥동 000",
+//     content: "맛있는 감자 환영",
+//     workStartTime: "09:30:00",
+//     workEndTime: "18:00:00",
+//     workType: "요일 지정",
+//     workDays: ["월요일", "화요일"],
+//     workDaysCount: null,
+//     status: "OPEN", // OPEN 또는 CLOSED로 맞춰주세요
+//     careerRequirement: false,
+//     educationRequirement: "무관",
+//     employmentType: "아르바이트",
+//     jobField: "기계,금속 제작, 수리",
+//     applyMethods: ["간편지원", "전화지원"],
+//     expiryDate: "2025-10-30T12:00:00",
+//     employer: {
+//       id: 44,
+//       name: "안지은",
+//       companyName: "안지은 회사",
+//       companyLocation: "마포구",
+//       phone: "+8287654321",
+//     },
+//     questionList: {
+//       items: [
+//         {
+//           id: 1,
+//           text: "이름이뭐에요",
+//           type: "예/아니요",
+//           options: ["예", "아니요"],
+//         },
+//         {
+//           id: 2,
+//           text: "전화번호뭐에요",
+//           type: "서술형",
+//           options: [],
+//         },
+//       ],
+//     },
+//   },
+// ];
 
 export default function HomeEmployer() {
-  const [jobPosts, setJobPosts] = useState(mockdata);
+  const [jobPosts, setJobPosts] = useState([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("OPEN"); // 기본: OPEN
   const employerId = 44; // 예시 값
@@ -74,14 +76,23 @@ export default function HomeEmployer() {
   };
 
   useEffect(() => {
-    fetch("")
-      .then((res) => res.json())
+    fetch("/jobPosts", {
+      headers: {
+        token: `${employerToken}`,
+      },
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("네트워크 응답 실패");
+        return res.json();
+      })
       .then((data) => {
         if (data.success) {
           setJobPosts(data.data);
+        } else {
+          console.error("API 에러", data.message);
         }
       })
-      .catch((err) => console.error(err));
+      .catch((err) => console.error("Fetch 에러", err));
   }, []);
 
   const onChangeSearch = (e) => {

@@ -13,8 +13,13 @@ export default function ApplyMethod() {
   const navigate = useNavigate();
 
   const handleNext = () => {
-    navigate("/employer/postjobs/titlecategory");
+    const applyMethods = [];
+    if (selectedItems.phone) applyMethods.push("전화지원");
+    if (selectedItems.quick) applyMethods.push("간편지원");
+    console.log("applymethod입니다. :", applyMethods);
+    navigate("/employer/postjobs/titlecategory", { state: { applyMethods } });
   };
+
   const [selectedItems, setSelectedItems] = useState({
     all: false,
     phone: false,

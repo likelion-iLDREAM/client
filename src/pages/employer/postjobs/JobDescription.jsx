@@ -3,15 +3,54 @@ import Button from "../../../components/common/Button";
 import ProgressBar from "../../../components/common/Progressbar";
 import styled from "styled-components";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { IoIosArrowBack } from "react-icons/io";
 import Alert_post from "../../../components/employer/Alert_post";
 
 export default function JobDescription() {
   const navigate = useNavigate();
-  const handleNext = () => {
-    navigate("/employer/postjobs/AddQuestions");
+  const location = useLocation();
+  const prevState = location.state || {};
+  console.log("prevState입니다. ", prevState);
+
+  const handleNext = async () => {
+    const workPlace = extractDistrict(prevState.location);
+
+    // API 요청용 payload 조립 (prevState 포함, content 추가)
+    const payload = {
+      ...prevState,
+      content,
+      saveQuestionList: false,
+      workPlace: workPlace,
+    };
+    console.log("payload", payload);
+    try {
+      const response = await fetch("BACKEND_API_URL/jobposts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_EMPLOYER_TOKEN}`, // 인증 토큰
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // 생성 성공 시 다음 페이지로 이동
+        navigate("/employer/postjobs/AddQuestions", {
+          state: { ...prevState, content },
+        });
+      } else {
+        // 에러 처리 (예: alert)
+        alert("공고 생성에 실패했습니다: " + data.message);
+      }
+    } catch (error) {
+      console.error(error);
+      alert("서버 요청 중 오류가 발생했습니다.");
+    }
   };
+
   const [content, setContent] = useState("");
   const [backAlertOpen, setBackAlertOpen] = useState(false);
   const onChangeContent = (e) => {
@@ -179,3 +218,12 @@ const Title = styled.textarea`
     outline: none;
   }
 `;
+
+function extractDistrict(location) {
+  // 예: "서울특별시 마포구 대흥동 000" -> "마포구"
+  // 간단히 '구'라는 글자가 포함된 단어 추출 예시
+  if (!location) return "";
+
+  const match = location.match(/(\S+구)/);
+  return match ? match[1] : "";
+}

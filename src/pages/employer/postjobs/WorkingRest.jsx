@@ -4,20 +4,54 @@ import ProgressBar from "../../../components/common/Progressbar";
 import styled from "styled-components";
 import { Icons } from "../../../components/icons/index";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import TimeRangePicker from "../../../components/common/TimeRangePicker";
 import { IoIosArrowBack } from "react-icons/io";
 import Alert_post from "../../../components/employer/Alert_post";
 
 export default function WorkingRest() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const prevState = location.state || {};
+  console.log("prevState입니다. ", prevState);
+
   const handleNext = () => {
-    navigate("/employer/postjobs/jobdescription");
+    // 휴게시간을 분 단위로 변환
+    const restTime = Number(hours) * 60 + Number(minutes);
+
+    // 근무요일을 배열로, 요일 지정이 아니면 빈 배열로
+    const workDays = selectedoptions.date ? selectedDays : [];
+
+    // 근무 시작/종료 시간에 ":00" 붙여서 HH:mm:ss 형태로 맞추기
+    const workStartTime = workTime.start ? `${workTime.start}:00` : null;
+    const workEndTime = workTime.end ? `${workTime.end}:00` : null;
+
+    // workType 결정: date가 선택되어 있으면 "요일 지정", count가 선택되어 있으면 "주 횟수"
+    let workType = "";
+    if (selectedoptions.date) workType = "요일 지정";
+    else if (selectedoptions.count) workType = "주 횟수";
+
+    navigate("/employer/postjobs/jobdescription", {
+      state: {
+        ...prevState,
+        restTime,
+        workDays,
+        workDaysCount: selectedoptions.count
+          ? Number(workDaysCount) || null
+          : null,
+        workStartTime,
+        workEndTime,
+        workType,
+      },
+    });
   };
+
   const [selectedoptions, setSelectedoptions] = useState({
     date: true,
     count: false,
   });
+  const [workTime, setWorkTime] = useState({ start: "09:30", end: "18:00" });
+  const [workDaysCount, setWorkDaysCount] = useState("");
 
   const toggleOption = (key) => {
     setSelectedoptions((prev) => {
@@ -170,7 +204,7 @@ export default function WorkingRest() {
                   ))}
                 </Row>
               </DaySelectorWrapper>
-              <TimeRangePicker />
+              <TimeRangePicker value={workTime} onChange={setWorkTime} />
             </SubWrappter>
           </div>
           <CountWrapper style={{ opacity: countDisabled ? 0.5 : 1 }}>
@@ -192,9 +226,19 @@ export default function WorkingRest() {
               style={{ pointerEvents: countDisabled ? "none" : "auto" }}
             >
               <InputCount>
-                주 <input className="count"></input>회
+                주{" "}
+                <input
+                  className="count"
+                  value={workDaysCount}
+                  onChange={(e) => {
+                    // 숫자만 입력 허용 (필요시)
+                    const onlyNum = e.target.value.replace(/\D/g, "");
+                    setWorkDaysCount(onlyNum);
+                  }}
+                />{" "}
+                회
               </InputCount>
-              <TimeRangePicker />
+              <TimeRangePicker value={workTime} onChange={setWorkTime} />
             </SubWrappter>
           </CountWrapper>
           {/* </Working> */}
