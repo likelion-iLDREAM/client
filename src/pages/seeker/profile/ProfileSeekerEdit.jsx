@@ -11,35 +11,95 @@ import { useNavigate } from "react-router-dom";
 const workerToken = import.meta.env.VITE_WORKER_TOKEN;
 const serverUrl = import.meta.env.VITE_ILDREAM_URL;
 
-export default function ProfileSeekerEdit() {
-  useEffect(() => {
-    fetch(`${serverUrl}/workers/me`, {
-      headers: {
-        token: `${workerToken}`,
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log("받아온 구직자 정보:", data);
-        if (data.success && data.data) {
-          const emp = data.data;
-          setCompanyName(emp.companyName || "");
-          setEmail(emp.email || "");
-          setbossName(emp.bossName || "");
-          setPhone(emp.phone || "");
-          setcompanyNumber(emp.companyNumber || "");
-          setAddress(emp.address || "");
-          setAddressDetail(emp.addressDetail || "");
-          setJobFields(emp.jobFields || []);
-          setSelectedTags(emp.jobFields || []);
-          // 필요한 필드 추가로 초기화
-        }
-      })
-      .catch(console.error);
-  }, []);
+/** ===== 직군 옵션 (라벨/서버용 값 분리) ===== */
+const JOB_OPTIONS = [
+  { id: 1, label: "🌱농사·원예·어업", api: "농사,원예,어업" },
+  { id: 2, label: "🚚운전·배달", api: "운전,배달" },
+  { id: 3, label: "🥬식품·옷·환경 가공", api: "식품,옷,환경가공" },
+  { id: 4, label: "📄사무·금융", api: "사무,금융" },
+  { id: 5, label: "🛒판매", api: "판매" },
+  { id: 6, label: "❤️돌봄", api: "돌봄" },
+  { id: 7, label: "🧹청소·미화", api: "청소,미화" },
+  { id: 8, label: "🍲음식·서비스", api: "음식,서비스" },
+  { id: 9, label: "🪚목공·공예·제조", api: "목공,공예,제조" },
+  { id: 10, label: "🎨문화·연구·기술", api: "문화,연구,기술" },
+  { id: 11, label: "🏗️건설·시설 관리", api: "건설,시설관리" },
+  { id: 12, label: "🔌전기·전자 수리", api: "전기,전자수리" },
+  { id: 13, label: "⚙️기계·금속 제작·수리", api: "기계,금속제작,수리" },
+];
 
+// 빠른 탐색용 맵
+const idToLabel = Object.fromEntries(JOB_OPTIONS.map((o) => [o.id, o.label]));
+const idToApi = Object.fromEntries(JOB_OPTIONS.map((o) => [o.id, o.api]));
+const apiToLabel = Object.fromEntries(JOB_OPTIONS.map((o) => [o.api, o.label]));
+const labelToId = Object.fromEntries(JOB_OPTIONS.map((o) => [o.label, o.id]));
+
+/** ===== 유틸: UI ⇄ API 변환 ===== */
+// (견고해졌지만, 폴백으로 유지)
+const stripEmoji = (s = "") =>
+  s.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\uFE0F\u200D]/gu, "");
+const toApiBirth = (s = "") => s.replaceAll(".", "-"); // "YYYY.MM.DD" → "YYYY-MM-DD"
+const toUiBirth = (s = "") => s.replaceAll("-", "."); // "YYYY-MM-DD" → "YYYY.MM.DD"
+const uiJobToApiFallback = (s = "") =>
+  stripEmoji(s).replace(/\s+/g, "").replace(/·/g, ","); // 라벨만 있는 경우 폴백 변환
+const apiBLGToUi = (s = "") => (s.endsWith("구") ? s : `${s}구`); // "마포" → "마포구"
+const uiGuToApi = (s = "") => s.replace(/구$/, ""); // "마포구" → "마포"
+
+/** ===== 메인 컴포넌트 ===== */
+export default function ProfileSeekerEdit() {
   const navigate = useNavigate();
 
+  /** 서버에서 현재 로그인 사용자 불러오기 */
+  useEffect(() => {
+    if (!serverUrl || !workerToken) return;
+
+    fetch(`${serverUrl}/workers/me`, {
+      method: "GET",
+      headers: { token: `${workerToken}` },
+      mode: "cors",
+    })
+      .then(async (res) => {
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(json?.message || `HTTP_${res.status}`);
+        return json;
+      })
+      .then((data) => {
+        console.log("받아온 구직자 정보:", data);
+        if (data?.success && data?.data) {
+          const me = data.data;
+
+          // 기본 프로필 필드 동기화
+          sessionStorage.setItem("signup.name", (me.name || "").trim());
+          sessionStorage.setItem("signup.birth", toUiBirth(me.birthday || ""));
+          sessionStorage.setItem("signup.gender", me.gender || "");
+          sessionStorage.setItem("signup.address", me.residence || "");
+
+          const gusUi = Array.isArray(me.BLG) ? me.BLG.map(apiBLGToUi) : [];
+          sessionStorage.setItem("signup.gus", JSON.stringify(gusUi));
+
+          // 서버 jobInterest(api값 배열) → 화면 라벨/서버값 동시 저장
+          const apiArr = Array.isArray(me.jobInterest) ? me.jobInterest : [];
+          const labelArr = apiArr.map((api) => apiToLabel[api] || api); // 매핑 없으면 그대로 표시
+          sessionStorage.setItem("signup.interests", JSON.stringify(labelArr));
+          sessionStorage.setItem("signup.interestsApi", JSON.stringify(apiArr));
+
+          // 선택 id도 복원(하나만 표시하는 UI라 첫 번째만)
+          const firstLabel = labelArr[0];
+          const firstId = firstLabel ? labelToId[firstLabel] || null : null;
+          sessionStorage.setItem(
+            "signup.interestIds",
+            JSON.stringify(firstId ? [firstId] : [])
+          );
+
+          // 화면 상태 갱신
+          setAddress(me.residence || "");
+          setGus(gusUi);
+        }
+      })
+      .catch((err) => console.error("[/workers/me] 실패:", err));
+  }, []);
+
+  /** 화면 상태 */
   const [name] = useState(() =>
     (sessionStorage.getItem("signup.name") || "").trim()
   );
@@ -51,7 +111,7 @@ export default function ProfileSeekerEdit() {
     () => sessionStorage.getItem("signup.address") || ""
   );
 
-  // 상세 주소 불러오기/동기화
+  // 상세 주소 불러오기/동기화(서버로는 아직 미전송)
   const [addressDetail, setAddressDetail] = useState(
     () => sessionStorage.getItem("signup.addressDetail") || ""
   );
@@ -63,6 +123,7 @@ export default function ProfileSeekerEdit() {
       return [];
     }
   });
+
   const interests = useMemo(() => {
     try {
       return JSON.parse(sessionStorage.getItem("signup.interests") || "[]");
@@ -79,29 +140,131 @@ export default function ProfileSeekerEdit() {
     sessionStorage.setItem("signup.gus", JSON.stringify(gus));
   }, [gus]);
 
-  // 상세주소 세션 저장
   useEffect(() => {
     sessionStorage.setItem("signup.addressDetail", addressDetail);
   }, [addressDetail]);
 
-  const handleSave = () => {
-    sessionStorage.setItem("signup.address", address);
-    sessionStorage.setItem("signup.addressDetail", addressDetail);
-    sessionStorage.setItem("signup.gus", JSON.stringify(gus));
-    // interests는 하위 Section에서 이미 sessionStorage에 동기화됨
-    navigate("/homeseeker/profile");
+  /** 저장 (PATCH /workers/me) — 서버용 값 우선 사용 */
+  const handleSave = async () => {
+    try {
+      // 서버용 값(apis) 우선
+      let apis = [];
+      try {
+        apis = JSON.parse(
+          sessionStorage.getItem("signup.interestsApi") || "[]"
+        );
+        if (!Array.isArray(apis)) apis = [];
+      } catch {
+        apis = [];
+      }
+
+      // 폴백: 화면 라벨 → 변환 또는 매핑
+      if (apis.length === 0) {
+        try {
+          const labels = JSON.parse(
+            sessionStorage.getItem("signup.interests") || "[]"
+          );
+          apis = (Array.isArray(labels) ? labels : [])
+            .map((label) => {
+              const id = labelToId[label];
+              if (id && idToApi[id]) return idToApi[id];
+              // 매핑 실패 시 폴백 변환
+              return uiJobToApiFallback(label);
+            })
+            .filter(Boolean);
+        } catch {
+          apis = [];
+        }
+      }
+
+      const payload = {
+        name: (sessionStorage.getItem("signup.name") || "").trim(),
+        birthday: toApiBirth(sessionStorage.getItem("signup.birth") || ""),
+        gender: sessionStorage.getItem("signup.gender") || "",
+        residence: address || "",
+        RLG: "서울특별시", // 현재 UI는 서울 고정
+        BLG: (Array.isArray(gus) ? gus : []).map(uiGuToApi).filter(Boolean),
+        jobInterest: apis, // ✅ 서버용 값만 보냄
+      };
+
+      const phoneRaw =
+        sessionStorage.getItem("signup.phoneNumber") ||
+        sessionStorage.getItem("signup.phone") ||
+        "";
+      if (phoneRaw) payload.phoneNumber = phoneRaw;
+
+      // 비어있는 값 제거
+      Object.keys(payload).forEach((k) => {
+        const v = payload[k];
+        if (
+          v === undefined ||
+          v === null ||
+          (typeof v === "string" && !v.trim()) ||
+          (Array.isArray(v) && v.length === 0)
+        ) {
+          delete payload[k];
+        }
+      });
+
+      console.log("PATCH /workers/me 요청 바디:", payload);
+
+      if (!serverUrl || !workerToken) {
+        alert("환경변수(serverUrl/workerToken)가 설정되지 않았습니다.");
+        return;
+      }
+
+      const res = await fetch(`${serverUrl}/workers/me`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          token: `${workerToken}`,
+        },
+        body: JSON.stringify(payload),
+        mode: "cors",
+      });
+
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json?.success) {
+        throw new Error(json?.message || `HTTP_${res.status}`);
+      }
+
+      console.log("PATCH /workers/me 응답:", json);
+
+      // 성공 시 응답 데이터로 세션 갱신
+      const d = json.data || {};
+      sessionStorage.setItem("signup.name", (d.name || "").trim());
+      sessionStorage.setItem("signup.birth", toUiBirth(d.birthday || ""));
+      sessionStorage.setItem("signup.gender", d.gender || "");
+      sessionStorage.setItem("signup.address", d.residence || "");
+      sessionStorage.setItem(
+        "signup.gus",
+        JSON.stringify(Array.isArray(d.BLG) ? d.BLG.map(apiBLGToUi) : [])
+      );
+
+      // 서버 응답의 jobInterest(api값) → 라벨/서버값 동기화
+      const apiArr2 = Array.isArray(d.jobInterest) ? d.jobInterest : [];
+      const labelArr2 = apiArr2.map((api) => apiToLabel[api] || api);
+      sessionStorage.setItem("signup.interests", JSON.stringify(labelArr2));
+      sessionStorage.setItem("signup.interestsApi", JSON.stringify(apiArr2));
+      const firstLabel2 = labelArr2[0];
+      const firstId2 = firstLabel2 ? labelToId[firstLabel2] || null : null;
+      sessionStorage.setItem(
+        "signup.interestIds",
+        JSON.stringify(firstId2 ? [firstId2] : [])
+      );
+
+      navigate("/homeseeker/profile");
+    } catch (err) {
+      console.error("프로필 저장 실패:", err);
+      alert(`저장에 실패했습니다.\n${err?.message || err}`);
+    }
   };
 
   return (
     <>
       <Header text="내 정보 수정" />
       <ProfileWrapper>
-        <ProfileImage>
-          <IoPersonCircleOutline
-            color="var(--Foundation-Green-Normal)"
-            size={55}
-          />
-        </ProfileImage>
+        <ProfileImage color="var(--Foundation-Green-Normal)" size={55} />
         <SmallButton>내 사진 변경하기</SmallButton>
 
         <ContentWrapper>
@@ -140,7 +303,6 @@ export default function ProfileSeekerEdit() {
               onClick={() => console.log("주소버튼")}
             />
           </InputWrapper>
-          {/* 상세 주소를 Address.jsx에서 가져온 값으로 표시/편집 */}
           <Inputtitle
             placeholder={"상세 주소를 입력해주세요"}
             value={addressDetail}
@@ -161,6 +323,7 @@ export default function ProfileSeekerEdit() {
   );
 }
 
+/** ===== 스타일 ===== */
 const ProfileWrapper = styled.div`
   display: flex;
   width: 360px;
@@ -348,67 +511,39 @@ const Footer = styled.div`
   gap: 10px;
 `;
 
-// 구직분야 (프로필에서도 세션과 동기화)
+/** ===== 구직분야: 1개만 선택 (라벨/서버값 동시 저장) ===== */
 function Section() {
+  // 2열/3열 배치 유지
   const rows = [
-    [
-      { id: 1, label: "🌱농사·원예·어업" },
-      { id: 2, label: "🚚운전·배달" },
-    ],
-    [
-      { id: 3, label: "🥬식품·옷·환경 가공" },
-      { id: 4, label: "📄사무·금융" },
-    ],
-    [
-      { id: 5, label: "🛒판매" },
-      { id: 6, label: "❤️돌봄" },
-      { id: 7, label: "🧹청소·미화" },
-    ],
-    [
-      { id: 8, label: "🍲음식·서비스" },
-      { id: 9, label: "🪚목공·공예·제조" },
-    ],
-    [
-      { id: 10, label: "🎨문화·연구·기술" },
-      { id: 11, label: "🏗️건설·시설 관리" },
-    ],
-    [
-      { id: 12, label: "🔌전기·전자 수리" },
-      { id: 13, label: "⚙️기계·금속 제작·수리" },
-    ],
+    [1, 2],
+    [3, 4],
+    [5, 6, 7],
+    [8, 9],
+    [10, 11],
+    [12, 13],
   ];
-  const idToLabel = {};
-  rows.flat().forEach((o) => (idToLabel[o.id] = o.label));
 
-  const [selected, setSelected] = useState(() => {
+  const [selectedId, setSelectedId] = useState(() => {
     try {
-      return new Set(
-        JSON.parse(sessionStorage.getItem("signup.interestIds") || "[]")
+      const arr = JSON.parse(
+        sessionStorage.getItem("signup.interestIds") || "[]"
       );
+      return Array.isArray(arr) && arr.length ? arr[0] : null;
     } catch {
-      return new Set();
+      return null;
     }
   });
 
-  const toggle = (id) => {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        if (next.size >= 3) return next;
-        next.add(id);
-      }
-      return next;
-    });
-  };
+  const toggle = (id) => setSelectedId((prev) => (prev === id ? null : id));
 
   useEffect(() => {
-    const ids = Array.from(selected);
+    const ids = selectedId ? [selectedId] : [];
     const labels = ids.map((id) => idToLabel[id]).filter(Boolean);
+    const apis = ids.map((id) => idToApi[id]).filter(Boolean);
     sessionStorage.setItem("signup.interestIds", JSON.stringify(ids));
-    sessionStorage.setItem("signup.interests", JSON.stringify(labels));
-  }, [selected]);
+    sessionStorage.setItem("signup.interests", JSON.stringify(labels)); // 화면용
+    sessionStorage.setItem("signup.interestsApi", JSON.stringify(apis)); // 서버용
+  }, [selectedId]);
 
   return (
     <SectionContainer>
@@ -416,18 +551,18 @@ function Section() {
 
       {rows.map((row, i) => (
         <div className="group" key={i}>
-          {row.map((opt) => (
+          {row.map((id) => (
             <IntButton
-              key={opt.id}
-              text={opt.label}
-              selected={selected.has(opt.id)}
-              onClick={() => toggle(opt.id)}
+              key={id}
+              text={idToLabel[id]}
+              selected={selectedId === id}
+              onClick={() => toggle(id)}
             />
           ))}
         </div>
       ))}
 
-      <div className="helper">{selected.size} / 3 선택됨</div>
+      <div className="helper">{selectedId ? 1 : 0} / 1 선택됨</div>
     </SectionContainer>
   );
 }
@@ -497,7 +632,7 @@ const IntButtonContainer = styled.div`
   }
 `;
 
-// 희망 근무지 (세션과 동기화 + 초기값 반영)
+/** ===== 희망 근무지 (기존 유지) ===== */
 function Section2({ initial = [], onChange }) {
   const [guSelect, setGuSelect] = useState("");
   const [selectedGus, setSelectedGus] = useState(initial || []);
@@ -600,7 +735,6 @@ const SectionContainer2 = styled.div`
     font-size: 20px;
     font-weight: 700;
   }
-
   .selectors {
     display: flex;
     flex-direction: row;
@@ -610,11 +744,9 @@ const SectionContainer2 = styled.div`
     gap: 8px;
     align-items: center;
   }
-
   button {
     margin: 0;
   }
-
   .sido {
     padding: 5px 10px;
     border-radius: 8px;
@@ -623,13 +755,11 @@ const SectionContainer2 = styled.div`
     color: #9f9f9f;
     font-size: 20px;
   }
-
   .selectWrap {
     position: relative;
     display: inline-flex;
     align-items: center;
   }
-
   .selectWrap select {
     appearance: none;
     -webkit-appearance: none;
@@ -642,7 +772,6 @@ const SectionContainer2 = styled.div`
     color: #333;
     min-width: 120px;
   }
-
   .selectWrap .caret {
     position: absolute;
     right: 10px;
@@ -650,14 +779,12 @@ const SectionContainer2 = styled.div`
     font-size: 20px;
     color: #6e6e6e;
   }
-
   .chips {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
     margin-top: 12px;
   }
-
   .chip {
     display: inline-flex;
     align-items: center;
@@ -669,7 +796,6 @@ const SectionContainer2 = styled.div`
     font-size: 20px;
     border: 1px solid rgba(0, 0, 0, 0.06);
   }
-
   .chipX {
     border: none;
     background: transparent;
