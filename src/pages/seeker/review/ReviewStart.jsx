@@ -1,15 +1,71 @@
 import styled from "styled-components";
 import Header from "../../../components/common/Header";
 import ReviewCheck from "../../../components/seeker/ReviewCheck";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import Button from "../../../components/common/Button";
+
+// ===== 사전 준비(API 형식에 맞춘 라벨/유틸) =====
+const ANSWER_LABELS = {
+  boss_kindness: "사장님 친절도",
+  coworker_kindness: "동료 친절도",
+  welfare: "복지 수준",
+  rework_intent: "재근무 의사",
+  pay_expansion: "급여일 준수",
+  payment: "시급 수준",
+  work_intesity: "업무 강도", // (오타 그대로 키 유지) intesity → intensity
+  work_clarity: "업무 명확성",
+  breaktime: "휴게시간 준수",
+};
+
+const toScore = (idx) => (typeof idx === "number" ? idx + 1 : 2); // 0~2 → 1~3
 
 export default function ReviewStart() {
   const navigate = useNavigate();
-  const [answers, setAnswers] = useState({});
+  const location = useLocation();
+
+  // employerId 확보(쿼리스트링 → 세션 유지)
+  const employerId = useMemo(() => {
+    const search = new URLSearchParams(location.search);
+    const fromQS = search.get("employerId");
+    const fromSession = sessionStorage.getItem("review.employerId");
+    const id = Number(fromQS ?? fromSession ?? 0) || 0;
+    sessionStorage.setItem("review.employerId", String(id));
+    return id;
+  }, [location.search]);
+
+  const [answers, setAnswers] = useState({}); // { key: 0|1|2 }
   const setAnswer = (key) => (idx) =>
     setAnswers((prev) => ({ ...prev, [key]: idx }));
+
+  // 다음 단계로 넘어갈 때: API 스펙에 맞춘 draft 저장
+  const goNext = () => {
+    // API 요청형식 answers (라벨: 1~3)
+    const apiAnswers = Object.entries(answers).reduce((acc, [k, v]) => {
+      const label = ANSWER_LABELS[k];
+      if (label) acc[label] = toScore(v);
+      return acc;
+    }, {});
+
+    const draft = {
+      employerId,
+      answers: apiAnswers,
+      hashtags: [], // 다음 페이지에서 채움
+    };
+
+    // 전 단계/후 단계에서 공유
+    sessionStorage.setItem("review.answers", JSON.stringify(apiAnswers));
+    sessionStorage.setItem("review.draft", JSON.stringify(draft));
+
+    navigate("/homeseeker/review/tag");
+  };
+
+  // 초기화(새 작성시 이전 임시값 제거 - 선택)
+  useEffect(() => {
+    sessionStorage.removeItem("review.hashtags");
+    // answers는 이번 페이지에서 새로 작성
+  }, []);
+
   return (
     <ReviewContainer>
       <Header text={"고용주 후기 작성"} showBack />
@@ -56,13 +112,13 @@ export default function ReviewStart() {
             onChange={setAnswer("payment")}
           />
           <ReviewCheck
-            question="업무는 강도는 어떘나요?"
+            question="업무 강도는 어땠나요?"
             options={["단순 업무", "보통이에요", "힘든 업무"]}
             onChange={setAnswer("work_intesity")}
           />
           <ReviewCheck
             question="업무는 명확했나요?"
-            options={["불명확해요", "모르겠어요", "명확해요"]}
+            options={["불명확해요", "보통이에요", "명확해요"]}
             onChange={setAnswer("work_clarity")}
           />
           <ReviewCheck
@@ -73,11 +129,7 @@ export default function ReviewStart() {
         </Checks>
       </Section>
       <Tap>
-        <Button
-          onClick={() => navigate("/homeseeker/review/tag")}
-          type={"White"}
-          text={"다음"}
-        />
+        <Button onClick={goNext} type={"White"} text={"다음"} />
       </Tap>
     </ReviewContainer>
   );

@@ -6,8 +6,8 @@ import Phonenum from "./pages/auth/login/Phonenum";
 import SelectRole from "./pages/auth/signup/SelectRole";
 import Terms from "./pages/auth/signup/Terms";
 // Signup
-import NameBirth from "./pages/seeker/signupseeker/namebirth";
-import Address from "./pages/seeker/signupseeker/address";
+import NameBirth from "./pages/seeker/signupseeker/NameBirth";
+import Address from "./pages/seeker/signupseeker/Address";
 import Interests from "./pages/seeker/signupseeker/interests";
 import SignupEnd from "./pages/seeker/signupseeker/signupend";
 import * as Employer from "./EmployerIndex.js";
