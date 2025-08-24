@@ -5,12 +5,54 @@ import ProgressBar from "../../../components/common/Progressbar";
 import styled from "styled-components";
 import { Icons } from "../../../components/icons/index";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+
+const employerToken = import.meta.env.VITE_EMPLOYER_TOKEN;
 
 export default function SignupEndEmployer() {
   const navigate = useNavigate();
-  const handleNext = () => {
-    navigate("/employer");
+  const location = useLocation();
+
+  const FinalData = location.state || {};
+  console.log("final data :", FinalData);
+
+  const postDataToBackend = async (formData) => {
+    const payload = transformFormData(formData);
+
+    try {
+      const response = await fetch("/auth/employer/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error(`서버 오류: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("저장 성공", data);
+      return data;
+    } catch (error) {
+      console.error("저장 중 오류 발생", error);
+      throw error;
+    }
+  };
+
+  // const handleNext = () => {
+  //   navigate("/employer");
+  // };
+
+  const handleSave = async () => {
+    try {
+      const result = await postDataToBackend(formData);
+      // 저장 성공 후 후속 처리 (예: 페이지 이동, 메시지 표시 등)
+      navigate("/employer");
+    } catch (error) {
+      // 오류 처리
+    }
   };
   return (
     <>
@@ -29,11 +71,28 @@ export default function SignupEndEmployer() {
         </Question>
       </ApplyWrapper>
       <Footer>
-        <Button text="확인" type="White" onClick={handleNext} />
+        <Button text="확인" type="White" onClick={handleSave} />
       </Footer>
     </>
   );
 }
+
+function transformFormData(formData) {
+  return {
+    name: formData.name || "",
+    email: formData.email || "",
+    bossName: formData.bossName || "",
+    phoneNumber: formData.phone || "", // 이름이 phoneNumber로 변경됨
+    companyName: formData.companyName || "",
+    companyLocation: `${formData.address || ""} ${
+      formData.addressDetail || ""
+    }`.trim(),
+    companyNumber: formData.companyNumber || "",
+    jobFields: (formData.jobFields || []).join(","),
+    // 이미 배열이므로 그대로 사용; 필요시 문자열 변환 가능
+  };
+}
+
 const ApplyWrapper = styled.div`
   display: flex;
   padding: 30px;

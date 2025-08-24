@@ -6,6 +6,9 @@ import styled from "styled-components";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
+const employerToken = import.meta.env.VITE_EMPLOYER_TOKEN;
+const serverUrl = import.meta.env.VITE_ILDREAM_URL;
+
 export default function ProfileEmployerEdit() {
   const navigate = useNavigate();
 
@@ -31,13 +34,13 @@ export default function ProfileEmployerEdit() {
   const [addressDetail, setAddressDetail] = useState(() =>
     (sessionStorage.getItem("signup.addressDetail") || "").trim()
   );
-  const [jobFields, setJobFields] = useState(() => {
-    try {
-      return JSON.parse(sessionStorage.getItem("employer.jobFields") || "[]");
-    } catch {
-      return [];
-    }
-  });
+  // const [jobFields, setJobFields] = useState(() => {
+  //   try {
+  //     return JSON.parse(sessionStorage.getItem("employer.jobFields") || "[]");
+  //   } catch {
+  //     return [];
+  //   }
+  // });
   // 구인분야 태그 (sessionStorage 저장된 배열 불러오기)
   const [selectedTags, setSelectedTags] = useState(() => {
     try {
@@ -46,6 +49,7 @@ export default function ProfileEmployerEdit() {
       return [];
     }
   });
+  // console.log("employerToken:", employerToken);
 
   // 필드 값 저장 (sessionStorage 동기화 + 페이지 이동)
   const handleSave = () => {
@@ -56,9 +60,67 @@ export default function ProfileEmployerEdit() {
     sessionStorage.setItem("employer.companyNumber", companyNumber);
     sessionStorage.setItem("signup.address", address);
     sessionStorage.setItem("signup.addressDetail", addressDetail);
-    sessionStorage.setItem("employer.jobFields", JSON.stringify(jobFields));
+    sessionStorage.setItem("employer.jobFields", JSON.stringify(selectedTags));
     navigate("/employer/profile");
   };
+  // fetch("/api/employer/me")
+  //   .then((response) => response.json())
+  //   .then((data) => {
+  //     console.log(data);
+  //     // data 구조 확인 가능
+  //   })
+  //   .catch((error) => console.error(error));
+
+  // fetch(`${serverUrl}/employers/me`, {
+  //   headers: {
+  //     token: `${employerToken}`,
+  //   },
+  // })
+  //   .then((res) => {
+  //     if (!res.ok) {
+  //       throw new Error(`HTTP error, status = ${res.status}`);
+  //     }
+  //     console.log(res);
+  //     return res.json();
+  //   })
+  //   .then((data) => {
+  //     console.log("데이터 받아옴", data);
+  //   })
+  //   .catch((err) => {
+  //     console.error("API 요청 실패 에러:", err);
+  //   });
+
+  useEffect(() => {
+    fetch(`${serverUrl}/employers/me`, {
+      headers: {
+        token: `${employerToken}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("받아온 고용주 정보:", data);
+        if (data.success && data.data) {
+          const emp = data.data;
+
+          // companyLocation 분리
+          const locationParts = (emp.companyLocation || "").split(" ");
+          const address = locationParts.slice(0, 2).join(" ");
+          const addressDetail = locationParts.slice(2).join(" ");
+
+          setCompanyName(emp.companyName || "");
+          setEmail(emp.email || "");
+          setbossName(emp.bossName || "");
+          setPhone(convertPhoneNumber(emp.phoneNumber || ""));
+          setcompanyNumber(emp.companyNumber || "");
+          setAddress(address);
+          setAddressDetail(addressDetail);
+          // setJobFields(emp.jobFields || []);
+          setSelectedTags(emp.jobFields || []);
+          // 필요한 필드 추가로 초기화
+        }
+      })
+      .catch(console.error);
+  }, []);
 
   return (
     <>
@@ -129,13 +191,32 @@ export default function ProfileEmployerEdit() {
             onChange={(e) => setAddressDetail(e.target.value)}
           />
         </Submenu>
-        <Section jobFields={jobFields} setJobFields={setJobFields} />
+        <Section jobFields={selectedTags} setJobFields={setSelectedTags} />
       </Menu>
       <Footer>
         <Button text="저장하기" type="White" onClick={handleSave} />
       </Footer>
     </>
   );
+}
+function convertPhoneNumber(phoneNumber) {
+  if (!phoneNumber) return "";
+
+  // +82로 시작하면 010으로 변경
+  let converted = phoneNumber.startsWith("+82")
+    ? "0" + phoneNumber.slice(3)
+    : phoneNumber;
+
+  // 숫자만 추출
+  converted = converted.replace(/[^0-9]/g, "");
+
+  // 010-XXXX-XXXX 형태로 포맷팅 (휴대폰 번호일 경우)
+  if (converted.length === 11 && converted.startsWith("010")) {
+    return converted.replace(/(\d{3})(\d{4})(\d{4})/, "$1-$2-$3");
+  }
+
+  // 그 밖의 경우는 원본 리턴
+  return phoneNumber;
 }
 
 const TagRow = styled.div`

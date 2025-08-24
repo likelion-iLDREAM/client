@@ -5,15 +5,20 @@ import QuestionProcess from "../../../components/employer/QuestionProcess";
 import styled from "styled-components";
 import { Icons } from "../../../components/icons/index";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { IoIosArrowBack } from "react-icons/io";
 import Alert_post from "../../../components/employer/Alert_post";
 
 export default function AddQuestions() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const prevState = location.state || {};
+  console.log("prevState입니다. ", prevState);
+
   const handleNext = () => {
     navigate("/employer/postjobs/postcomplete");
   };
+
   const [IsSave, setSave] = useState(false);
   const [backAlertOpen, setBackAlertOpen] = useState(false);
 

@@ -5,7 +5,7 @@ import ProgressBar from "../../../components/common/Progressbar";
 import styled from "styled-components";
 import { Icons } from "../../../components/icons/index";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { IoIosArrowBack } from "react-icons/io";
 import Alert_post from "../../../components/employer/Alert_post";
 
@@ -18,21 +18,41 @@ const paymentOptions = [
 
 export default function PayLocation() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const prevState = location.state || {};
+  console.log("prevState입니다. ", prevState);
+
+  const minPayment = 10030;
   const handleNext = () => {
-    navigate("/employer/postjobs/requirementtype");
+    const fullLocation = workPlaceDetail
+      ? `${workPlaceAddress} ${workPlaceDetail}`
+      : workPlaceAddress;
+    navigate("/employer/postjobs/requirementtype", {
+      state: {
+        ...prevState, // 이전 단계에서 넘겨온 누적 state
+        paymentType, // 현재 선택한 급여 종류
+        payment: Number(payInput) || Number(minPayment), // 숫자로 변환한 금액
+        location: fullLocation, // 근무지 주소
+      },
+    });
   };
+
   const [paymentType, setPaymentType] = useState(paymentOptions[0].value);
   const [payInput, setPayInput] = useState("");
   const formatNumberWithComma = (value) => {
     if (!value) return "";
     return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
+  const [workPlaceAddress, setWorkPlaceAddress] = useState("");
+  const [workPlaceDetail, setWorkPlaceDetail] = useState("");
+
   const [backAlertOpen, setBackAlertOpen] = useState(false);
 
   const handleInputChange = (e) => {
     const rawValue = e.target.value.replace(/,/g, "").replace(/[^0-9]/g, "");
     setPayInput(rawValue);
   };
+
   return (
     <>
       <Headersection>
@@ -88,17 +108,25 @@ export default function PayLocation() {
             </PayWrapper>
             <div style={{ fontSize: "15px" }}>
               {" "}
-              2025년 최저시급은 10,030원입니다.
+              2025년 최저시급은 {formatNumberWithComma(minPayment)}원입니다.
             </div>
           </Tag>
 
           <Tag>
             <p>근무지</p>
             <InputWrapper>
-              <Inputaddress placeholder="주소 입력" />
+              <Inputaddress
+                placeholder="주소 입력"
+                value={workPlaceAddress}
+                onChange={(e) => setWorkPlaceAddress(e.target.value)}
+              />
               <Icons.Map color="var(--Foundation-Green-Normal)" size={24} />
             </InputWrapper>
-            <Enter text="상세주소" />
+            <Enter
+              text="상세주소"
+              value={workPlaceDetail}
+              onChange={(e) => setWorkPlaceDetail(e.target.value)}
+            />
           </Tag>
         </OptionsWrapper>
       </ApplyWrapper>

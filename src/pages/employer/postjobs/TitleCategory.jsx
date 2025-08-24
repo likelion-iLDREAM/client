@@ -4,16 +4,18 @@ import Enter from "../../../components/common/Enter";
 import ProgressBar from "../../../components/common/Progressbar";
 import styled from "styled-components";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Icons } from "../../../components/icons/index";
 import { IoIosArrowBack } from "react-icons/io";
 import Alert_post from "../../../components/employer/Alert_post";
 
 export default function TitleCategory() {
   const navigate = useNavigate();
-  const handleNext = () => {
-    navigate("/employer/postjobs/paylocation");
-  };
+  const location = useLocation();
+  const prevState = location.state || {};
+
+  const [title, setTitle] = useState("");
+
   // 오늘 날짜 YYYY-MM-DD 형식 구하는 함수
   const getTodayDateString = () => {
     const today = new Date();
@@ -62,14 +64,24 @@ export default function TitleCategory() {
     "사무·행정",
   ];
 
-  const [selectedTags, setSelectedTags] = useState([]);
+  const [selectedTag, setSelectedTag] = useState(null);
   const [showOther, setShowOther] = useState(false);
-  const toggleTag = (key) =>
-    setSelectedTags((prev) =>
-      prev.includes(key) ? prev.filter((t) => t !== key) : [...prev, key]
-    );
-  const [backAlertOpen, setBackAlertOpen] = useState(false);
+  const toggleTag = (key) => {
+    setSelectedTag((prev) => (prev === key ? null : key));
+  };
 
+  const [backAlertOpen, setBackAlertOpen] = useState(false);
+  const handleNext = () => {
+    navigate("/employer/postjobs/paylocation", {
+      state: {
+        ...prevState,
+        title,
+        startDate,
+        expiryDate: selectedoptions.count ? null : endDate, // 채용시마감 시 null 처리
+        jobFields: selectedTag ? selectedTag : null,
+      },
+    });
+  };
   return (
     <>
       <Headersection>
@@ -106,7 +118,11 @@ export default function TitleCategory() {
         <OptionsWrapper>
           <Tag>
             <p>공고제목</p>
-            <Enter text="제목을 입력해주세요" />
+            <Enter
+              text="제목을 입력해주세요"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
           </Tag>
           <Tag>
             <p>구인기간</p>
@@ -147,7 +163,7 @@ export default function TitleCategory() {
               {mainTags.map((t) => (
                 <TagPill
                   key={t.id}
-                  data-selected={selectedTags.includes(t.id)}
+                  data-selected={selectedTag === t.id}
                   onClick={() => toggleTag(t.id)}
                 >
                   {t.label}
@@ -165,7 +181,7 @@ export default function TitleCategory() {
                 {otherTags.map((label) => (
                   <TagPill
                     key={label}
-                    data-selected={selectedTags.includes(label)}
+                    data-selected={selectedTag === label}
                     onClick={() => toggleTag(label)}
                   >
                     {label}
