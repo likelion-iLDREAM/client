@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import styled from "styled-components";
 
 const employerToken = import.meta.env.VITE_EMPLOYER_TOKEN;
+const serverUrl = import.meta.env.VITE_ILDREAM_URL;
 
 // const mockdata = [
 //   {
@@ -59,24 +60,26 @@ const employerToken = import.meta.env.VITE_EMPLOYER_TOKEN;
 export default function HomeEmployer() {
   const [jobPosts, setJobPosts] = useState([]);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("OPEN"); // 기본: OPEN
-  const employerId = 44; // 예시 값
-
+  const [statusFilter, setStatusFilter] = useState("모집 중"); // 기본: OPEN
+  // const employerId = jobPosts[0].id;
+  // console.log(jobPosts[0].id);
   // 필터링 함수 수정
   const getFilteredData = () => {
     return jobPosts.filter((jobPost) => {
-      const isEmployerMatch = jobPost.employer?.id === employerId;
+      // const isEmployerMatch = jobPost.employer?.id === employerId;
+      // console.log(isEmployerMatch);
       const isStatusMatch = statusFilter
         ? jobPost.status === statusFilter
         : true;
       const isSearchMatch = search === "" || jobPost.title.includes(search);
 
-      return isEmployerMatch && isStatusMatch && isSearchMatch;
+      // 아래는 employerId 없이 필터링
+      return isStatusMatch && isSearchMatch;
     });
   };
 
   useEffect(() => {
-    fetch("/jobPosts", {
+    fetch(`${serverUrl}/employers/me/jobPosts`, {
       headers: {
         token: `${employerToken}`,
       },
@@ -88,6 +91,7 @@ export default function HomeEmployer() {
       .then((data) => {
         if (data.success) {
           setJobPosts(data.data);
+          console.log(data.data);
         } else {
           console.error("API 에러", data.message);
         }
@@ -100,9 +104,9 @@ export default function HomeEmployer() {
   };
 
   const filteredjobPosts = getFilteredData();
-  const isEmployerPostsExist = jobPosts.some(
-    (jobPost) => jobPost.employer?.id === employerId
-  );
+  // const isEmployerPostsExist = jobPosts.some(
+  //   (jobPost) => jobPost.employer?.id === employerId
+  // );
 
   return (
     <>
@@ -114,17 +118,18 @@ export default function HomeEmployer() {
           filteredjobPosts.map((jobPost) => (
             <JobPostItem key={jobPost.jobPostId} {...jobPost} />
           ))
-        ) : isEmployerPostsExist ? (
-          <EmptyMessage>
-            검색어에 맞는 공고가 없어요.🥲 <br />
-            검색어를 바꿔서 다시 찾아보세요!
-          </EmptyMessage>
         ) : (
           <EmptyMessage>
             아직 채용중인 공고가 없어요.🥲 <br />
             하단 중앙에 있는 공고 등록하기로 <br />
             채용을 시작할 수 있어요!
           </EmptyMessage>
+          //    (
+          //   <EmptyMessage>
+          //     검색어에 맞는 공고가 없어요.🥲 <br />
+          //     검색어를 바꿔서 다시 찾아보세요!
+          //   </EmptyMessage>
+          // ) :
         )}
       </JobPostsWrapper>
       <TapBar />

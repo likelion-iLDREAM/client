@@ -67,8 +67,8 @@ export default function CheckReview() {
       <CategoryWrapper>
         구인분야
         <TagRow>
-          {Catetags.slice(0, 3).map((t, i) => (
-            <CateTag key={i}>{t}</CateTag>
+          {selectedTags.slice(0, 3).map((t, i) => (
+            <Tag key={i}>{t}</Tag>
           ))}
         </TagRow>
       </CategoryWrapper>

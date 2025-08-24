@@ -1,4 +1,3 @@
-import Header from "../../../components/common/Header";
 import Button from "../../../components/common/Button";
 import ProgressBar from "../../../components/common/Progressbar";
 import styled from "styled-components";

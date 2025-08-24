@@ -4,20 +4,23 @@ import ProgressBar from "../../../components/common/Progressbar";
 import QuestionProcess from "../../../components/employer/QuestionProcess";
 import styled from "styled-components";
 import { Icons } from "../../../components/icons/index";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { IoIosArrowBack } from "react-icons/io";
 import Alert_post from "../../../components/employer/Alert_post";
+
+const employerToken = import.meta.env.VITE_EMPLOYER_TOKEN;
+const serverUrl = import.meta.env.VITE_ILDREAM_URL;
 
 export default function AddQuestions() {
   const navigate = useNavigate();
   const location = useLocation();
   const prevState = location.state || {};
   console.log("prevState입니다. ", prevState);
+  const [questions, setQuestions] = useState([]);
 
-  const handleNext = () => {
-    navigate("/employer/postjobs/postcomplete");
-  };
+  // const handleNext = () => {
+  //   navigate("/employer/postjobs/postcomplete");
+  // };
 
   const [IsSave, setSave] = useState(false);
   const [backAlertOpen, setBackAlertOpen] = useState(false);
@@ -25,23 +28,60 @@ export default function AddQuestions() {
   // const [progress, setProgress] = useState(87.5);
   const toggleItem = () => setSave((prev) => !prev);
 
+  useEffect(() => {
+    const filteredQuestions = questions.filter((q) => q.text.trim() !== "");
+    if (filteredQuestions.length > 0) {
+      console.log("생성된 질문들:", filteredQuestions);
+    } else {
+      console.log("생성된 질문이 없습니다.");
+    }
+  }, [questions]);
+
+  const handleNext = async () => {
+    try {
+      const jobPostId = prevState?.jobPostId;
+      console.log("prevState:", prevState);
+      console.log("jobPostId:", prevState?.jobPostId);
+
+      if (!jobPostId) {
+        alert("잘못된 접근입니다: 모집 공고 ID가 없습니다.");
+        return;
+      }
+
+      const response = await fetch(
+        `${serverUrl}/jobPosts/${jobPostId}/questionList`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            token: employerToken,
+          },
+          body: JSON.stringify({
+            items: questions,
+            saveQuestionList: IsSave, // 여기에 체크 상태 반영
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        navigate("/employer/postjobs/postcomplete");
+      } else {
+        alert("질문 저장에 실패했습니다: " + data.message);
+      }
+    } catch (error) {
+      console.error(error);
+      alert("서버 요청 중 오류가 발생했습니다.");
+    }
+  };
+
   return (
     <>
       <Headersection>
         <Header text={"지원자 현황"} showBack />
       </Headersection>
-      {/* <Headersection>
-        <HeaderContainer>
-          <BackButton
-            type="button"
-            aria-label="뒤로가기"
-            onClick={() => setBackAlertOpen(true)}
-          >
-            <IoIosArrowBack />
-          </BackButton>
-          {"새 공고"}
-        </HeaderContainer>
-      </Headersection> */}
+
       <Alert_post
         open={backAlertOpen}
         onConfirm={() => {
@@ -58,7 +98,7 @@ export default function AddQuestions() {
           추가 질문을 <br />
           입력해 주세요.(선택)
         </Question>
-        <QuestionProcess />
+        <QuestionProcess questions={questions} setQuestions={setQuestions} />
       </ApplyWrapper>
       <Footerwithcheckbox>
         <Savequestion onClick={toggleItem}>
@@ -83,38 +123,6 @@ export default function AddQuestions() {
   );
 }
 
-// 변경: position 추가
-const HeaderContainer = styled.div`
-  position: relative;
-  width: 400px;
-  height: 70px;
-  background-color: #eaf7f0;
-  font-size: 30px;
-  font-weight: 700;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-`;
-
-// 추가: 뒤로가기 버튼 스타일
-const BackButton = styled.button`
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  align-items: center;
-  background: transparent;
-  border: 0;
-  padding: 10px;
-  cursor: pointer;
-
-  svg {
-    width: 32px;
-    height: 32px;
-  }
-`;
 const Headersection = styled.div`
   position: relative;
   display: flex;

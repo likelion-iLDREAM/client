@@ -3,7 +3,6 @@ import Button from "../../../components/common/Button";
 import Enter from "../../../components/common/Button";
 import ProgressBar from "../../../components/common/Progressbar";
 import styled from "styled-components";
-import { Icons } from "../../../components/icons/index";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 

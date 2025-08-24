@@ -2,29 +2,48 @@ import styled from "styled-components";
 import Button from "../common/Button";
 import { useNavigate } from "react-router-dom";
 
+const categoryMap = [
+  { keys: ["농사", "원예", "어업"], label: "🌱농사·원예·어업" },
+  { keys: ["운전", "배달"], label: "🚚운전·배달" },
+  { keys: ["식품", "옷", "환경 가공"], label: "🥬식품·옷·환경 가공" },
+  { keys: ["사무", "금융"], label: "📄사무·금융" },
+  { keys: ["판매"], label: "🛒판매" },
+  { keys: ["돌봄"], label: "❤️돌봄" },
+  { keys: ["청소", "미화"], label: "🧹청소·미화" },
+  { keys: ["음식", "서비스"], label: "🍲음식·서비스" },
+  { keys: ["목공", "공예", "제조"], label: "🪚목공·공예·제조" },
+  { keys: ["문화", "연구", "기술"], label: "🎨문화·연구·기술" },
+  { keys: ["건설", "시설 관리"], label: "🏗️건설·시설 관리" },
+  { keys: ["전기", "전자 수리"], label: "🔌전기·전자 수리" },
+  { keys: ["기계", "금속제작", "수리"], label: "⚙️기계·금속 제작·수리" },
+  { keys: ["기타"], label: "💬기타" },
+];
+
 export default function JobPostItem({
-  jobPostId,
+  id,
   title,
   paymentType,
   location,
   applyMethod, // 만약 배열이라면 applyMethods로 받을 수도 있음
+  startDate,
   expiryDate,
   status,
   createdAt,
   updatedAt,
   employer,
+  jobField,
+  workPlace,
 }) {
   const navigate = useNavigate();
-
+  console.log("jobpostid욜시다", id);
   const handleViewApplicants = () => {
-    navigate("/employer/seekerlist/seekerlist", { state: jobPostId });
+    navigate("/employer/seekerlist/seekerlist", { state: { id } });
   };
 
   // employer 객체 구조 분해
   const { name: employerName, companyName, companyLocation } = employer || {};
 
   const parts = location ? location.split(" ") : [];
-  const dong = parts.find((part) => part.endsWith("동"));
 
   const today = new Date();
   const expiryDateObj = new Date(expiryDate);
@@ -64,10 +83,11 @@ export default function JobPostItem({
                 fontWeight: "400",
               }}
             >
-              🛒판매 {/* 필요시 다른 텍스트나 아이콘으로 교체 */}
+              {mapDbToLabels(jobField)}{" "}
+              {/* 필요시 다른 텍스트나 아이콘으로 교체 */}
             </Filter>
             <span>
-              [{dong}] {title}
+              [{workPlace}] {title}
             </span>
           </div>
           <div>{location}</div>
@@ -96,13 +116,45 @@ export default function JobPostItem({
               fontSize: "13px",
             }}
           >
-            {status === "OPEN" ? "채용중" : "채용마감"}
+            {status === "모집 중" ? "채용중" : "채용마감"}
           </Filter>
         </div>
       </TextWrapper>
       <Button text="지원자 확인하기" onClick={handleViewApplicants} />
     </ItemWrapper>
   );
+}
+
+function mapDbToLabels(input) {
+  if (!input) return [];
+
+  let parts = [];
+
+  if (Array.isArray(input)) {
+    parts = input;
+  } else if (typeof input === "string") {
+    parts = input
+      .split(/[,·\s]+/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+  } else {
+    return [];
+  }
+
+  const labels = [];
+
+  parts.forEach((part) => {
+    for (const category of categoryMap) {
+      if (category.keys.some((key) => part.includes(key))) {
+        if (!labels.includes(category.label)) {
+          labels.push(category.label);
+        }
+        break;
+      }
+    }
+  });
+
+  return labels;
 }
 
 // 스타일 정의 (기존대로 유지)
@@ -140,11 +192,13 @@ const Filter = styled.div`
   line-height: normal;
 
   border: ${({ status }) =>
-    status === "OPEN"
+    status === "모집 중"
       ? "1px solid #ff5858"
       : "1px solid var(--Foundation-Black-black-7, #8C8C8C)"};
   color: ${({ status }) =>
-    status === "OPEN" ? "#e05e5e" : "var(--Foundation-Black-black-7, #8C8C8C)"};
+    status === "모집 중"
+      ? "#e05e5e"
+      : "var(--Foundation-Black-black-7, #8C8C8C)"};
 `;
 
 const TextWrapper = styled.div`

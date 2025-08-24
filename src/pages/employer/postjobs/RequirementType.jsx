@@ -1,12 +1,9 @@
 import Header from "../../../components/common/Header";
 import Button from "../../../components/common/Button";
-import Enter from "../../../components/common/Button";
 import ProgressBar from "../../../components/common/Progressbar";
 import styled from "styled-components";
-import { Icons } from "../../../components/icons/index";
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { IoIosArrowBack } from "react-icons/io";
 import Alert_post from "../../../components/employer/Alert_post";
 
 export default function RequirementType() {
@@ -40,18 +37,7 @@ export default function RequirementType() {
       <Headersection>
         <Header text={"지원자 현황"} showBack />
       </Headersection>
-      {/* <Headersection>
-        <HeaderContainer>
-          <BackButton
-            type="button"
-            aria-label="뒤로가기"
-            onClick={() => setBackAlertOpen(true)}
-          >
-            <IoIosArrowBack />
-          </BackButton>
-          {"새 공고"}
-        </HeaderContainer>
-      </Headersection> */}
+
       <Alert_post
         open={backAlertOpen}
         onConfirm={() => {
@@ -86,33 +72,43 @@ export default function RequirementType() {
           <Tag>
             <p>학력</p>
             <SubWrapper>
-              {["학력무관", "고졸 이상", "초대졸 이상", "대졸 이상"].map(
-                (item) => (
-                  <Filter
-                    key={item}
-                    active={selectedEducation === item}
-                    onClick={() => handleSelect(setSelectedEducation, item)}
-                  >
-                    {item}
-                  </Filter>
-                )
-              )}
+              {[
+                "무관",
+                "고등학교 졸업 이상",
+                "학사 이상",
+                "석사 이상",
+                "박사 이상",
+              ].map((item) => (
+                <Filter
+                  key={item}
+                  active={selectedEducation === item}
+                  onClick={() => handleSelect(setSelectedEducation, item)}
+                >
+                  {item}
+                </Filter>
+              ))}
             </SubWrapper>{" "}
           </Tag>
           <Tag>
             <p>고용형태</p>
             <SubWrapper>
-              {["정규직", "시간제 정규직", "계약직", "시간제 계약직"].map(
-                (item) => (
-                  <Filter
-                    key={item}
-                    active={selectedEmployment === item}
-                    onClick={() => handleSelect(setSelectedEmployment, item)}
-                  >
-                    {item}
-                  </Filter>
-                )
-              )}
+              {[
+                "아르바이트",
+                "정규직",
+                "계약직",
+                "파견직",
+                "인턴직",
+                "교육생",
+                "프리랜서",
+              ].map((item) => (
+                <Filter
+                  key={item}
+                  active={selectedEmployment === item}
+                  onClick={() => handleSelect(setSelectedEmployment, item)}
+                >
+                  {item}
+                </Filter>
+              ))}
             </SubWrapper>
           </Tag>
         </OptionsWrapper>

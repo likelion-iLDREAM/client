@@ -7,7 +7,7 @@ import { Icons } from "../../../components/icons/index";
 import { IoIosArrowBack } from "react-icons/io";
 import { useState, useEffect } from "react";
 import Alert_emp from "../../../components/employer/Alert_emp";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import ApplicantItem from "../../../components/employer/ApplicantItem";
 
 const mockData = [
@@ -51,6 +51,10 @@ const tabButtonTextMap = {
 
 export default function SeekerList() {
   // 탭 상태
+  const location = useLocation();
+  const prevState = location.state || {};
+  console.log("prevState입니다. ", prevState);
+
   const [currentTab, setCurrentTab] = useState("지원 완료"); // 기본값
   const [backAlertOpen, setBackAlertOpen] = useState(false);
   const [isClosed, setIsClosed] = useState(false);
