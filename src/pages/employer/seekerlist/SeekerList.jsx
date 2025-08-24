@@ -65,6 +65,39 @@ export default function SeekerList() {
     fetchApplicants();
   }, []);
 
+  // 1) 총 지원자 수
+  const totalApplicants = mockData.length;
+
+  // 2) 성별 인원 수 구하기
+  const genderCounts = applicants.reduce((acc, cur) => {
+    acc[cur.workerGender] = (acc[cur.workerGender] || 0) + 1;
+    return acc;
+  }, {});
+  console.log(genderCounts);
+  // 3) 연령대별 인원 수 구하기
+  // 예: 50대, 60대, 70대, 80대 이상
+  const ageGroups = {
+    "50대": 0,
+    "60대": 0,
+    "70대": 0,
+    "80대 이상": 0,
+  };
+
+  applicants.forEach(({ workerAge }) => {
+    if (workerAge >= 80) ageGroups["80대 이상"]++;
+    else if (workerAge >= 70) ageGroups["70대"]++;
+    else if (workerAge >= 60) ageGroups["60대"]++;
+    else if (workerAge >= 50) ageGroups["50대"]++;
+  });
+  const barData = Object.entries(ageGroups).map(([label, value]) => ({
+    label,
+    value,
+  }));
+
+  // 결과 예시 console.log
+  console.log("총 지원자:", totalApplicants);
+  console.log("성별 인원 수:", genderCounts);
+  console.log("연령대별 인원 수:", barData);
   const navigate = useNavigate();
 
   return (
@@ -91,9 +124,14 @@ export default function SeekerList() {
       />
       <SummarySection>
         <div className="title">
-          지원자 통계 <span className="subtitle">총 지원자 8명</span>
+          지원자 통계{" "}
+          <span className="subtitle">총 지원자 {applicants.length}명</span>
         </div>
-        <StatsRow></StatsRow>
+        <StatsRow
+          totalApplicants={totalApplicants}
+          genderCounts={genderCounts}
+          barData={barData}
+        ></StatsRow>
       </SummarySection>
       <FilterTab_SeekerList
         currentTab={currentTab}
@@ -102,8 +140,11 @@ export default function SeekerList() {
       <List>
         {applicants.map((applicant) => (
           <ApplicantItem
-            key={applicant.applicationId}
-            application={applicant}
+            applicationId={applicant.applicationId}
+            name={applicant.workerName}
+            gender={applicant.workerGender}
+            age={applicant.workerAge}
+            district={applicant.workerAddress}
             currentTab={currentTab}
             isClosed={isClosed}
           />

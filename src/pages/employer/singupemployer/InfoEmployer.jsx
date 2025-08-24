@@ -10,13 +10,14 @@ import { useNavigate } from "react-router-dom";
 
 export default function InfoEmployer() {
   const navigate = useNavigate();
+  const [phone] = useState(() => sessionStorage.getItem("signup.phone") || "");
 
   // 상태값 선언
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     bossName: "",
-    phoneNumber: "",
+    phoneNumber: { phone },
     companyName: "",
     companyLocation: "",
     companyNumber: "",
@@ -58,8 +59,8 @@ export default function InfoEmployer() {
             <EnterWrapper>
               <input
                 readOnly
-                placeholder={formData.phoneNumber}
-                value={formData.phoneNumber}
+                placeholder={phone}
+                value={phone}
                 onChange={(e) => handleChange("phoneNumber", e.target.value)}
               />
             </EnterWrapper>
@@ -233,15 +234,18 @@ const EnterWrapper = styled.div`
   align-items: center;
   border-radius: 7px;
   border: 1px solid #bfbfbf;
-  background: var(--Foundation-Black-black-5, #d9d9d9);
+  background: #e9e9e9;
   margin-top: 10px;
 
   > input {
     border: none;
     font-size: 20px;
     font-weight: 400;
-    background: var(--Foundation-Black-black-5, #d9d9d9);
     pointerevent: none;
+    width: 100%;
+    background: #e9e9e9;
+    color: #6a6a6a;
+    cursor: not-allowed;
 
     &:focus {
       outline: none;
