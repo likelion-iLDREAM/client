@@ -76,7 +76,7 @@ export default function ProfileSeekerEdit() {
         <SmallButton>내 사진 변경하기</SmallButton>
 
         <ContentWrapper>
-          <SubWrapper style={{ fontWeight: "700" }}>{"기업명"}</SubWrapper>
+          <SubWrapper style={{ fontWeight: "700" }}>{name}</SubWrapper>
           <SubWrapper>
             관심분야
             {interests.length > 0 && (
