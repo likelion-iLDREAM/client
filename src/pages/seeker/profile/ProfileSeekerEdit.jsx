@@ -8,7 +8,36 @@ import { IoPersonCircleOutline } from "react-icons/io5";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+const workerToken = import.meta.env.VITE_WORKER_TOKEN;
+const serverUrl = import.meta.env.VITE_ILDREAM_URL;
+
 export default function ProfileSeekerEdit() {
+  useEffect(() => {
+    fetch(`${serverUrl}/workers/me`, {
+      headers: {
+        token: `${workerToken}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("받아온 구직자 정보:", data);
+        if (data.success && data.data) {
+          const emp = data.data;
+          setCompanyName(emp.companyName || "");
+          setEmail(emp.email || "");
+          setbossName(emp.bossName || "");
+          setPhone(emp.phone || "");
+          setcompanyNumber(emp.companyNumber || "");
+          setAddress(emp.address || "");
+          setAddressDetail(emp.addressDetail || "");
+          setJobFields(emp.jobFields || []);
+          setSelectedTags(emp.jobFields || []);
+          // 필요한 필드 추가로 초기화
+        }
+      })
+      .catch(console.error);
+  }, []);
+
   const navigate = useNavigate();
 
   const [name] = useState(() =>
