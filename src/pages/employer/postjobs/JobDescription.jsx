@@ -4,8 +4,10 @@ import ProgressBar from "../../../components/common/Progressbar";
 import styled from "styled-components";
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { IoIosArrowBack } from "react-icons/io";
 import Alert_post from "../../../components/employer/Alert_post";
+
+const employerToken = import.meta.env.VITE_EMPLOYER_TOKEN;
+const serverUrl = import.meta.env.VITE_ILDREAM_URL;
 
 export default function JobDescription() {
   const navigate = useNavigate();
@@ -14,35 +16,30 @@ export default function JobDescription() {
   console.log("prevState입니다. ", prevState);
 
   const handleNext = async () => {
-    const workPlace = extractDistrict(prevState.location);
-
     // API 요청용 payload 조립 (prevState 포함, content 추가)
     const payload = {
       ...prevState,
       content,
       saveQuestionList: false,
-      workPlace: workPlace,
+      status: "모집 중",
     };
     console.log("payload", payload);
     try {
-      const response = await fetch("BACKEND_API_URL/jobposts", {
+      const response = await fetch(`${serverUrl}/jobPosts`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_EMPLOYER_TOKEN}`, // 인증 토큰
+          token: `${employerToken}`,
         },
         body: JSON.stringify(payload),
       });
-
       const data = await response.json();
 
       if (data.success) {
-        // 생성 성공 시 다음 페이지로 이동
-        navigate("/employer/postjobs/AddQuestions", {
-          state: { ...prevState, content },
-        });
+        const jobPostId = data.data.id; // 새 공고 id 저장
+        // 생성 성공 시 다음 페이지로 이동하며 id 전달
+        navigate("/employer/postjobs/AddQuestions", { state: { jobPostId } });
       } else {
-        // 에러 처리 (예: alert)
         alert("공고 생성에 실패했습니다: " + data.message);
       }
     } catch (error) {
@@ -61,18 +58,7 @@ export default function JobDescription() {
       <Headersection>
         <Header text={"지원자 현황"} showBack />
       </Headersection>
-      {/* <Headersection>
-        <HeaderContainer>
-          <BackButton
-            type="button"
-            aria-label="뒤로가기"
-            onClick={() => setBackAlertOpen(true)}
-          >
-            <IoIosArrowBack />
-          </BackButton>
-          {"새 공고"}
-        </HeaderContainer>
-      </Headersection> */}
+
       <Alert_post
         open={backAlertOpen}
         onConfirm={() => {
@@ -111,38 +97,6 @@ const Tag = styled.div`
     font-size: 20px;
     font-weight: 700;
     margin: 0 0 8px 0;
-  }
-`;
-// 변경: position 추가
-const HeaderContainer = styled.div`
-  position: relative;
-  width: 400px;
-  height: 70px;
-  background-color: #eaf7f0;
-  font-size: 30px;
-  font-weight: 700;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-`;
-
-// 추가: 뒤로가기 버튼 스타일
-const BackButton = styled.button`
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  align-items: center;
-  background: transparent;
-  border: 0;
-  padding: 10px;
-  cursor: pointer;
-
-  svg {
-    width: 32px;
-    height: 32px;
   }
 `;
 

@@ -2,10 +2,7 @@ import styled from "styled-components";
 import { useState } from "react";
 import { Icons } from "../icons/index";
 
-export default function QuestionProcess() {
-  const [questions, setQuestions] = useState([
-    "요양보호사 경력이 있으시면 말씀해주세요.",
-  ]);
+export default function QuestionProcess({ questions, setQuestions }) {
   const [newQuestion, setNewQuestion] = useState("");
   const [questionType, setQuestionType] = useState("yesno");
 
@@ -17,22 +14,33 @@ export default function QuestionProcess() {
   // 새 질문 등록
   const handleAddQuestion = () => {
     if (newQuestion && questions.length < 10) {
-      setQuestions([...questions, newQuestion]);
+      const newItem = {
+        id: null, // 새 질문이면 null, 서버 생성 후 id 할당할 수 있음
+        text: newQuestion,
+        type: questionType === "yesno" ? "예/아니요" : "서술형",
+        options: questionType === "yesno" ? ["예", "아니요"] : null,
+      };
+      setQuestions([...questions, newItem]);
       setNewQuestion("");
     }
   };
+
   return (
     <Wrapper>
       <SectionTitle>추가 질문(최대 10개)</SectionTitle>
       {/* -------- 등록된 질문 목록 -------- */}
-      {questions.map((q, idx) => (
-        <QuestionItem key={idx}>
-          <QuestionText>{`${idx + 1}. ${q}`}</QuestionText>
-          <DeleteBtn onClick={() => handleDelete(idx)}>
-            <Icons.Close color="#BFBFBF" size={20} />
-          </DeleteBtn>
-        </QuestionItem>
-      ))}
+      {questions.length === 0 ? (
+        <EmptyMessage>추가된 질문이 없습니다.</EmptyMessage>
+      ) : (
+        questions.map((q, idx) => (
+          <QuestionItem key={idx}>
+            <QuestionText>{`${idx + 1}. ${q.text}`}</QuestionText>
+            <DeleteBtn onClick={() => handleDelete(idx)}>
+              <Icons.Close color="#BFBFBF" size={20} />
+            </DeleteBtn>
+          </QuestionItem>
+        ))
+      )}
 
       {/* -------- 새 질문 입력 영역 -------- */}
       <InputCard>
@@ -62,6 +70,13 @@ export default function QuestionProcess() {
     </Wrapper>
   );
 }
+const EmptyMessage = styled.div`
+  color: #aaa;
+  font-style: italic;
+  font-size: 16px;
+  padding: 10px 0;
+  text-align: center;
+`;
 
 const Wrapper = styled.div`
   display: flex;

@@ -6,8 +6,17 @@ import { Icons } from "../../../components/icons/index";
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import TimeRangePicker from "../../../components/common/TimeRangePicker";
-import { IoIosArrowBack } from "react-icons/io";
 import Alert_post from "../../../components/employer/Alert_post";
+
+const dayMap = {
+  일: "일요일",
+  월: "월요일",
+  화: "화요일",
+  수: "수요일",
+  목: "목요일",
+  금: "금요일",
+  토: "토요일",
+};
 
 export default function WorkingRest() {
   const navigate = useNavigate();
@@ -20,7 +29,7 @@ export default function WorkingRest() {
     const restTime = Number(hours) * 60 + Number(minutes);
 
     // 근무요일을 배열로, 요일 지정이 아니면 빈 배열로
-    const workDays = selectedoptions.date ? selectedDays : [];
+    const workDays = selectedoptions.date ? expandDays(selectedDays) : [];
 
     // 근무 시작/종료 시간에 ":00" 붙여서 HH:mm:ss 형태로 맞추기
     const workStartTime = workTime.start ? `${workTime.start}:00` : null;
@@ -36,7 +45,7 @@ export default function WorkingRest() {
         ...prevState,
         restTime,
         workDays,
-        workDaysCount: selectedoptions.count
+        workNumber: selectedoptions.count
           ? Number(workDaysCount) || null
           : null,
         workStartTime,
@@ -134,18 +143,7 @@ export default function WorkingRest() {
       <Headersection>
         <Header text={"지원자 현황"} showBack />
       </Headersection>
-      {/* <Headersection>
-        <HeaderContainer>
-          <BackButton
-            type="button"
-            aria-label="뒤로가기"
-            onClick={() => setBackAlertOpen(true)}
-          >
-            <IoIosArrowBack />
-          </BackButton>
-          {"새 공고"}
-        </HeaderContainer>
-      </Headersection> */}
+
       <Alert_post
         open={backAlertOpen}
         onConfirm={() => {
@@ -271,6 +269,11 @@ export default function WorkingRest() {
       </Footer>
     </>
   );
+}
+
+function expandDays(abbreviatedDays) {
+  // 예: ["월", "화", "수"] → ["월요일", "화요일", "수요일"]
+  return abbreviatedDays.map((day) => dayMap[day] || day);
 }
 
 // 변경: position 추가

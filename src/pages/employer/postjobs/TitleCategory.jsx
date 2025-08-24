@@ -6,8 +6,24 @@ import styled from "styled-components";
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Icons } from "../../../components/icons/index";
-import { IoIosArrowBack } from "react-icons/io";
 import Alert_post from "../../../components/employer/Alert_post";
+
+const categoryMap = [
+  { keys: ["농사", "원예", "어업"], label: "🌱농사·원예·어업" },
+  { keys: ["운전", "배달"], label: "🚚운전·배달" },
+  { keys: ["식품", "옷", "환경 가공"], label: "🥬식품·옷·환경 가공" },
+  { keys: ["사무", "금융"], label: "📄사무·금융" },
+  { keys: ["판매"], label: "🛒판매" },
+  { keys: ["돌봄"], label: "❤️돌봄" },
+  { keys: ["청소", "미화"], label: "🧹청소·미화" },
+  { keys: ["음식", "서비스"], label: "🍲음식·서비스" },
+  { keys: ["목공", "공예", "제조"], label: "🪚목공·공예·제조" },
+  { keys: ["문화", "연구", "기술"], label: "🎨문화·연구·기술" },
+  { keys: ["건설", "시설 관리"], label: "🏗️건설·시설 관리" },
+  { keys: ["전기", "전자 수리"], label: "🔌전기·전자 수리" },
+  { keys: ["기계", "금속제작", "수리"], label: "⚙️기계·금속 제작·수리" },
+  { keys: ["기타"], label: "💬기타" },
+];
 
 export default function TitleCategory() {
   const navigate = useNavigate();
@@ -49,36 +65,27 @@ export default function TitleCategory() {
     });
   };
 
-  // 직무 분야
-  const mainTags = [
-    { id: "farm", label: "🌱 농사·원예·어업" },
-    { id: "drive", label: "🚚 운전·배달" },
-    { id: "craft", label: "🪵 목공·공예·제조" },
-  ];
-  const otherTags = [
-    "요리·주방",
-    "청소·미화",
-    "경비·보안",
-    "간병·돌봄",
-    "판매·서비스",
-    "사무·행정",
-  ];
-
   const [selectedTag, setSelectedTag] = useState(null);
-  const [showOther, setShowOther] = useState(false);
   const toggleTag = (key) => {
     setSelectedTag((prev) => (prev === key ? null : key));
   };
 
   const [backAlertOpen, setBackAlertOpen] = useState(false);
   const handleNext = () => {
+    // 근무 시작/종료 시간 UTC ISO 문자열 변환
+    const workStartTimeUTC = convertDateToLocalISOString(startDate);
+    const workEndTimeUTC = selectedoptions.count
+      ? null
+      : convertDateToLocalISOString(endDate);
+    const dbJobFields = selectedTag ? labelToDbString(selectedTag) : null;
+
     navigate("/employer/postjobs/paylocation", {
       state: {
         ...prevState,
         title,
-        startDate,
-        expiryDate: selectedoptions.count ? null : endDate, // 채용시마감 시 null 처리
-        jobFields: selectedTag ? selectedTag : null,
+        startDate: workStartTimeUTC,
+        expiryDate: workEndTimeUTC,
+        jobField: dbJobFields ? dbJobFields : null,
       },
     });
   };
@@ -87,18 +94,7 @@ export default function TitleCategory() {
       <Headersection>
         <Header text={"지원자 현황"} showBack />
       </Headersection>
-      {/* <Headersection>
-        <HeaderContainer>
-          <BackButton
-            type="button"
-            aria-label="뒤로가기"
-            onClick={() => setBackAlertOpen(true)}
-          >
-            <IoIosArrowBack />
-          </BackButton>
-          {"새 공고"}
-        </HeaderContainer>
-      </Headersection> */}
+
       <Alert_post
         open={backAlertOpen}
         onConfirm={() => {
@@ -160,35 +156,16 @@ export default function TitleCategory() {
           <Tag>
             <p>구인분야</p>
             <TagList>
-              {mainTags.map((t) => (
+              {categoryMap.map((item) => (
                 <TagPill
-                  key={t.id}
-                  data-selected={selectedTag === t.id}
-                  onClick={() => toggleTag(t.id)}
+                  key={item.label} // label을 키로 사용
+                  data-selected={selectedTag === item.label}
+                  onClick={() => toggleTag(item.label)}
                 >
-                  {t.label}
+                  {item.label}
                 </TagPill>
               ))}
-              <TagPill
-                data-variant="outline"
-                onClick={() => setShowOther((s) => !s)}
-              >
-                다른 분야 ▾
-              </TagPill>
             </TagList>
-            {showOther && (
-              <OtherWrap>
-                {otherTags.map((label) => (
-                  <TagPill
-                    key={label}
-                    data-selected={selectedTag === label}
-                    onClick={() => toggleTag(label)}
-                  >
-                    {label}
-                  </TagPill>
-                ))}
-              </OtherWrap>
-            )}
           </Tag>
         </OptionsWrapper>
       </ApplyWrapper>
@@ -198,39 +175,21 @@ export default function TitleCategory() {
     </>
   );
 }
+function convertDateToLocalISOString(dateStr) {
+  if (!dateStr) return "";
 
-// 변경: position 추가
-const HeaderContainer = styled.div`
-  position: relative;
-  width: 400px;
-  height: 70px;
-  background-color: #eaf7f0;
-  font-size: 30px;
-  font-weight: 700;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-`;
+  // dateStr 예: "2025-08-22"
+  // 시간은 자정 00:00으로 고정하거나 필요 시 수정 가능
+  return `${dateStr}T00:00`;
+}
 
-// 추가: 뒤로가기 버튼 스타일
-const BackButton = styled.button`
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  align-items: center;
-  background: transparent;
-  border: 0;
-  padding: 10px;
-  cursor: pointer;
+function labelToDbString(label) {
+  const category = categoryMap.find((cat) => cat.label === label);
+  if (!category) return "";
 
-  svg {
-    width: 32px;
-    height: 32px;
-  }
-`;
+  // keys 배열을 쉼표로 연결한 문자열 반환
+  return category.keys.join(",");
+}
 
 const Headersection = styled.div`
   position: relative;
@@ -272,13 +231,6 @@ const TagPill = styled.button`
   &[data-variant="outline"] {
     background: #ffffff;
   }
-`;
-
-const OtherWrap = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 8px;
 `;
 
 const ApplyWrapper = styled.div`
@@ -332,13 +284,6 @@ const Period = styled.div`
   gap: 10px;
   justify-content: center;
   align-items: center;
-`;
-
-const SubWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  font-size: 20px;
 `;
 
 const Selectcheckbox = styled.button`

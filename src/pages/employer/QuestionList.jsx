@@ -3,22 +3,37 @@ import Button from "../../components/common/Button";
 import QuestionProcess from "../../components/employer/QuestionProcess";
 import styled from "styled-components";
 import { Icons } from "../../components/icons/index";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+
+const employerToken = import.meta.env.VITE_EMPLOYER_TOKEN;
+const serverUrl = import.meta.env.VITE_ILDREAM_URL;
 
 export default function QuestionList() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { id, companyName, bossName, jobFields, questionList } =
+    location.state || {};
+  // const prevState = location.state || {};
+  // console.log("prevState입니다. ", prevState);
+  // console.log("id다", prevState.id);
+  console.log(
+    "id, companyname, bossname, jobfileds, quesitonlist",
+    id,
+    companyName,
+    bossName,
+    jobFields,
+    questionList
+  );
   // const handleNext = () => { navigate("../AddQuestions")}
 
   const [IsSave, setSave] = useState({});
   // const [progress, setProgress] = useState(87.5);
 
   const toggleItem = () => setSave((prev) => !prev);
-  const [questions, setQuestions] = useState([
-    "요양보호사 경력이 있으시면 말씀해주세요.",
-  ]);
+
   const [newQuestion, setNewQuestion] = useState("");
-  const [questionType, setQuestionType] = useState("yesno");
+  const [questions, setQuestions] = useState([]);
 
   // 질문 삭제
   const handleDelete = (idx) => {
@@ -32,7 +47,71 @@ export default function QuestionList() {
       setNewQuestion("");
     }
   };
-  const Catetags = ["돌봄", "식품·옷·환경 가공", "목공·공예·제조"];
+  const [tags, setTags] = useState(() => {
+    try {
+      return JSON.parse(sessionStorage.getItem("employer.jobFields") || "[]");
+    } catch {
+      return [];
+    }
+  });
+  // useEffect(() => {
+  //   const jobPostId = id;
+  //   if (!jobPostId) {
+  //     alert("잘못된 접근입니다: 모집 공고 ID가 없습니다.");
+  //     return;
+  //   }
+
+  //   fetch(`${serverUrl}/jobPosts/${jobPostId}/questionList`, {
+  //     headers: {
+  //       token: employerToken,
+  //       "Content-Type": "application/json",
+  //     },
+  //   })
+  //     .then((res) => res.json())
+  //     .then((data) => {
+  //       if (data.success && data.items) {
+  //         setQuestions(data.items);
+  //       } else {
+  //         setQuestions([]);
+  //       }
+  //     })
+  //     .catch(console.error);
+  // }, [prevState]);
+
+  const handleNext = async () => {
+    try {
+      const jobPostId = id;
+      if (!jobPostId) {
+        alert("잘못된 접근입니다: 모집 공고 ID가 없습니다.");
+        return;
+      }
+
+      const response = await fetch(
+        `${serverUrl}/jobPosts/${jobPostId}/questionList`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            token: employerToken,
+          },
+          body: JSON.stringify({
+            items: questions,
+            saveQuestionList: IsSave,
+          }),
+        }
+      );
+
+      const data = await response.json();
+      if (data.success) {
+        navigate("/employer/postjobs/postcomplete");
+      } else {
+        alert("질문 저장에 실패했습니다: " + data.message);
+      }
+    } catch (error) {
+      console.error(error);
+      alert("서버 요청 중 오류가 발생했습니다.");
+    }
+  };
 
   return (
     <>
@@ -42,22 +121,22 @@ export default function QuestionList() {
           <Icons.Building color="var(--Foundation-Green-Normal)" size={55} />
         </ProfileImage>
         <ContentWrapper>
-          <SubWrapper style={{ fontWeight: "700" }}>{"기업명"}</SubWrapper>
+          <SubWrapper style={{ fontWeight: "700" }}>{companyName}</SubWrapper>
           <SubWrapper style={{ fontWeight: "700" }}>
-            {"대표자명"} <div>{"강길동"}</div>
+            {"대표자명"} <div>{bossName}</div>
+          </SubWrapper>
+          <SubWrapper style={{ fontWeight: "700" }}>
+            구인분야
+            <TagRow>
+              {jobFields.slice(0, 3).map((t, i) => (
+                <Tag key={i}>{t}</Tag>
+              ))}
+            </TagRow>
           </SubWrapper>
         </ContentWrapper>
       </ProfileWrapper>
-      <CategoryWrapper>
-        구인분야
-        <TagRow>
-          {Catetags.slice(0, 3).map((t, i) => (
-            <CateTag key={i}>{t}</CateTag>
-          ))}
-        </TagRow>
-      </CategoryWrapper>
       <Process>
-        <QuestionProcess />
+        <QuestionProcess questions={questionList} setQuestions={setQuestions} />
       </Process>
       <Footer>
         <Button text="저장하기" type="White" />
@@ -71,6 +150,15 @@ const TagRow = styled.div`
   flex-wrap: nowrap;
   gap: 6px;
   //   padding-top: 10px;
+`;
+
+const Tag = styled.span`
+  display: inline-flex;
+  align-items: center;
+  padding: 5px;
+  border-radius: 5px;
+  border: 1px solid #000;
+  font-size: 15px;
 `;
 
 const CateTag = styled.span`
@@ -115,7 +203,7 @@ const SubWrapper = styled.div`
   display: flex;
   gap: 5px;
   font-size: 20px;
-
+  align-items: center;
   div {
     font-weight: 400;
   }

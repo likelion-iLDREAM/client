@@ -8,6 +8,22 @@ import { useNavigate } from "react-router-dom";
 
 const employerToken = import.meta.env.VITE_EMPLOYER_TOKEN;
 const serverUrl = import.meta.env.VITE_ILDREAM_URL;
+const categoryMap = [
+  { keys: ["농사", "원예", "어업"], label: "🌱농사·원예·어업" },
+  { keys: ["운전", "배달"], label: "🚚운전·배달" },
+  { keys: ["식품", "옷", "환경 가공"], label: "🥬식품·옷·환경 가공" },
+  { keys: ["사무", "금융"], label: "📄사무·금융" },
+  { keys: ["판매"], label: "🛒판매" },
+  { keys: ["돌봄"], label: "❤️돌봄" },
+  { keys: ["청소", "미화"], label: "🧹청소·미화" },
+  { keys: ["음식", "서비스"], label: "🍲음식·서비스" },
+  { keys: ["목공", "공예", "제조"], label: "🪚목공·공예·제조" },
+  { keys: ["문화", "연구", "기술"], label: "🎨문화·연구·기술" },
+  { keys: ["건설", "시설 관리"], label: "🏗️건설·시설 관리" },
+  { keys: ["전기", "전자 수리"], label: "🔌전기·전자 수리" },
+  { keys: ["기계", "금속제작", "수리"], label: "⚙️기계·금속 제작·수리" },
+  { keys: ["기타"], label: "💬기타" },
+];
 
 export default function ProfileEmployerEdit() {
   const navigate = useNavigate();
@@ -34,14 +50,7 @@ export default function ProfileEmployerEdit() {
   const [addressDetail, setAddressDetail] = useState(() =>
     (sessionStorage.getItem("signup.addressDetail") || "").trim()
   );
-  // const [jobFields, setJobFields] = useState(() => {
-  //   try {
-  //     return JSON.parse(sessionStorage.getItem("employer.jobFields") || "[]");
-  //   } catch {
-  //     return [];
-  //   }
-  // });
-  // 구인분야 태그 (sessionStorage 저장된 배열 불러오기)
+
   const [selectedTags, setSelectedTags] = useState(() => {
     try {
       return JSON.parse(sessionStorage.getItem("employer.jobFields")) || [];
@@ -49,63 +58,78 @@ export default function ProfileEmployerEdit() {
       return [];
     }
   });
-  // console.log("employerToken:", employerToken);
+  const [fullLocation, setFullLocation] = useState("");
 
   // 필드 값 저장 (sessionStorage 동기화 + 페이지 이동)
-  const handleSave = () => {
-    sessionStorage.setItem("employer.companyName", companyName);
-    sessionStorage.setItem("employer.email", email);
-    sessionStorage.setItem("employer.bossName", bossName);
-    sessionStorage.setItem("signup.phone", phone);
-    sessionStorage.setItem("employer.companyNumber", companyNumber);
-    sessionStorage.setItem("signup.address", address);
-    sessionStorage.setItem("signup.addressDetail", addressDetail);
-    sessionStorage.setItem("employer.jobFields", JSON.stringify(selectedTags));
-    navigate("/employer/profile");
+  // const handleSave = () => {
+  //   sessionStorage.setItem("employer.companyName", companyName);
+  //   sessionStorage.setItem("employer.email", email);
+  //   sessionStorage.setItem("employer.bossName", bossName);
+  //   sessionStorage.setItem("signup.phone", phone);
+  //   sessionStorage.setItem("employer.companyNumber", companyNumber);
+  //   sessionStorage.setItem("signup.address", address);
+  //   sessionStorage.setItem("signup.addressDetail", addressDetail);
+  //   sessionStorage.setItem("employer.jobFields", JSON.stringify(selectedTags));
+  //   navigate("/employer/profile");
+  // };
+  console.log("labeltodbstring", labelToDbString(selectedTags));
+  const handleSave = async () => {
+    try {
+      const jobFieldsString = selectedTagsToDbString(selectedTags);
+      const payload = {
+        companyName,
+        email,
+        bossName,
+        phone,
+        companyNumber,
+        companyLocation: fullLocation, // 필요시 합쳐서 보내기
+        jobFields: [jobFieldsString],
+      };
+
+      const response = await fetch(`${serverUrl}/employers/me`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          token: employerToken,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        alert("정보가 성공적으로 저장되었습니다.");
+        // 필요하면 추가 동작 (예: 화면 이동, 상태 갱신)
+      } else {
+        alert("저장에 실패했습니다: " + data.message);
+      }
+    } catch (error) {
+      console.error(error);
+      alert("서버 요청 중 오류가 발생했습니다.");
+    }
   };
-  // fetch("/api/employer/me")
-  //   .then((response) => response.json())
-  //   .then((data) => {
-  //     console.log(data);
-  //     // data 구조 확인 가능
-  //   })
-  //   .catch((error) => console.error(error));
 
-  // fetch(`${serverUrl}/employers/me`, {
-  //   headers: {
-  //     token: `${employerToken}`,
-  //   },
-  // })
-  //   .then((res) => {
-  //     if (!res.ok) {
-  //       throw new Error(`HTTP error, status = ${res.status}`);
-  //     }
-  //     console.log(res);
-  //     return res.json();
-  //   })
-  //   .then((data) => {
-  //     console.log("데이터 받아옴", data);
-  //   })
-  //   .catch((err) => {
-  //     console.error("API 요청 실패 에러:", err);
-  //   });
-
+  console.log("selected item", selectedTags);
   useEffect(() => {
     fetch(`${serverUrl}/employers/me`, {
-      headers: {
-        token: `${employerToken}`,
-      },
+      headers: { token: employerToken },
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log("받아온 고용주 정보:", data);
         if (data.success && data.data) {
+          // 데이터 가공 및 상태 업데이트 진행
           const emp = data.data;
 
           // companyLocation 분리
           const locationParts = (emp.companyLocation || "").split(" ");
           const address = locationParts.slice(0, 2).join(" ");
           const addressDetail = locationParts.slice(2).join(" ");
+          const rawJobFields = emp.jobFields;
+          setFullLocation(emp.companyLocation);
+          if (Array.isArray(rawJobFields)) {
+            setSelectedTags(mapDbToLabels(rawJobFields));
+          } else {
+            setSelectedTags(mapDbToLabels(rawJobFields));
+          }
 
           setCompanyName(emp.companyName || "");
           setEmail(emp.email || "");
@@ -114,9 +138,8 @@ export default function ProfileEmployerEdit() {
           setcompanyNumber(emp.companyNumber || "");
           setAddress(address);
           setAddressDetail(addressDetail);
-          // setJobFields(emp.jobFields || []);
-          setSelectedTags(emp.jobFields || []);
-          // 필요한 필드 추가로 초기화
+          console.log("jobfields", emp.jobFields);
+          setSelectedTags(emp.jobFields); // 예: "문화,연구,기술"
         }
       })
       .catch(console.error);
@@ -199,6 +222,61 @@ export default function ProfileEmployerEdit() {
     </>
   );
 }
+
+const handleTagToggle = (tag) => {
+  if (selectedTags.includes(tag)) {
+    // 이미 선택된 태그면 선택 해제
+    setSelectedTags(selectedTags.filter((t) => t !== tag));
+  } else {
+    // 최대 3개까지 선택 가능
+    if (selectedTags.length < 3) {
+      setSelectedTags([...selectedTags, tag]);
+    } else {
+      alert("최대 3개까지만 선택할 수 있습니다.");
+    }
+  }
+};
+
+function mapDbToLabels(input) {
+  if (!input) return [];
+
+  let parts = [];
+
+  if (Array.isArray(input)) {
+    parts = input;
+  } else if (typeof input === "string") {
+    parts = input
+      .split(/[,·\s]+/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+  } else {
+    return [];
+  }
+
+  const labels = [];
+
+  parts.forEach((part) => {
+    for (const category of categoryMap) {
+      if (category.keys.some((key) => part.includes(key))) {
+        if (!labels.includes(category.label)) {
+          labels.push(category.label);
+        }
+        break;
+      }
+    }
+  });
+
+  return labels;
+}
+
+function labelToDbString(label) {
+  const category = categoryMap.find((cat) => cat.label === label);
+  if (!category) return "";
+
+  // keys 배열을 쉼표로 연결한 문자열 반환
+  return category.keys.join(",");
+}
+
 function convertPhoneNumber(phoneNumber) {
   if (!phoneNumber) return "";
 
@@ -217,6 +295,31 @@ function convertPhoneNumber(phoneNumber) {
 
   // 그 밖의 경우는 원본 리턴
   return phoneNumber;
+}
+function removeEmojis(text) {
+  return text
+    .replace(
+      /[\u{1F300}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}]/gu,
+      ""
+    )
+    .trim();
+}
+function selectedTagsToDbString(labels) {
+  const allKeys = [];
+
+  labels.forEach((label) => {
+    const cleanLabel = removeEmojis(label);
+    const category = categoryMap.find((cat) => cat.label.includes(cleanLabel));
+    if (category) {
+      category.keys.forEach((key) => {
+        if (!allKeys.includes(key)) {
+          allKeys.push(key);
+        }
+      });
+    }
+  });
+
+  return allKeys.join(",");
 }
 
 const TagRow = styled.div`
@@ -509,6 +612,7 @@ function Section({ jobFields, setJobFields }) {
       { id: 12, label: "🔌전기·전자 수리" },
       { id: 13, label: "⚙️기계·금속 제작·수리" },
     ],
+    [{ id: 14, label: "💬기타" }],
   ];
   const idToLabel = {};
   rows.flat().forEach((o) => (idToLabel[o.id] = o.label));
@@ -519,15 +623,15 @@ function Section({ jobFields, setJobFields }) {
     const label = idToLabel[id];
     if (!label) return;
 
-    let updated = [...jobFields];
     if (selectedSet.has(label)) {
-      updated = updated.filter((t) => t !== label);
+      // 이미 선택된 태그이면 선택 해제 (빈 배열로 만듦)
+      setJobFields([]);
     } else {
-      if (jobFields.length >= 3) return; // 최대 3개 제한
-      updated.push(label);
+      // 새로 선택 시 기존 선택 모두 제거하고 하나만 선택
+      setJobFields([label]);
     }
-    setJobFields(updated);
   };
+
   // // jobFields 상태가 바뀔 때마다 세션스토리지에 반영
   // useEffect(() => {
   //   // 선택된 id 리스트가 아닌 label 리스트를 저장하므로 jobFields 자체 저장하면 됨
@@ -550,8 +654,6 @@ function Section({ jobFields, setJobFields }) {
           ))}
         </div>
       ))}
-
-      <div className="helper">{jobFields.length} / 3 선택됨</div>
     </SectionContainer>
   );
 }
