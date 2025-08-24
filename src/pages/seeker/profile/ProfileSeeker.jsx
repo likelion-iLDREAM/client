@@ -18,7 +18,9 @@ export default function ProfileSeeker() {
   const [activeTab, setActiveTab] = useState("guide");
   const navigate = useNavigate();
   const hasDraft = true;
-  const name = "홍길동"; // (요청사항 외: 그대로 둠)
+  const [name, setName] = useState(() =>
+    (sessionStorage.getItem("signup.name") || "").trim()
+  );
   const [tags, setTags] = useState(() => {
     try {
       return JSON.parse(sessionStorage.getItem("signup.interests") || "[]");
@@ -27,9 +29,20 @@ export default function ProfileSeeker() {
     }
   });
 
+  const [resumeCount, setResumeCount] = useState(() => {
+    try {
+      const arr = JSON.parse(sessionStorage.getItem("resume.list") || "[]");
+      return Array.isArray(arr) ? arr.length : 0;
+    } catch {
+      return 0;
+    }
+  });
+
   // 화면으로 돌아왔을 때도 최신값 반영 (프로필 편집 후 복귀 시)
   useEffect(() => {
     const sync = () => {
+      const n = (sessionStorage.getItem("signup.name") || "").trim();
+      setName(n);
       try {
         const next = JSON.parse(
           sessionStorage.getItem("signup.interests") || "[]"
@@ -38,11 +51,20 @@ export default function ProfileSeeker() {
       } catch {
         setTags([]);
       }
+      try {
+        const arr = JSON.parse(sessionStorage.getItem("resume.list") || "[]");
+        setResumeCount(Array.isArray(arr) ? arr.length : 0);
+      } catch {
+        setResumeCount(0);
+      }
     };
     window.addEventListener("focus", sync);
-    // 최초 마운트 시에도 동기화 한번
-    sync();
-    return () => window.removeEventListener("focus", sync);
+    window.addEventListener("storage", sync); // 다른 탭에서 변경 시
+    sync(); // 최초 1회
+    return () => {
+      window.removeEventListener("focus", sync);
+      window.removeEventListener("storage", sync);
+    };
   }, []);
   const workingList = [
     {
@@ -80,7 +102,7 @@ export default function ProfileSeeker() {
             <IoPersonCircleOutline size={83} />
           </Avatar>
           <TopRight>
-            <Name>{name}</Name>
+            <Name>{name || "고객님"}</Name>
             <TagRow>
               {tags.slice(0, 3).map((t, i) => (
                 <Tag key={i}>{t}</Tag>
@@ -184,7 +206,7 @@ export default function ProfileSeeker() {
         {/* 지원 현황 */}
         <Submenu onClick={() => navigate("/homeseeker/resume")}>
           <div>
-            내 이력 확인하기<span>{0}회</span>
+            내 이력 확인하기<span>{resumeCount}회</span>
           </div>
           <IoIosArrowForward />
         </Submenu>
@@ -394,6 +416,7 @@ const Submenu = styled.div`
   padding: 10px 20px;
   align-items: center;
   gap: 15px;
+  margin-bottom: 100px;
   align-self: stretch;
   border-radius: 7px;
   background: var(--Foundation-Green-Light, #eaf7f0);

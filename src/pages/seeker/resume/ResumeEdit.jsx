@@ -1,12 +1,82 @@
 import styled from "styled-components";
 import Header from "../../../components/common/Header";
 import Button from "../../../components/common/Button";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export default function ResumeEdit() {
-  // 입력값
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // 어떤 항목을 수정할지 식별 (Resume.jsx에서 state로 넘김)
+  const editId = location?.state?.id ?? null;
+
+  // 세션에서 전체 리스트 로드
+  const [list, setList] = useState(() => {
+    try {
+      const raw = sessionStorage.getItem("resume.list");
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  // 편집 대상 찾기 (id 없으면 마지막 항목 fallback)
+  const target = useMemo(() => {
+    if (!Array.isArray(list) || list.length === 0) return null;
+    if (editId == null) return list[list.length - 1];
+    return list.find((it) => it.id === editId) ?? list[list.length - 1];
+  }, [list, editId]);
+
+  // ====== UI 상태 ======
   const [company, setCompany] = useState("");
   const [duty, setDuty] = useState("");
+  const [selectedTag, setSelectedTag] = useState(""); // 1개 선택
+  const [showOther, setShowOther] = useState(false);
+
+  // 근무지역
+  const [sido] = useState("서울특별시");
+  const [gu, setGu] = useState("");
+
+  // 근무기간
+  const [startDate, setStartDate] = useState(""); // yyyy-mm-dd
+  const [endDate, setEndDate] = useState(""); // yyyy-mm-dd
+
+  // 초기화: target에서 상태로 주입
+  useEffect(() => {
+    if (!target) {
+      alert("수정할 이력이 없습니다.");
+      navigate("/homeseeker/resume");
+      return;
+    }
+    setCompany(target.company || "");
+    setDuty(target.duty || "");
+    setSelectedTag(target.jobTag || "");
+
+    // 주소에서 구 추출 (Add에서 addr은 `${sido} ${gu}`)
+    const m = (target.addr || "").match(/([가-힣]+구)/);
+    setGu(m ? m[1] : "");
+
+    // 날짜 복원
+    // 1순위: 새로 저장된 startIso/endIso가 있으면 그대로 사용
+    if (target.startIso && target.endIso) {
+      setStartDate(target.startIso);
+      setEndDate(target.endIso);
+    } else {
+      // 2순위: "YYYY.MM ~ YYYY.MM ..." 형태에서 대략 복원(일자는 01로)
+      // 예: "2020.01 ~ 2021.06 (1년 5개월)"
+      const dm = (target.date || "").match(
+        /\s*(\d{4})\.(\d{2})\s*~\s*(\d{4})\.(\d{2})/
+      );
+      if (dm) {
+        setStartDate(`${dm[1]}-${dm[2]}-01`);
+        setEndDate(`${dm[3]}-${dm[4]}-01`);
+      } else {
+        setStartDate("");
+        setEndDate("");
+      }
+    }
+  }, [target, navigate]);
 
   // 직무 분야
   const mainTags = [
@@ -15,24 +85,16 @@ export default function ResumeEdit() {
     { id: "craft", label: "🪵 목공·공예·제조" },
   ];
   const otherTags = [
-    "문화·연구·기술",
-    "식품·옷·환경 가공",
-    "사무·금융",
-    "돌봄",
-    "판매",
-    "음식·서비스",
-    "전기·전자 수리",
-    "기계·금속 제작·수리",
+    "🎨문화·연구·기술",
+    "🥬식품·옷·환경 가공",
+    "📄사무·금융",
+    "❤️돌봄",
+    "🛒판매",
+    "🍲음식·서비스",
+    "🔌전기·전자 수리",
+    "⚙️기계·금속 제작·수리",
   ];
-  const [selectedTags, setSelectedTags] = useState([]);
-  const [showOther, setShowOther] = useState(false);
-  const toggleTag = (key) =>
-    setSelectedTags((prev) =>
-      prev.includes(key) ? prev.filter((t) => t !== key) : [...prev, key]
-    );
 
-  // 근무지역
-  const [sido] = useState("서울특별시");
   const seoulGus = [
     "종로구",
     "중구",
@@ -60,11 +122,8 @@ export default function ResumeEdit() {
     "송파구",
     "강동구",
   ];
-  const [gu, setGu] = useState("");
 
-  // 근무기간
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  // 날짜 유틸
   const addMonths = (m) => {
     if (!startDate) return;
     const d = new Date(startDate);
@@ -73,6 +132,67 @@ export default function ResumeEdit() {
     const mm = String(d.getMonth() + 1).padStart(2, "0");
     const dd = String(d.getDate()).padStart(2, "0");
     setEndDate(`${yyyy}-${mm}-${dd}`);
+  };
+  const fmtYYYYMM = (iso) => {
+    if (!iso) return "";
+    const [y, m] = iso.split("-");
+    return `${y}.${m}`;
+  };
+  const diffMonths = (s, e) => {
+    const sd = new Date(s);
+    const ed = new Date(e);
+    if (isNaN(sd) || isNaN(ed) || ed < sd) return 0;
+    return (
+      (ed.getFullYear() - sd.getFullYear()) * 12 +
+      (ed.getMonth() - sd.getMonth())
+    );
+  };
+  const humanizePeriod = (months) => {
+    if (!months || months <= 0) return "";
+    if (months >= 12) {
+      const y = Math.floor(months / 12);
+      const m = months % 12;
+      return ` (${y}년${m ? ` ${m}개월` : ""})`;
+    }
+    return ` (${months}개월)`;
+  };
+
+  const handleSave = () => {
+    if (
+      !target ||
+      !company.trim() ||
+      !duty.trim() ||
+      !selectedTag ||
+      !gu ||
+      !startDate ||
+      !endDate
+    ) {
+      alert(
+        "업체명, 직무, 직무 분야 1개, 근무지역, 근무기간을 모두 입력해주세요."
+      );
+      return;
+    }
+
+    const months = diffMonths(startDate, endDate);
+    const period = `${fmtYYYYMM(startDate)} ~ ${fmtYYYYMM(
+      endDate
+    )}${humanizePeriod(months)}`;
+
+    const updated = {
+      ...target,
+      company: company.trim(),
+      duty: duty.trim(),
+      jobTag: selectedTag,
+      addr: `${sido} ${gu}`,
+      date: period,
+      startIso: startDate, // 새 구조 (편집 재진입 시 복원용)
+      endIso: endDate, // 새 구조 (편집 재진입 시 복원용)
+      // title은 요구사항대로 그대로 유지("[지역] 구인공고명")
+    };
+
+    const next = list.map((it) => (it.id === updated.id ? updated : it));
+    sessionStorage.setItem("resume.list", JSON.stringify(next));
+    navigate("/homeseeker/resume");
   };
 
   return (
@@ -99,13 +219,13 @@ export default function ResumeEdit() {
         </Input>
 
         <Tag>
-          <p>직무 분야</p>
+          <p>직무 분야 (1개 선택)</p>
           <TagList>
             {mainTags.map((t) => (
               <TagPill
                 key={t.id}
-                data-selected={selectedTags.includes(t.id)}
-                onClick={() => toggleTag(t.id)}
+                data-selected={selectedTag === t.label}
+                onClick={() => setSelectedTag(t.label)}
               >
                 {t.label}
               </TagPill>
@@ -122,8 +242,8 @@ export default function ResumeEdit() {
               {otherTags.map((label) => (
                 <TagPill
                   key={label}
-                  data-selected={selectedTags.includes(label)}
-                  onClick={() => toggleTag(label)}
+                  data-selected={selectedTag === label}
+                  onClick={() => setSelectedTag(label)}
                 >
                   {label}
                 </TagPill>
@@ -174,40 +294,13 @@ export default function ResumeEdit() {
       </Info>
 
       <Tap>
-        <Button type={"White"} text={"수정하기"} />
+        <Button type={"White"} text={"수정하기"} onClick={handleSave} />
       </Tap>
     </AddContainer>
   );
 }
 
 const AddContainer = styled.div``;
-
-const TopRow = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  padding: 8px 30px 0 30px;
-`;
-
-const VisibilityBadge = styled.button`
-  all: unset;
-  cursor: pointer;
-  padding: 6px 12px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 700;
-  border: 1px solid;
-
-  &[data-state="public"] {
-    color: #d92d20;
-    background: #ffffff;
-    border-color: #fecdd3;
-  }
-  &[data-state="private"] {
-    color: #5f6368;
-    background: #f1f3f4;
-    border-color: #e0e3e7;
-  }
-`;
 
 const Info = styled.div`
   display: flex;
@@ -343,28 +436,6 @@ const SmallChip = styled.button`
   border: 1px solid #bfbfbf;
   background: #ffffff;
   font-size: 14px;
-`;
-
-const Text = styled.div`
-  p {
-    font-size: 20px;
-    font-weight: 700;
-    margin: 0 0 8px 0;
-  }
-`;
-
-const TextArea = styled.textarea`
-  width: 320px;
-  padding: 10px 12px;
-  border-radius: 7px;
-  border: 1px solid var(--Foundation-Black-black-6, #bfbfbf);
-  background: var(--Foundation-surface-White, #fff);
-  font-size: 16px;
-  color: #000;
-
-  ::placeholder {
-    color: var(--Foundation-Black-black-7, #8c8c8c);
-  }
 `;
 
 const Tap = styled.div`
