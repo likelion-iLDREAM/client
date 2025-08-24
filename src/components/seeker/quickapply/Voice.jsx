@@ -1,22 +1,29 @@
+// components/seeker/quickapply/Voice.jsx
 import styled from "styled-components";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { FiMic } from "react-icons/fi";
 import { IoInformationCircle } from "react-icons/io5";
+import { useState } from "react";
 
-export default function Voice() {
-  const [answer, setAnswer] = useState("");
+export default function Voice({
+  value = "",
+  onChange = () => {},
+  placeholder = "이곳에 질문에 대한 답변을 남겨주세요.",
+}) {
   const [isRecording, setIsRecording] = useState(false);
-  const [supportMsg, setSupportMsg] = useState(""); // 브라우저 지원/권한 안내
-  const questionTitle = "요양보호사 경력이 있으시면 말씀해주세요.";
-
+  const [supportMsg, setSupportMsg] = useState("");
   const recognitionRef = useRef(null);
-  const shouldKeepAliveRef = useRef(false); // onend에서 재시작 여부
+  const keepAliveRef = useRef(false);
+  const valueRef = useRef(value);
 
-  // 음성 인식 초기화
+  // 외부 value 변화 추적해 onresult에서 이어붙일 때 사용
+  useEffect(() => {
+    valueRef.current = value;
+  }, [value]);
+
   useEffect(() => {
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
-
     if (!SpeechRecognition) {
       setSupportMsg(
         "이 브라우저에서는 음성 인식을 지원하지 않습니다. (Chrome/Edge 권장)"
@@ -26,27 +33,24 @@ export default function Voice() {
 
     const rec = new SpeechRecognition();
     rec.lang = "ko-KR";
-    rec.continuous = true; // 계속 듣기
-    rec.interimResults = true; // 중간 결과도 받기
+    rec.continuous = true;
+    rec.interimResults = true;
 
     rec.onresult = (event) => {
       let finalText = "";
-      // 새로 들어온 결과만 처리
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const res = event.results[i];
         const transcript = res[0].transcript.trim();
-        if (res.isFinal) {
-          finalText += transcript + " ";
-        }
+        if (res.isFinal) finalText += transcript + " ";
       }
       if (finalText) {
-        // 최종 인식된 문장을 누적
-        setAnswer((prev) => (prev ? `${prev} ${finalText}`.trim() : finalText));
+        const next =
+          (valueRef.current ? `${valueRef.current} ` : "") + finalText;
+        onChange(next.trim());
       }
     };
 
     rec.onerror = (e) => {
-      // 권한 거부/차단 등 사용자 안내
       if (e.error === "not-allowed" || e.error === "service-not-allowed") {
         setSupportMsg(
           "마이크 권한이 필요합니다. 브라우저 설정에서 허용해주세요."
@@ -54,79 +58,70 @@ export default function Voice() {
       } else if (e.error !== "no-speech") {
         setSupportMsg(`음성 인식 오류: ${e.error}`);
       }
-      // 오류 발생 시 녹음 상태 해제
-      shouldKeepAliveRef.current = false;
+      keepAliveRef.current = false;
       setIsRecording(false);
     };
 
     rec.onend = () => {
-      // 사용자가 끄지 않았으면 자동 재시작(모바일 환경 등에서 유용)
-      if (shouldKeepAliveRef.current) {
+      if (keepAliveRef.current) {
         try {
           rec.start();
-        } catch {
-          // 연속 start 예외 무시
-        }
+        } catch {}
       }
     };
 
     recognitionRef.current = rec;
-
     return () => {
       try {
         rec.stop();
       } catch {}
       recognitionRef.current = null;
-      shouldKeepAliveRef.current = false;
+      keepAliveRef.current = false;
     };
-  }, []);
+  }, [onChange]);
 
   const startRecording = () => {
     if (!recognitionRef.current) return;
     setSupportMsg("");
-    shouldKeepAliveRef.current = true;
+    keepAliveRef.current = true;
     try {
       recognitionRef.current.start();
       setIsRecording(true);
-    } catch {
-      // 이미 실행 중일 수 있음
-    }
+    } catch {}
   };
 
   const stopRecording = () => {
     if (!recognitionRef.current) return;
-    shouldKeepAliveRef.current = false;
+    keepAliveRef.current = false;
     try {
       recognitionRef.current.stop();
     } catch {}
     setIsRecording(false);
   };
 
-  const toggleRecord = () => {
+  const toggle = () => {
     if (!recognitionRef.current) {
       return setSupportMsg(
         "이 브라우저에서는 음성 인식을 지원하지 않습니다. (Chrome/Edge 권장)"
       );
     }
-    if (isRecording) stopRecording();
-    else startRecording();
+    isRecording ? stopRecording() : startRecording();
   };
 
   return (
     <Container>
-      <Title>{questionTitle}</Title>
       <AnswerArea>
         <AnswerTextarea
-          placeholder="이곳에 질문에 대한 답변을 남겨주세요."
-          value={answer}
-          onChange={(e) => setAnswer(e.target.value)}
+          placeholder={placeholder}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
         />
 
         <MicSection>
           <MicButton
             type="button"
             aria-pressed={isRecording}
-            onClick={toggleRecord}
+            onClick={toggle}
             $active={isRecording}
           >
             <FiMic size={50} />
@@ -139,7 +134,7 @@ export default function Voice() {
           <InfoText>
             상자에 직접 입력하거나 상단의 녹음 버튼을 누르고 말씀해주세요.
             <br />
-            저희가 받아 적어드릴게요!
+            받아 적어드릴게요!
           </InfoText>
         </InfoBanner>
 
@@ -150,15 +145,6 @@ export default function Voice() {
 }
 
 const Container = styled.div``;
-
-const Title = styled.h2`
-  margin: 0 0 12px 0;
-  padding: 0 10px;
-  font-size: 26px;
-  font-weight: 800;
-  line-height: 1.35;
-  color: #18a058;
-`;
 
 const AnswerTextarea = styled.textarea`
   width: 100%;
