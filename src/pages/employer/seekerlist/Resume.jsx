@@ -4,15 +4,128 @@ import Enter from "../../../components/common/Enter";
 import styled from "styled-components";
 import { Icons } from "../../../components/icons/index";
 import { IoIosArrowBack } from "react-icons/io";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
+
+const mockData = {
+  applicationId: 2,
+  jobPostId: 2,
+  workerId: 1,
+  status: "임시저장",
+  submissionTime: "2025-08-23T21:05:05.084545",
+  applyMethod: "간편지원",
+  workerName: "이현서",
+  workerBirthDate: "2025-08-22",
+  workerGender: "여성",
+  workerPhoneNumber: "+821012345678",
+  workerAddress: "서강대학교",
+  answers: [
+    {
+      questionId: 2,
+      text: "이것은 답변입니다",
+      optionIds: null,
+    },
+    {
+      questionId: 1,
+      text: "이것은 답변입니다",
+      optionIds: null,
+    },
+  ],
+  question: [
+    {
+      id: 1,
+      text: "이름이 뭐에요",
+      type: "예/아니요",
+      options: ["예", "아니요"],
+    },
+    {
+      id: 2,
+      text: "전화번호 뭐에요",
+      type: "서술형",
+      options: [],
+    },
+  ],
+};
+
+const mockhistory = [
+  {
+    id: 2,
+    workerId: 1,
+    title: "근무이력",
+    companyName: "회사이름",
+    startDate: "2025-08-11",
+    endDate: "2025-08-22",
+    workplace: "마포",
+    mainDuties: "일한내용",
+    isOpening: true,
+    jobField: "음식,서비스",
+  },
+  {
+    id: 3,
+    workerId: 1,
+    title: "22근무이력",
+    companyName: "회사이름",
+    startDate: "2025-08-11",
+    endDate: "2025-10-30",
+    workplace: "용산",
+    mainDuties: "일한내용",
+    isOpening: true,
+    jobField: "판매",
+  },
+];
 
 export default function Resume() {
   const navigate = useNavigate("");
+  const location = useLocation();
+
+  // 이전 페이지에서 받은 값
+  const applicationId = location.state || {};
+  console.log("prevdata입니다.", applicationId);
+
+  // 실제 API 사용 시 아래 fetch 로직 주석 해제 후 사용
+  const [applicationData, setApplicationData] = useState(mockData);
+
+  // useEffect(() => {
+  //   if (!applicationId) return;
+  //   fetch(`/api/applications/${applicationId}`)
+  //     .then((res) => res.json())
+  //     .then((data) => {
+  //       if (data.success) {
+  //         setApplicationData(data.data);
+  //       }
+  //     })
+  //     .catch((error) => console.error(error));
+  // }, [applicationId]);
+
+  // 날짜 포맷팅 (예: 생년월일)
+  const birthDateFormatted = new Date(
+    applicationData.workerBirthDate
+  ).toLocaleDateString("ko-KR", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+
+  function formatPhoneNumber(phone) {
+    // +82로 시작하는 경우 0으로 시작하도록 변환
+    // +821012345678 → 01012345678
+    let num = phone.startsWith("+82") ? "0" + phone.slice(3) : phone;
+
+    // 일반적인 010-1234-5678 형태로 변환
+    // 0으로 시작하는 11자리 번호 포맷팅 예제
+    const match = num.match(/^(\d{3})(\d{4})(\d{4})$/);
+    if (match) {
+      return `${match[1]}-${match[2]}-${match[3]}`;
+    }
+    return phone; // 포맷에 맞지 않으면 원본 반환
+  }
+
   const handleBack = () => {
     navigate("/employer/seekerlist/seekerlist"); //navigate("/employer/seekerlist/seekerlist/${joblist.id}");
   };
   const savedCategory = "♥️돌봄"; // 예: 따로 저장해둔 정보
   const currentFilter = ["♥️돌봄", "돌봄", "돌봄"]; // 예: 필터 안 내용
+
   return (
     <>
       <Headersection>
@@ -29,26 +142,34 @@ export default function Resume() {
       <Menu>
         <Submenu>
           이름
-          <span>홍길동</span>
+          <span>{applicationData.workerName}</span>
           생년월일
-          <span>1970.01.20</span>
+          <span>{birthDateFormatted}</span>
           성별
-          <span>남성</span>
+          <span>{applicationData.workerGender}</span>
           전화번호
-          <span>010-2345-6789</span>
+          <span>{formatPhoneNumber(applicationData.workerPhoneNumber)}</span>
           주소
-          <span>서울특별시 00구 00동 00로</span>
+          <span>{applicationData.workerAddress}</span>
         </Submenu>
         <Submenu>
           추가질문
-          <span>1. 요양보호사 경력이 있으시면 말씀해주세요.</span>
-          <EnterWrapper>
-            <input readOnly placeholder="요양보호사 경력이 3년 있습니다." />
-          </EnterWrapper>
-          <span>2.(준)고령자(50세 이상)을 만족하시나요?</span>
-          <EnterWrapper>
-            <input readOnly placeholder="네, 올해 만 54세입니다." />
-          </EnterWrapper>
+          {applicationData.question.map((q, idx) => (
+            <div className="singlequestion" key={q.id}>
+              <span>
+                {idx + 1}. {q.text}
+              </span>
+              <EnterWrapper>
+                <input
+                  readOnly
+                  placeholder={
+                    applicationData.answers.find((a) => a.questionId === q.id)
+                      ?.text || ""
+                  }
+                />
+              </EnterWrapper>
+            </div>
+          ))}
         </Submenu>
         <Submenu>
           지원자 이력
@@ -207,6 +328,12 @@ const Submenu = styled.div`
     align-self: stretch;
     margin-top: 10px;
     cursor: pointer;
+  }
+
+  div.singlequestion {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
   }
 `;
 

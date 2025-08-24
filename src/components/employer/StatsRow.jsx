@@ -3,26 +3,19 @@ import styled from "styled-components";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 
-export default function StatsRow() {
-  const value = 80; // 원형 차트 값
-  const maxValue = 100;
-  const maxHeight = 100; // 부모 높이 100px
-
-  // 막대 차트 데이터 예시
-  const barData = [
-    { label: "50대", value: 5 },
-    { label: "60대", value: 3 },
-    { label: "70대", value: 2 },
-    { label: "80대 이상", value: 1 },
-  ];
+export default function StatsRow({ totalApplicants, genderCounts, barData }) {
+  const value = totalApplicants; // 원형 차트 값
+  const maxValue = totalApplicants;
   const maxBarValue = barData.reduce((acc, cur) => acc + cur.value, 0);
-
+  console.log(
+    `statsrow 남성 : ${genderCounts["남성"]} 여성 : ${genderCounts["여성"]}`
+  );
   return (
     <Wrapper>
       <CircleStats>
         <RoundStat>
           <CircularProgressbar
-            value={value}
+            value={genderCounts["여성"]}
             maxValue={maxValue}
             //   text={`총 지원자\n${value}명`}
             strokeWidth={15}
@@ -41,16 +34,20 @@ export default function StatsRow() {
         </RoundStat>
         <StatLegend>
           <div>
-            <LegendDot color="#3B96FF" /> 남성 25%(2명)
+            <LegendDot color="#3B96FF" /> 남성{" "}
+            {Math.round((genderCounts["남성"] / value) * 100) || 0}% (
+            {genderCounts["남성"] || 0}명)
           </div>
           <div>
-            <LegendDot color="#e54e21" /> 여성 75%(6명)
+            <LegendDot color="#e54e21" /> 여성{" "}
+            {Math.round((genderCounts["여성"] / value) * 100) || 0}% (
+            {genderCounts["여성"] || 0}명)
           </div>
         </StatLegend>
       </CircleStats>
       <BarChart>
         {barData.map((item) => {
-          const heightPx = (item.value / maxBarValue) * 100; // 100px 기준 px 계산
+          const heightPx = (item.value / maxBarValue) * 100;
           return (
             <BarItem key={item.label}>
               <BarValue>{item.value}명</BarValue>

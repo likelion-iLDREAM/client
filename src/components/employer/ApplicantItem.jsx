@@ -1,41 +1,24 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
+import { Icons } from "../icons/index";
+import Button from "../common/Button";
 
-export default function ApplicantItem({ application, currentTab, isClosed }) {
-  const {
-    applicationId,
-    applicantName,
-    applyMethod,
-    status,
-    registrationTime,
-  } = application;
-  const [details, setDetails] = useState(null);
+export default function ApplicantItem({
+  applicationId,
+  name,
+  gender,
+  age,
+  district,
+  currentTab,
+  isClosed,
+}) {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    async function fetchDetails() {
-      try {
-        const res = await fetch(`/api/applications//${applicationId}`);
-        const json = await res.json();
-        if (json.success) {
-          setDetails(json.data);
-        } else {
-          setDetails(null);
-        }
-      } catch (error) {
-        console.error("지원자 상세정보 불러오기 실패", error);
-        setDetails(null);
-      } finally {
-        // setLoading
-      }
-    }
-    fetchDetails();
-  }, [applicationId]);
-
-  if (!details) return <div>Loading...</div>;
-
-  const { gender, age, district } = details;
+  const handleViewDetails = () => {
+    navigate(`/employer/seekerlist/resume`, { state: { applicationId } });
+  };
+  // const handleViewApplicants = () => navigate("/employer/seekerlist/resume"); //navigate("../resume/${resume.id}")
 
   // 탭에 따라 하단 버튼 문구와 카드 내용 등 변경
   let buttonText;
@@ -55,29 +38,22 @@ export default function ApplicantItem({ application, currentTab, isClosed }) {
     default:
       buttonText = "전화 면접하기";
   }
+
   const isButtonDisabled =
     isClosed && !(currentTab === "채용 확정" || currentTab === "최종 합격");
 
-  const handleViewApplicants = () => navigate("/employer/seekerlist/resume"); //navigate("../resume/${resume.id}")
   const handleViewContract = (e) => {
     e.stopPropagation(); // 부모 onClick 이벤트 전파 차단
     if (currentTab === "채용 확정" || currentTab === "최종 합격") {
       navigate("/employer/seekerlist/writecontract");
     }
   };
-  //   const handleViewContract = () => {
-  //     if (currentTab === "채용 확정") {
-  //       return navigate("/employer/seekerlist/writecontract");
-  //       // navigate("seekerlist/${job.id}")
-  //     } else if (currentTab === "최종 합격") {
-  //       return navigate("/employer/seekerlist/writecontract");
-  //     } else return;
-  //   };
+
   return (
-    <ApplicantCard onClick={handleViewApplicants}>
+    <ApplicantCard onClick={handleViewDetails}>
       <NameRow>
         <InfoBlock>
-          <Name>{applicantName}</Name>
+          <Name>{name}</Name>
           <SumWrap>
             <Summary>{gender}</Summary>
             <Summary>{age}대</Summary>

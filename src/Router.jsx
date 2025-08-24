@@ -62,7 +62,7 @@ const router = createBrowserRouter([
       {
         // singupemployer --> signupemployer (오타수정),
         // /employer/singupemployer --> /signupemployer (라우터 수정)
-        path: "signupemployer",
+        path: "/signupemployer",
         children: [
           {
             path: "",
@@ -262,7 +262,7 @@ const router = createBrowserRouter([
                 element: <Employer.FinalAccept />,
               },
               {
-                path: "Resume",
+                path: "resume",
                 element: <Employer.Resume />,
               },
               {
@@ -270,7 +270,7 @@ const router = createBrowserRouter([
                 element: <Employer.SeekerList />,
               },
               {
-                path: "WriteContract",
+                path: "writecontract",
                 element: <Employer.WriteContract />,
               },
             ],

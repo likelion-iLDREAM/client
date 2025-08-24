@@ -8,68 +8,48 @@ import styled from "styled-components";
 
 const mockdata = [
   {
-    id: 1,
-    title: "주 3일 카페 서빙 직원 모집",
-    paymentType: "HOURLY",
-    location: "서울 마포구 합정동 123-45",
-    applyMethod: ["QUICK"],
-    expiryDate: "2025-09-30T15:00:00Z",
-    status: "OPEN", // OPEN | CLOSED
-    createdAt: "2025-08-13T07:00:00Z",
-    updatedAt: "2025-08-13T07:00:00Z",
-    employer: {
-      id: 44,
-      name: "김사장",
-      companyName: "해피카페",
-      companyLocation: "서울 마포구 합정동 123-45",
-    },
-  },
-  {
-    id: 2,
-    title: "학원 등하차 도우미 모집",
-    content: "성실하고 아이를 좋아하시는 분 모집합니다. 초보자 환영",
-    paymentType: "HOURLY",
+    jobPostId: 1,
+    createdAt: null,
+    updatedAt: null,
+    title: "일할 사람을 구합니다",
+    paymentType: "시급",
     payment: 12000,
-    location: "서울 마포구 합정동 123-45",
-    info: "아이들 학원 등하차할 때 애들 케어해주시면 됩니다",
-    applyMethod: ["QUICK", "PHONE"],
-    questionList: [
-      "본인의 경력에 대해 간단히 설명해주세요.",
-      "희망 근무 요일과 시간을 알려주세요.",
-    ],
-    expiryDate: "2025-08-30T15:00:00Z",
-    status: "OPEN", // OPEN | CLOSED
-    createdAt: "2025-08-13T07:00:00Z",
-    updatedAt: "2025-08-13T07:00:00Z",
+    location: "서울특별시 마포구 대흥동 000",
+    content: "맛있는 감자 환영",
+    workStartTime: "09:30:00",
+    workEndTime: "18:00:00",
+    workType: "요일 지정",
+    workDays: ["월요일", "화요일"],
+    workDaysCount: null,
+    status: "OPEN", // OPEN 또는 CLOSED로 맞춰주세요
+    careerRequirement: false,
+    educationRequirement: "무관",
+    employmentType: "아르바이트",
+    jobField: "기계,금속 제작, 수리",
+    applyMethods: ["간편지원", "전화지원"],
+    expiryDate: "2025-10-30T12:00:00",
     employer: {
       id: 44,
-      name: "김사장",
-      companyName: "해피카페",
-      companyLocation: "서울 마포구 합정동 123-45",
+      name: "안지은",
+      companyName: "안지은 회사",
+      companyLocation: "마포구",
+      phone: "+8287654321",
     },
-  },
-  {
-    id: 3,
-    title: "학원 마감된 더미",
-    content: "성실하고 아이를 좋아하시는 분 모집합니다. 초보자 환영",
-    paymentType: "HOURLY",
-    payment: 12000,
-    location: "서울 마포구 대흥동 123-45",
-    info: "아이들 학원 등하차할 때 애들 케어해주시면 됩니다",
-    applyMethod: ["QUICK", "PHONE"],
-    questionList: [
-      "본인의 경력에 대해 간단히 설명해주세요.",
-      "희망 근무 요일과 시간을 알려주세요.",
-    ],
-    expiryDate: "2025-07-30T15:00:00Z",
-    status: "CLOSED", // OPEN | CLOSED
-    createdAt: "2025-07-13T07:00:00Z",
-    updatedAt: "2025-07-13T07:00:00Z",
-    employer: {
-      id: 44,
-      name: "김사장",
-      companyName: "해피카페",
-      companyLocation: "서울 마포구 대흥동 123-45",
+    questionList: {
+      items: [
+        {
+          id: 1,
+          text: "이름이뭐에요",
+          type: "예/아니요",
+          options: ["예", "아니요"],
+        },
+        {
+          id: 2,
+          text: "전화번호뭐에요",
+          type: "서술형",
+          options: [],
+        },
+      ],
     },
   },
 ];
@@ -77,23 +57,16 @@ const mockdata = [
 export default function HomeEmployer() {
   const [jobPosts, setJobPosts] = useState(mockdata);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("OPEN"); // 기본은 채용중
-  const employerId = 44; // 예시, 실제는 props 또는 auth context에서 받음
-  const employerPosts = jobPosts.filter(
-    (jobPost) => jobPost.employer.id === employerId
-  );
+  const [statusFilter, setStatusFilter] = useState("OPEN"); // 기본: OPEN
+  const employerId = 44; // 예시 값
 
+  // 필터링 함수 수정
   const getFilteredData = () => {
     return jobPosts.filter((jobPost) => {
-      // 1) 본인 employer id 여부 필터링
-      const isEmployerMatch = jobPost.employer.id === employerId;
-
-      // 2) 상태 필터링 (채용중 or 마감)
+      const isEmployerMatch = jobPost.employer?.id === employerId;
       const isStatusMatch = statusFilter
         ? jobPost.status === statusFilter
         : true;
-
-      // 3) 검색어 필터링
       const isSearchMatch = search === "" || jobPost.title.includes(search);
 
       return isEmployerMatch && isStatusMatch && isSearchMatch;
@@ -113,23 +86,22 @@ export default function HomeEmployer() {
 
   const onChangeSearch = (e) => {
     setSearch(e.target.value);
-    console.log(e.target.value);
   };
 
   const filteredjobPosts = getFilteredData();
-
-  const isEmployerPostsExist = employerPosts.length > 0;
+  const isEmployerPostsExist = jobPosts.some(
+    (jobPost) => jobPost.employer?.id === employerId
+  );
 
   return (
     <>
       <HeaderImg />
       <FilterTab onChange={(newStatus) => setStatusFilter(newStatus)} />
-
       <Search text="검색어를 입력하세요." onChange={onChangeSearch} />
       <JobPostsWrapper>
         {filteredjobPosts.length > 0 ? (
           filteredjobPosts.map((jobPost) => (
-            <JobPostItem key={jobPost.id} {...jobPost} />
+            <JobPostItem key={jobPost.jobPostId} {...jobPost} />
           ))
         ) : isEmployerPostsExist ? (
           <EmptyMessage>
@@ -144,11 +116,12 @@ export default function HomeEmployer() {
           </EmptyMessage>
         )}
       </JobPostsWrapper>
-
       <TapBar />
     </>
   );
 }
+
+// 스타일 그대로 유지
 
 function HeaderImg() {
   return (

@@ -3,11 +3,11 @@ import Button from "../common/Button";
 import { useNavigate } from "react-router-dom";
 
 export default function JobPostItem({
-  id,
+  jobPostId,
   title,
   paymentType,
   location,
-  applyMethod,
+  applyMethod, // 만약 배열이라면 applyMethods로 받을 수도 있음
   expiryDate,
   status,
   createdAt,
@@ -17,23 +17,26 @@ export default function JobPostItem({
   const navigate = useNavigate();
 
   const handleViewApplicants = () => {
-    navigate("/employer/seekerlist/seekerlist");
-    // navigate("seekerlist/${job.id}")
+    navigate("/employer/seekerlist/seekerlist", { state: jobPostId });
   };
-  const { id: employerId, name, companyName, companyLocation } = employer;
-  const parts = location.split(" ");
+
+  // employer 객체 구조 분해
+  const { name: employerName, companyName, companyLocation } = employer || {};
+
+  const parts = location ? location.split(" ") : [];
   const dong = parts.find((part) => part.endsWith("동"));
+
   const today = new Date();
   const expiryDateObj = new Date(expiryDate);
-  // console.log("expiry data", expiryDateObj);
   const diffMs = expiryDateObj.getTime() - today.getTime();
   const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
   const ddayStr =
     diffDays > 0
       ? `D-${diffDays}`
-      : diffDays == 0
+      : diffDays === 0
       ? "D-day"
       : `D+${Math.abs(diffDays)}`;
+
   const formattedExpiryDate = new Intl.DateTimeFormat("ko-KR", {
     year: "numeric",
     month: "2-digit",
@@ -42,17 +45,12 @@ export default function JobPostItem({
     minute: "2-digit",
     hour12: false,
   }).format(expiryDateObj);
-  // yyyy = expiryDateObj.getFullYear();
-  // const mm = String(expiryDateObj.getMonth() + 1).padStart(2, "0");
-  // const dd = String(expiryDateObj.getDate()).padStart(2, "0");
-  // const hh = String(expiryDateObj.getHours()).padStart(2, "0");
-  // const mi = String(expiryDateObj.getMinutes()).padStart(2, "0");
 
   return (
     <ItemWrapper>
       <TextWrapper>
         <Information>
-          <div>{companyName}</div>
+          <div>{companyName || employerName}</div>
           <div>
             <Filter
               style={{
@@ -66,7 +64,7 @@ export default function JobPostItem({
                 fontWeight: "400",
               }}
             >
-              🛒판매
+              🛒판매 {/* 필요시 다른 텍스트나 아이콘으로 교체 */}
             </Filter>
             <span>
               [{dong}] {title}
@@ -106,24 +104,8 @@ export default function JobPostItem({
     </ItemWrapper>
   );
 }
-// {
-// 	    "id": 1,
-// 		  "title": "주 3일 카페 서빙 직원 모집",
-// 		  "paymentType": "HOURLY",
-// 		  "location": "서울 마포구 합정동 123-45",
-// 		  "applyMethod": ["QUICK"],
-// 		  "expiryDate": "2025-09-30T15:00:00Z",
-// 		  "status": "OPEN",                         // OPEN | CLOSED
-// 		  "createdAt": "2025-08-13T07:00:00Z",
-// 		  "updatedAt": "2025-08-13T07:00:00Z",
-// 		  "employer": {
-// 		    "id": 44,
-// 		    "name": "김사장",
-// 		    "companyName": "해피카페",
-// 		    "companyLocation": "서울 마포구 합정동 123-45"
-// 			 }
-// 	  },
 
+// 스타일 정의 (기존대로 유지)
 const ItemWrapper = styled.div`
   display: flex;
   padding: 10px 20px;
@@ -150,11 +132,9 @@ const Filter = styled.div`
   border-radius: 10px;
   background: #fff;
   font-size: 15px;
-  min-width: auto; /* 또는 width: auto; */
-  box-sizing: border-box; /* 패딩 포함 */
+  min-width: auto;
+  box-sizing: border-box;
   text-align: center;
-  border-radius: 10px;
-  font-size: 15px;
   font-style: normal;
   font-weight: 700;
   line-height: normal;
