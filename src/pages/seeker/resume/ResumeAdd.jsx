@@ -2,34 +2,33 @@ import styled from "styled-components";
 import Header from "../../../components/common/Header";
 import Button from "../../../components/common/Button";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function ResumeAdd() {
+  const navigate = useNavigate();
+
   // 입력값
   const [company, setCompany] = useState("");
   const [duty, setDuty] = useState("");
 
-  // 직무 분야
+  // 직무 분야 (1개만 선택)
   const mainTags = [
     { id: "farm", label: "🌱 농사·원예·어업" },
     { id: "drive", label: "🚚 운전·배달" },
     { id: "craft", label: "🪵 목공·공예·제조" },
   ];
   const otherTags = [
-    "문화·연구·기술",
-    "식품·옷·환경 가공",
-    "사무·금융",
-    "돌봄",
-    "판매",
-    "음식·서비스",
-    "전기·전자 수리",
-    "기계·금속 제작·수리",
+    "🎨문화·연구·기술",
+    "🥬식품·옷·환경 가공",
+    "📄사무·금융",
+    "❤️돌봄",
+    "🛒판매",
+    "🍲음식·서비스",
+    "🔌전기·전자 수리",
+    "⚙️기계·금속 제작·수리",
   ];
-  const [selectedTags, setSelectedTags] = useState([]);
+  const [selectedTag, setSelectedTag] = useState(""); // 라벨을 그대로 저장
   const [showOther, setShowOther] = useState(false);
-  const toggleTag = (key) =>
-    setSelectedTags((prev) =>
-      prev.includes(key) ? prev.filter((t) => t !== key) : [...prev, key]
-    );
 
   // 근무지역
   const [sido] = useState("서울특별시");
@@ -75,6 +74,73 @@ export default function ResumeAdd() {
     setEndDate(`${yyyy}-${mm}-${dd}`);
   };
 
+  const fmtYYYYMM = (iso) => {
+    if (!iso) return "";
+    const [y, m] = iso.split("-");
+    return `${y}.${m}`;
+  };
+
+  const diffMonths = (s, e) => {
+    const sd = new Date(s);
+    const ed = new Date(e);
+    if (isNaN(sd) || isNaN(ed) || ed < sd) return 0;
+    return (
+      (ed.getFullYear() - sd.getFullYear()) * 12 +
+      (ed.getMonth() - sd.getMonth())
+    );
+  };
+
+  const humanizePeriod = (months) => {
+    if (!months || months <= 0) return "";
+    if (months >= 12) {
+      const y = Math.floor(months / 12);
+      const m = months % 12;
+      return ` (${y}년${m ? ` ${m}개월` : ""})`;
+    }
+    return ` (${months}개월)`;
+  };
+
+  const handleAdd = () => {
+    if (
+      !company.trim() ||
+      !duty.trim() ||
+      !selectedTag ||
+      !gu ||
+      !startDate ||
+      !endDate
+    ) {
+      alert(
+        "업체명, 직무, 직무 분야 1개, 근무지역, 근무기간을 모두 입력해주세요."
+      );
+      return;
+    }
+    const months = diffMonths(startDate, endDate);
+    const period = `${fmtYYYYMM(startDate)} ~ ${fmtYYYYMM(
+      endDate
+    )}${humanizePeriod(months)}`;
+
+    const newItem = {
+      id: Date.now(),
+      company: company.trim(),
+      duty: duty.trim(), // 저장해둠(지금은 카드에 미표시)
+      title: "[지역] 구인공고명", // 요구사항: 이 텍스트는 수정하지 않음
+      addr: `${sido} ${gu}`,
+      date: period,
+      isPublic: true,
+      jobTag: selectedTag, // 카드에서 제목 왼쪽 배지로 표시
+    };
+
+    try {
+      const saved = JSON.parse(sessionStorage.getItem("resume.list") || "[]");
+      const next = Array.isArray(saved) ? [...saved, newItem] : [newItem];
+      sessionStorage.setItem("resume.list", JSON.stringify(next));
+    } catch {
+      sessionStorage.setItem("resume.list", JSON.stringify([newItem]));
+    }
+
+    navigate("/homeseeker/resume");
+  };
+
   return (
     <AddContainer>
       <Header showBack text={"이력 수정하기"} />
@@ -99,13 +165,13 @@ export default function ResumeAdd() {
         </Input>
 
         <Tag>
-          <p>직무 분야</p>
+          <p>직무 분야 (1개 선택)</p>
           <TagList>
             {mainTags.map((t) => (
               <TagPill
                 key={t.id}
-                data-selected={selectedTags.includes(t.id)}
-                onClick={() => toggleTag(t.id)}
+                data-selected={selectedTag === t.label}
+                onClick={() => setSelectedTag(t.label)}
               >
                 {t.label}
               </TagPill>
@@ -122,8 +188,8 @@ export default function ResumeAdd() {
               {otherTags.map((label) => (
                 <TagPill
                   key={label}
-                  data-selected={selectedTags.includes(label)}
-                  onClick={() => toggleTag(label)}
+                  data-selected={selectedTag === label}
+                  onClick={() => setSelectedTag(label)}
                 >
                   {label}
                 </TagPill>
@@ -174,40 +240,13 @@ export default function ResumeAdd() {
       </Info>
 
       <Tap>
-        <Button type={"White"} text={"추가하기"} />
+        <Button type={"White"} text={"추가하기"} onClick={handleAdd} />
       </Tap>
     </AddContainer>
   );
 }
 
 const AddContainer = styled.div``;
-
-const TopRow = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  padding: 8px 30px 0 30px;
-`;
-
-const VisibilityBadge = styled.button`
-  all: unset;
-  cursor: pointer;
-  padding: 6px 12px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 700;
-  border: 1px solid;
-
-  &[data-state="public"] {
-    color: #d92d20;
-    background: #ffffff;
-    border-color: #fecdd3;
-  }
-  &[data-state="private"] {
-    color: #5f6368;
-    background: #f1f3f4;
-    border-color: #e0e3e7;
-  }
-`;
 
 const Info = styled.div`
   display: flex;
@@ -343,28 +382,6 @@ const SmallChip = styled.button`
   border: 1px solid #bfbfbf;
   background: #ffffff;
   font-size: 14px;
-`;
-
-const Text = styled.div`
-  p {
-    font-size: 20px;
-    font-weight: 700;
-    margin: 0 0 8px 0;
-  }
-`;
-
-const TextArea = styled.textarea`
-  width: 320px;
-  padding: 10px 12px;
-  border-radius: 7px;
-  border: 1px solid var(--Foundation-Black-black-6, #bfbfbf);
-  background: var(--Foundation-surface-White, #fff);
-  font-size: 16px;
-  color: #000;
-
-  ::placeholder {
-    color: var(--Foundation-Black-black-7, #8c8c8c);
-  }
 `;
 
 const Tap = styled.div`

@@ -2,14 +2,25 @@ import styled from "styled-components";
 import Header from "../../../components/common/Header";
 import { useNavigate } from "react-router-dom";
 import Button from "../../../components/common/Button";
+import { useState } from "react";
 
 export default function ContractSummary() {
   const navigate = useNavigate();
-
+  const [name] = useState(
+    () => (sessionStorage.getItem("signup.name") || "").trim() || "홍길동"
+  );
   return (
     <CheckContainer>
       <Header showBack text={"근로계약서 요약"} />
-      <Text>축하해</Text>
+      <Text>
+        <p>
+          {name} 님의 근로계약서
+          <Gap />
+          <Highlight>{name} </Highlight>님의
+          <br />
+          <Highlight>새로운 출발을 응원합니다!</Highlight>
+        </p>
+      </Text>
       <Summary>
         <Section>
           <SectionTitle>근로계약서 요약</SectionTitle>
@@ -44,7 +55,15 @@ export default function ContractSummary() {
 const CheckContainer = styled.div``;
 
 const Text = styled.div`
-  padding: 80px 40px;
+  padding: 30px;
+  color: #000;
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 1.4;
+
+  p {
+    margin: 0;
+  }
 `;
 
 const Tap = styled.div`
@@ -106,4 +125,12 @@ const Row = styled.div`
   display: grid;
   grid-template-columns: 100px 1fr;
   align-items: start;
+`;
+
+const Highlight = styled.span`
+  color: var(--Foundation-Green-Normal, #2baf66);
+`;
+
+const Gap = styled.div`
+  height: 20px; /* 한 줄 띄우기 */
 `;

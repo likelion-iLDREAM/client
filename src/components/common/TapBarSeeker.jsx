@@ -22,7 +22,7 @@ export default function TapBarSeeker() {
     <TapBarContainer>
       <CompTab
         active={activeTab === "folder"}
-        onClick={() => [setActiveTab("folder"), navigate("/homeseeker/jobs")]}
+        onClick={() => [setActiveTab("folder"), navigate("/homeseeker")]}
       >
         {activeTab === "folder" ? (
           <Icons.HomeActive color="var(--Foundation-Green-Normal)" size={24} />
