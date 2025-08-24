@@ -4,20 +4,311 @@ import ButtonSmall from "../../../components/common/ButtonSmall";
 import { Icons } from "../../../components/icons/index";
 import { IoPersonCircleOutline } from "react-icons/io5";
 import { AiOutlineEdit } from "react-icons/ai";
-import { FaUserEdit } from "react-icons/fa";
 import { IoIosArrowForward } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
 import TapBarSeeker from "../../../components/common/TapBarSeeker";
 import { useEffect, useState } from "react";
-import TapBar from "../../../components/common/TapBar";
-// (추후) 별도 리스트 컴포넌트를 만들면 아래 import만 활성화해서 교체하면 됩니다.
-// import AppliedJobProgressList from "../../../components/seeker/AppliedJobProgressList";
-// import AppliedJobResultList from "../../../components/seeker/AppliedJobResultList";
 
+/* =========================
+ * ENV (서버/토큰)
+ * ========================= */
+const workerToken = import.meta.env.VITE_WORKER_TOKEN;
+const serverUrl = import.meta.env.VITE_ILDREAM_URL;
+
+const JOB_OPTIONS = [
+  { api: "농사,원예,어업", label: "🌱농사·원예·어업" },
+  { api: "운전,배달", label: "🚚운전·배달" },
+  { api: "식품,옷,환경가공", label: "🥬식품·옷·환경 가공" },
+  { api: "사무,금융", label: "📄사무·금융" },
+  { api: "판매", label: "🛒판매" },
+  { api: "돌봄", label: "❤️돌봄" },
+  { api: "청소,미화", label: "🧹청소·미화" },
+  { api: "음식,서비스", label: "🍲음식·서비스" },
+  { api: "목공,공예,제조", label: "🪚목공·공예·제조" },
+  { api: "문화,연구,기술", label: "🎨문화·연구·기술" },
+  { api: "건설,시설관리", label: "🏗️건설·시설 관리" },
+  { api: "전기,전자수리", label: "🔌전기·전자 수리" },
+  { api: "기계,금속제작,수리", label: "⚙️기계·금속 제작·수리" },
+];
+
+const apiToLabel = Object.fromEntries(JOB_OPTIONS.map((o) => [o.api, o.label]));
+
+/* =========================
+ * 공통 Fetch 헬퍼 (콘솔 로깅 포함)
+ * ========================= */
+async function fetchWithLog(url, options = {}) {
+  console.log("[FETCH] →", url, options);
+  const res = await fetch(url, options);
+  const raw = await res
+    .clone()
+    .text()
+    .catch(() => "");
+  console.log("[FETCH RAW] ←", res.status, res.url, raw);
+  let json = {};
+  try {
+    json = JSON.parse(raw);
+  } catch {
+    // not json
+  }
+  console.log("[FETCH JSON] ←", res.status, res.url, json);
+  if (!res.ok) {
+    const msg = json?.message || `HTTP_${res.status}`;
+    throw new Error(msg);
+  }
+  return json;
+}
+
+/* =========================
+ * 안전 파서 + Mock 어댑터 (API 실패시 폴백)
+ * ========================= */
+const safeParse = (key, fallback) => {
+  try {
+    const raw = sessionStorage.getItem(key);
+    if (!raw) return fallback;
+    const v = JSON.parse(raw);
+    return v ?? fallback;
+  } catch {
+    return fallback;
+  }
+};
+
+// 지원서 목록 불러오기 (Mock)
+function loadResumesFromStorage() {
+  return safeParse("resume.list", []);
+}
+
+// 진행 중인 근로(계약) 목록 불러오기 (Mock)
+function loadWorkingFromStorage() {
+  return safeParse("working.list", []);
+}
+
+// 상단 배지 카운트
+function countResumesForBadge(resumes) {
+  return Array.isArray(resumes) ? resumes.length : 0;
+}
+
+// 상태별 분리
+function partitionResumes(resumes = []) {
+  const drafts = [];
+  const progress = []; // 제출 이후 결과 대기
+  const results = []; // 결과 확인 단계
+
+  for (const r of resumes) {
+    switch (r.status) {
+      case "draft":
+        drafts.push(r);
+        break;
+      case "submitted":
+      case "in_review":
+      case "interview":
+        progress.push(r);
+        break;
+      case "rejected":
+        results.push(r);
+        break;
+      default:
+        break;
+    }
+  }
+  return { drafts, progress, results };
+}
+
+// 초안 제거(“지원 포기하기”용, Mock only)
+function deleteDraftsInStorage() {
+  const list = loadResumesFromStorage();
+  const filtered = list.filter((x) => x.status !== "draft");
+  sessionStorage.setItem("resume.list", JSON.stringify(filtered));
+  return filtered;
+}
+
+/* =========================
+ * API 어댑터
+ * ========================= */
+// /workers/me → 상단 사용자 정보/태그용
+async function fetchMeFromApi() {
+  if (!serverUrl || !workerToken) throw new Error("ENV not ready");
+  const json = await fetchWithLog(`${serverUrl}/workers/me`, {
+    method: "GET",
+    headers: { token: `${workerToken}` },
+    mode: "cors",
+  });
+
+  // 예상 응답 형태:
+  // { success, data: { name, jobInterest: ["농사,원예,어업", ...] } }
+  const me = json?.data || {};
+  const name = (me.name || "").trim();
+
+  const jobInterest = Array.isArray(me.jobInterest) ? me.jobInterest : []; // UI 태그는 이모지 없는 텍스트 사용
+  const tags = jobInterest.map(
+    (api) => apiToLabel[api] || api.replace(/,/g, "·")
+  );
+  // 세션에도 반영(다른 화면 일관성)
+  sessionStorage.setItem("signup.name", name);
+  sessionStorage.setItem("signup.interests", JSON.stringify(tags));
+  sessionStorage.setItem("signup.interestsApi", JSON.stringify(jobInterest));
+
+  return { name, tags, raw: json };
+}
+
+// /workers/me/applications → 지원서 목록
+async function fetchResumesFromApi() {
+  if (!serverUrl || !workerToken) throw new Error("ENV not ready");
+  const url = `${serverUrl}/workers/me/applications`;
+  const json = await fetchWithLog(url, {
+    method: "GET",
+    headers: { token: `${workerToken}` },
+    mode: "cors",
+  });
+
+  // 응답 적응형 매핑
+  const list = Array.isArray(json?.data)
+    ? json.data
+    : Array.isArray(json?.data?.items)
+    ? json.data.items
+    : [];
+
+  const mapped = list.map((r, i) => {
+    const company =
+      r.company?.name ||
+      r.companyName ||
+      r.employerName ||
+      r.company ||
+      "구인업체명";
+
+    const title =
+      r.title ||
+      r.postTitle ||
+      r.jobTitle ||
+      r.titleText ||
+      r.post?.title ||
+      "[지역] 구인공고명";
+
+    const addr =
+      r.addr ||
+      r.address ||
+      r.location?.address ||
+      r.location?.addr ||
+      r.locationText ||
+      "주소 정보 없음";
+
+    const status =
+      (r.status && String(r.status).toLowerCase()) ||
+      (r.applicationStatus && String(r.applicationStatus).toLowerCase()) ||
+      "submitted"; // 기본값
+
+    return {
+      id: r.id ?? i + 1,
+      company,
+      title,
+      addr,
+      status, // "draft" | "submitted" | "in_review" | "interview" | "rejected"
+    };
+  });
+
+  console.log("[applications mapped]", mapped);
+  return mapped;
+}
+
+// /workers/me/works → 진행중 근로 목록 (없으면 /contracts 시도)
+async function fetchWorksFromApi() {
+  if (!serverUrl || !workerToken) throw new Error("ENV not ready");
+
+  // 1차 시도
+  try {
+    const json = await fetchWithLog(`${serverUrl}/workers/me/works`, {
+      method: "GET",
+      headers: { token: `${workerToken}` },
+      mode: "cors",
+    });
+
+    const list = Array.isArray(json?.data)
+      ? json.data
+      : Array.isArray(json?.data?.items)
+      ? json.data.items
+      : [];
+
+    const mapped = list.map((w, i) => {
+      const company =
+        w.company?.name ||
+        w.companyName ||
+        w.employerName ||
+        w.company ||
+        "구인업체명";
+
+      const title =
+        w.title ||
+        w.jobTitle ||
+        w.postTitle ||
+        w.post?.title ||
+        "[지역] 구인공고명";
+
+      const addr =
+        w.addr ||
+        w.address ||
+        w.location?.address ||
+        w.location?.addr ||
+        "주소 정보 없음";
+
+      return {
+        id: w.id ?? i + 1,
+        company,
+        title,
+        addr,
+      };
+    });
+
+    console.log("[works mapped]", mapped);
+    return mapped;
+  } catch (e) {
+    console.warn("[/workers/me/works 실패, /contracts로 폴백]");
+  }
+
+  // 2차 폴백
+  const json2 = await fetchWithLog(`${serverUrl}/workers/me/contracts`, {
+    method: "GET",
+    headers: { token: `${workerToken}` },
+    mode: "cors",
+  });
+
+  const list2 = Array.isArray(json2?.data)
+    ? json2.data
+    : Array.isArray(json2?.data?.items)
+    ? json2.data.items
+    : [];
+
+  const mapped2 = list2.map((w, i) => {
+    const company =
+      w.company?.name ||
+      w.companyName ||
+      w.employerName ||
+      w.company ||
+      "구인업체명";
+    const title =
+      w.title ||
+      w.jobTitle ||
+      w.postTitle ||
+      w.post?.title ||
+      "[지역] 구인공고명";
+    const addr =
+      w.addr ||
+      w.address ||
+      w.location?.address ||
+      w.location?.addr ||
+      "주소 정보 없음";
+    return { id: w.id ?? i + 1, company, title, addr };
+  });
+
+  console.log("[contracts mapped]", mapped2);
+  return mapped2;
+}
+
+/* =========================
+ * 컴포넌트
+ * ========================= */
 export default function ProfileSeeker() {
-  const [activeTab, setActiveTab] = useState("guide");
   const navigate = useNavigate();
-  const hasDraft = true;
+
+  // 상단 사용자/태그/카운트
   const [name, setName] = useState(() =>
     (sessionStorage.getItem("signup.name") || "").trim()
   );
@@ -28,70 +319,99 @@ export default function ProfileSeeker() {
       return [];
     }
   });
+  const [resumeCount, setResumeCount] = useState(0);
 
-  const [resumeCount, setResumeCount] = useState(() => {
+  // 리스트 상태
+  const [hasDraft, setHasDraft] = useState(false);
+  const [appliedProgressList, setAppliedProgressList] = useState([]);
+  const [appliedResultList, setAppliedResultList] = useState([]);
+  const [workingList, setWorkingList] = useState([]);
+
+  // 스토리지 → 화면 동기화
+  const syncFromStorage = () => {
+    setName((sessionStorage.getItem("signup.name") || "").trim());
     try {
-      const arr = JSON.parse(sessionStorage.getItem("resume.list") || "[]");
-      return Array.isArray(arr) ? arr.length : 0;
+      const nextTags = JSON.parse(
+        sessionStorage.getItem("signup.interests") || "[]"
+      );
+      setTags(Array.isArray(nextTags) ? nextTags : []);
     } catch {
-      return 0;
+      setTags([]);
     }
-  });
 
-  // 화면으로 돌아왔을 때도 최신값 반영 (프로필 편집 후 복귀 시)
+    const resumes = loadResumesFromStorage();
+    const works = loadWorkingFromStorage();
+    const { drafts, progress, results } = partitionResumes(resumes);
+
+    setHasDraft(drafts.length > 0);
+    setAppliedProgressList(progress);
+    setAppliedResultList(results);
+    setWorkingList(works);
+    setResumeCount(countResumesForBadge(resumes));
+  };
+
+  // API → 화면 동기화
+  const syncFromApi = async () => {
+    try {
+      // 사용자/태그
+      const me = await fetchMeFromApi();
+      console.log("[/workers/me OK]", me.raw);
+      setName(me.name);
+      setTags(me.tags);
+
+      // 지원서 목록
+      const resumes = await fetchResumesFromApi();
+      // 콘솔 테이블 출력(가독성)
+      console.table(resumes);
+      const { drafts, progress, results } = partitionResumes(resumes);
+      setHasDraft(drafts.length > 0);
+      setAppliedProgressList(progress);
+      setAppliedResultList(results);
+      setResumeCount(countResumesForBadge(resumes));
+
+      // 진행중 근로
+      const works = await fetchWorksFromApi();
+      console.table(works);
+      setWorkingList(works);
+    } catch (err) {
+      console.error("[API 동기화 실패 → Mock로 표시]", err);
+      // 실패 시 Mock로 유지
+    }
+  };
+
   useEffect(() => {
-    const sync = () => {
-      const n = (sessionStorage.getItem("signup.name") || "").trim();
-      setName(n);
-      try {
-        const next = JSON.parse(
-          sessionStorage.getItem("signup.interests") || "[]"
-        );
-        setTags(Array.isArray(next) ? next : []);
-      } catch {
-        setTags([]);
-      }
-      try {
-        const arr = JSON.parse(sessionStorage.getItem("resume.list") || "[]");
-        setResumeCount(Array.isArray(arr) ? arr.length : 0);
-      } catch {
-        setResumeCount(0);
-      }
-    };
-    window.addEventListener("focus", sync);
-    window.addEventListener("storage", sync); // 다른 탭에서 변경 시
-    sync(); // 최초 1회
+    // 1) 먼저 로컬 표시
+    syncFromStorage();
+    // 2) 그 다음 서버 동기화(성공 시 화면 업데이트 + 콘솔 출력)
+    syncFromApi();
+
+    // 포커스/스토리지 변경 시에도 로컬 동기화
+    const onFocus = () => syncFromStorage();
+    const onStorage = () => syncFromStorage();
+    window.addEventListener("focus", onFocus);
+    window.addEventListener("storage", onStorage);
     return () => {
-      window.removeEventListener("focus", sync);
-      window.removeEventListener("storage", sync);
+      window.removeEventListener("focus", onFocus);
+      window.removeEventListener("storage", onStorage);
     };
   }, []);
-  const workingList = [
-    {
-      id: 1,
-      company: "구인업체명",
-      title: "[지역] 구인공고명",
-      addr: "서울특별시 00구 00로 000",
-    },
-  ];
 
-  const appliedProgressList = [
-    {
-      id: 1,
-      company: "구인업체명",
-      title: "[지역] 구인공고명",
-      addr: "서울특별시 00구 00로 000",
-    },
-  ];
+  // 초안 포기 (Mock 데이터 기준)
+  const handleDiscardDraft = () => {
+    if (!hasDraft) return;
+    if (!confirm("작성 중인 지원서를 모두 삭제할까요?")) return;
+    const next = deleteDraftsInStorage();
+    const { progress, results } = partitionResumes(next);
+    setHasDraft(false);
+    setAppliedProgressList(progress);
+    setAppliedResultList(results);
+    setResumeCount(countResumesForBadge(next));
+  };
 
-  const appliedResultList = [
-    {
-      id: 2,
-      company: "구인업체명",
-      title: "[지역] 구인공고명",
-      addr: "서울특별시 00구 00로 000",
-    },
-  ];
+  // 초안 이어서 작성
+  const handleContinueDraft = () => {
+    navigate("/homeseeker/resume");
+  };
 
   return (
     <ProfileContainer>
@@ -124,12 +444,20 @@ export default function ProfileSeeker() {
                 <DraftIcon>
                   <AiOutlineEdit size={50} />
                 </DraftIcon>
-                현재 작성하던 지원서가 있어요! <br />
+                현재 작성하던 지원서가 있어요!
+                <br />
                 계속 진행하시겠어요?
               </DraftText>
               <TwoCols>
-                <ButtonSmall type="White" text={"지원 포기하기"} />
-                <ButtonSmall text={"지원 계속하기"} />
+                <ButtonSmall
+                  type="White"
+                  text={"지원 포기하기"}
+                  onClick={handleDiscardDraft}
+                />
+                <ButtonSmall
+                  text={"지원 계속하기"}
+                  onClick={handleContinueDraft}
+                />
               </TwoCols>
             </DraftBody>
           </DraftCard>
@@ -140,30 +468,28 @@ export default function ProfileSeeker() {
           <>
             <SectionTitle>지원한 공고</SectionTitle>
 
-            {/* (추후 교체) 진행중 리스트 */}
-            {/* <AppliedJobProgressList data={appliedProgressList} /> */}
+            {/* 진행중 */}
             {appliedProgressList.map((item) => (
               <Card key={`p-${item.id}`}>
                 <CardHeader>
-                  <CompanyLabel>구인업체명</CompanyLabel>
+                  <CompanyLabel>{item.company || "구인업체명"}</CompanyLabel>
                   <IoIosArrowForward />
                 </CardHeader>
-                <JobTitle>{item.title}</JobTitle>
-                <Address>{item.addr}</Address>
+                <JobTitle>{item.title || "[지역] 구인공고명"}</JobTitle>
+                <Address>{item.addr || "주소 정보 없음"}</Address>
                 <DisabledButton disabled>채용 진행중</DisabledButton>
               </Card>
             ))}
 
-            {/* (추후 교체) 결과 확인 리스트 */}
-            {/* <AppliedJobResultList data={appliedResultList} /> */}
+            {/* 결과 확인(불합격 등) */}
             {appliedResultList.map((item) => (
               <Card key={`r-${item.id}`}>
                 <CardHeader>
-                  <CompanyLabel>구인업체명</CompanyLabel>
+                  <CompanyLabel>{item.company || "구인업체명"}</CompanyLabel>
                   <IoIosArrowForward />
                 </CardHeader>
-                <JobTitle>{item.title}</JobTitle>
-                <Address>{item.addr}</Address>
+                <JobTitle>{item.title || "[지역] 구인공고명"}</JobTitle>
+                <Address>{item.addr || "주소 정보 없음"}</Address>
                 <SingleButtonRow>
                   <ButtonSmall
                     onClick={() => navigate("/homeseeker/result/fail")}
@@ -182,11 +508,11 @@ export default function ProfileSeeker() {
             {workingList.map((item) => (
               <Card key={item.id}>
                 <CardHeader>
-                  <CompanyLabel>구인업체명</CompanyLabel>
+                  <CompanyLabel>{item.company || "구인업체명"}</CompanyLabel>
                   <IoIosArrowForward />
                 </CardHeader>
-                <JobTitle>{item.title}</JobTitle>
-                <Address>{item.addr}</Address>
+                <JobTitle>{item.title || "[지역] 구인공고명"}</JobTitle>
+                <Address>{item.addr || "주소 정보 없음"}</Address>
                 <TwoCols>
                   <ButtonSmall
                     onClick={() => navigate("/homeseeker/result/summary")}
@@ -211,11 +537,14 @@ export default function ProfileSeeker() {
           <IoIosArrowForward />
         </Submenu>
       </Section>
-      <Homebar></Homebar>
+      <Homebar />
     </ProfileContainer>
   );
 }
 
+/* =========================
+ * 스타일 (기존 유지)
+ * ========================= */
 const Homebar = styled(TapBarSeeker)``;
 
 const Section = styled.div`
@@ -393,22 +722,6 @@ const DisabledButton = styled.button`
   color: #fff;
   font-weight: 700;
   font-size: 18px;
-`;
-
-const RowBetween = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 10px;
-`;
-
-const CountBox = styled.div`
-  margin: 0;
-  font-weight: 700;
-  font-size: 20px;
-  color: var(--Foundation-Green-Normal, #2baf66);
 `;
 
 const Submenu = styled.div`
