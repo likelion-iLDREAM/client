@@ -39,12 +39,23 @@ const mockData = [
     applicationStatus: "거부",
   },
 ];
+
+// 탭 상태별 버튼 텍스트 매핑 예시
+const tabButtonTextMap = {
+  "지원 완료": "전화 면접하기",
+  "면접 진행": "채용 확정하기",
+  "채용 확정": "계약서 작성하기",
+  "최종 합격": "계약서 확인하기",
+  default: "전화 면접하기",
+};
+
 export default function SeekerList() {
   // 탭 상태
   const [currentTab, setCurrentTab] = useState("지원 완료"); // 기본값
   const [backAlertOpen, setBackAlertOpen] = useState(false);
   const [isClosed, setIsClosed] = useState(false);
   const [applicants, setApplicants] = useState(mockData);
+  const buttonText = tabButtonTextMap[currentTab] || tabButtonTextMap.default;
 
   const handleBack = () => {
     navigate("/employer"); //navigate("/employer/seekerlist/seekerlist/${joblist.id}");
@@ -145,7 +156,7 @@ export default function SeekerList() {
             gender={applicant.workerGender}
             age={applicant.workerAge}
             district={applicant.workerAddress}
-            currentTab={currentTab}
+            buttonText={buttonText}
             isClosed={isClosed}
           />
         ))}

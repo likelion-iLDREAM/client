@@ -11,22 +11,31 @@ import Button from "../../../components/common/Button";
 import { PiX } from "react-icons/pi";
 import { BsAspectRatio } from "react-icons/bs";
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 export default function ProfileEmployer() {
-  const tags = ["돌봄", "식품·옷·환경 가공", "목공·공예·제조"];
+  const [tags, setTags] = useState(() => {
+    try {
+      return JSON.parse(sessionStorage.getItem("employer.jobFields") || "[]");
+    } catch {
+      return [];
+    }
+  });
 
-  const name = "기업명";
+  const [name, setName] = useState(() =>
+    (sessionStorage.getItem("employer.name") || "").trim()
+  );
   const navigate = useNavigate();
   return (
     <>
-      <Header text={"내 정보"} />
+      <Header text={"내 기업 정보"} />
       <Section>
         <TopCard>
           <Avatar>
             <Icons.Building color="var(--Foundation-Green-Normal)" size={45} />
           </Avatar>
           <TopRight>
-            <Name>{name}</Name>
+            <Name>{name || "고객님"}</Name>
             <TagRow>
               {tags.slice(0, 3).map((t, i) => (
                 <Tag key={i}>{t}</Tag>

@@ -10,42 +10,28 @@ export default function ApplicantItem({
   gender,
   age,
   district,
-  currentTab,
+  buttonText,
   isClosed,
 }) {
   const navigate = useNavigate();
 
   const handleViewDetails = () => {
-    navigate(`/employer/seekerlist/resume`, { state: { applicationId } });
+    navigate(`/employer/seekerlist/resume`, {
+      state: { applicationId, buttonText },
+    });
   };
   // const handleViewApplicants = () => navigate("/employer/seekerlist/resume"); //navigate("../resume/${resume.id}")
 
-  // 탭에 따라 하단 버튼 문구와 카드 내용 등 변경
-  let buttonText;
-  switch (currentTab) {
-    case "지원 완료":
-      buttonText = "전화 면접하기";
-      break;
-    case "면접 진행":
-      buttonText = "채용 확정하기";
-      break;
-    case "채용 확정":
-      buttonText = "계약서 작성하기";
-      break;
-    case "최종 합격":
-      buttonText = "계약서 확인하기";
-      break;
-    default:
-      buttonText = "전화 면접하기";
-  }
-
   const isButtonDisabled =
-    isClosed && !(currentTab === "채용 확정" || currentTab === "최종 합격");
+    isClosed &&
+    !(buttonText === "계약서 작성하기" || buttonText === "계약서 확인하기");
 
   const handleViewContract = (e) => {
     e.stopPropagation(); // 부모 onClick 이벤트 전파 차단
-    if (currentTab === "채용 확정" || currentTab === "최종 합격") {
-      navigate("/employer/seekerlist/writecontract");
+    if (buttonText === "계약서 작성하기" || buttonText === "계약서 확인하기") {
+      navigate("/employer/seekerlist/writecontract", {
+        state: { applicationId, buttonText },
+      });
     }
   };
 
