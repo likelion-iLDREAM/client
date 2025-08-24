@@ -4,13 +4,54 @@ import Employername from "../../../components/employer/Employername";
 import EmployerTitle from "../../../components/employer/EmployTitle";
 import Button from "../../../components/common/Button";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { IoCheckboxOutline } from "react-icons/io5";
 import { IoCheckbox } from "react-icons/io5";
 
 export default function QuickApply() {
   const navigate = useNavigate();
   const [includeResume, setIncludeResume] = useState(true);
+
+  // ✅ NameBirth / Phonenum 에서 저장한 값 불러오기
+  const [name, setName] = useState(() =>
+    (sessionStorage.getItem("signup.name") || "").trim()
+  );
+  const [gender, setGender] = useState(
+    () => sessionStorage.getItem("signup.gender") || ""
+  );
+  const [phoneRaw, setPhoneRaw] = useState(
+    () => sessionStorage.getItem("signup.phone") || ""
+  );
+
+  // 보기 좋은 전화번호 포맷 (국내/ +82 처리)
+  const formatPhone = (v) => {
+    if (!v) return "";
+    let s = v.replace(/\D/g, "");
+    // +82 → 0 치환
+    if (s.startsWith("82")) {
+      let rest = s.slice(2);
+      if (!rest.startsWith("0")) rest = "0" + rest;
+      s = rest;
+    }
+    if (s.length === 11) return s.replace(/(\d{3})(\d{4})(\d{4})/, "$1-$2-$3");
+    if (s.length === 10) return s.replace(/(\d{3})(\d{3})(\d{4})/, "$1-$2-$3");
+    return v; // 길이가 애매하면 원문 반환
+  };
+  const phone = formatPhone(phoneRaw);
+
+  // 창에 다시 돌아왔을 때 최신값 동기화
+  useEffect(() => {
+    const sync = () => {
+      setName((sessionStorage.getItem("signup.name") || "").trim());
+      setGender(sessionStorage.getItem("signup.gender") || "");
+      setPhoneRaw(sessionStorage.getItem("signup.phone") || "");
+    };
+    window.addEventListener("focus", sync);
+    // 최초 1회 동기화
+    sync();
+    return () => window.removeEventListener("focus", sync);
+  }, []);
+
   return (
     <QuickApplyContainer>
       <Header text={"간편 지원"} showBack />
@@ -43,23 +84,23 @@ export default function QuickApply() {
         </EditBtn>
       </Edit>
 
-      {/* 추가: 이름/성별/전화번호/이력서 섹션 */}
+      {/* 이름/성별/전화번호/이력서 섹션 */}
       <InfoCard>
         <Row>
           <Cell>
             <Label>이름</Label>
-            <Value>홍길동</Value>
+            <Value>{name || "홍길동"}</Value>
           </Cell>
           <Cell align="left">
             <Label>성별</Label>
-            <Value>남성</Value>
+            <Value>{gender || "성별"}</Value>
           </Cell>
         </Row>
 
         <Row style={{ marginTop: 12 }}>
           <Cell col={2}>
             <Label>전화번호</Label>
-            <Value>010-2345-6789</Value>
+            <Value>{phone || "010-0000-0000"}</Value>
           </Cell>
         </Row>
 

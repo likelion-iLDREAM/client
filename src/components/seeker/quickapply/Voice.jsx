@@ -1,14 +1,116 @@
 import styled from "styled-components";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FiMic } from "react-icons/fi";
 import { IoInformationCircle } from "react-icons/io5";
 
 export default function Voice() {
   const [answer, setAnswer] = useState("");
   const [isRecording, setIsRecording] = useState(false);
+  const [supportMsg, setSupportMsg] = useState(""); // 브라우저 지원/권한 안내
   const questionTitle = "요양보호사 경력이 있으시면 말씀해주세요.";
 
-  const toggleRecord = () => setIsRecording((v) => !v);
+  const recognitionRef = useRef(null);
+  const shouldKeepAliveRef = useRef(false); // onend에서 재시작 여부
+
+  // 음성 인식 초기화
+  useEffect(() => {
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      setSupportMsg(
+        "이 브라우저에서는 음성 인식을 지원하지 않습니다. (Chrome/Edge 권장)"
+      );
+      return;
+    }
+
+    const rec = new SpeechRecognition();
+    rec.lang = "ko-KR";
+    rec.continuous = true; // 계속 듣기
+    rec.interimResults = true; // 중간 결과도 받기
+
+    rec.onresult = (event) => {
+      let finalText = "";
+      // 새로 들어온 결과만 처리
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const res = event.results[i];
+        const transcript = res[0].transcript.trim();
+        if (res.isFinal) {
+          finalText += transcript + " ";
+        }
+      }
+      if (finalText) {
+        // 최종 인식된 문장을 누적
+        setAnswer((prev) => (prev ? `${prev} ${finalText}`.trim() : finalText));
+      }
+    };
+
+    rec.onerror = (e) => {
+      // 권한 거부/차단 등 사용자 안내
+      if (e.error === "not-allowed" || e.error === "service-not-allowed") {
+        setSupportMsg(
+          "마이크 권한이 필요합니다. 브라우저 설정에서 허용해주세요."
+        );
+      } else if (e.error !== "no-speech") {
+        setSupportMsg(`음성 인식 오류: ${e.error}`);
+      }
+      // 오류 발생 시 녹음 상태 해제
+      shouldKeepAliveRef.current = false;
+      setIsRecording(false);
+    };
+
+    rec.onend = () => {
+      // 사용자가 끄지 않았으면 자동 재시작(모바일 환경 등에서 유용)
+      if (shouldKeepAliveRef.current) {
+        try {
+          rec.start();
+        } catch {
+          // 연속 start 예외 무시
+        }
+      }
+    };
+
+    recognitionRef.current = rec;
+
+    return () => {
+      try {
+        rec.stop();
+      } catch {}
+      recognitionRef.current = null;
+      shouldKeepAliveRef.current = false;
+    };
+  }, []);
+
+  const startRecording = () => {
+    if (!recognitionRef.current) return;
+    setSupportMsg("");
+    shouldKeepAliveRef.current = true;
+    try {
+      recognitionRef.current.start();
+      setIsRecording(true);
+    } catch {
+      // 이미 실행 중일 수 있음
+    }
+  };
+
+  const stopRecording = () => {
+    if (!recognitionRef.current) return;
+    shouldKeepAliveRef.current = false;
+    try {
+      recognitionRef.current.stop();
+    } catch {}
+    setIsRecording(false);
+  };
+
+  const toggleRecord = () => {
+    if (!recognitionRef.current) {
+      return setSupportMsg(
+        "이 브라우저에서는 음성 인식을 지원하지 않습니다. (Chrome/Edge 권장)"
+      );
+    }
+    if (isRecording) stopRecording();
+    else startRecording();
+  };
 
   return (
     <Container>
@@ -40,6 +142,8 @@ export default function Voice() {
             저희가 받아 적어드릴게요!
           </InfoText>
         </InfoBanner>
+
+        {supportMsg && <SupportMsg>{supportMsg}</SupportMsg>}
       </AnswerArea>
     </Container>
   );
@@ -127,6 +231,13 @@ const InfoText = styled.p`
   font-weight: 700;
   line-height: 1.45;
   color: #000;
+`;
+
+const SupportMsg = styled.p`
+  margin: 8px 0 0;
+  color: #d92d20;
+  font-size: 14px;
+  font-weight: 600;
 `;
 
 const AnswerArea = styled.div`

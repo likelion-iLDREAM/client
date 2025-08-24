@@ -1,4 +1,3 @@
-// pages/terms/Address.jsx
 import styled from "styled-components";
 import Header from "../../../components/common/Header";
 import ProgressBar from "../../../components/common/Progressbar";
