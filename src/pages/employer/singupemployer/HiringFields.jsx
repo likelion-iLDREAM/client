@@ -1,68 +1,48 @@
+// pages/terms/Interests.jsx
 import { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import Header from "../../../components/common/Header";
 import ProgressBar from "../../../components/common/Progressbar";
 import Button from "../../../components/common/Button";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
-export default function HiringFields() {
+export default function Interests() {
   const navigate = useNavigate();
-  const location = useLocation();
-
-  // 이전 페이지에서 받은 값
-  const prevData = location.state || {};
-  console.log("prevdata입니다.", prevData);
-  // 여기서 새롭게 입력할 값
-  const [jobFields, setJobFields] = useState([]);
-
-  // const handleNext = () => {
-  //   navigate("/signupemployer/signupendemployer");
-  // };
-  const handleNext = async () => {
-    const finalData = { ...prevData, jobFields }; // 합치기
-    console.log("최종 저장될 데이터 : ", finalData);
-    navigate("/signupemployer/signupendemployer");
-    // try {
-    //   const res = await fetch("/api/employer/info", {
-    //     method: "POST",
-    //     headers: { "Content-Type": "application/json" },
-    //     body: JSON.stringify(finalData),
-    //   });
-
-    //   if (res.ok) {
-    //     // 저장 성공 → 다음 페이지 이동
-    //     navigate("/signupemployer/signupendemployer");
-    //   } else {
-    //     console.error("저장 실패");
-    //   }
-    // } catch (err) {
-    //   console.error("에러 발생:", err);
-    // }
-  };
   return (
-    <>
+    <InterestContainer>
       <Header text={"회원가입"} />
-      <InterestContainer>
-        <ProgressBar value={"80"} max={"100"} />
+      <ProgressBar value={"80"} max={"100"} />
+      <Info>
         <h2 className="Text1">
           구인분야 최대 3가지를
           <br />
           선택해주세요.
         </h2>
-        <Section onChange={(labels) => setJobFields(labels)} />
-      </InterestContainer>
-      <Footer>
-        <Button text={"다음"} type={"White"} onClick={handleNext} />
-      </Footer>
-    </>
+        <Section />
+      </Info>
+      <div className="Bottom">
+        <Button
+          text={"다음"}
+          type={"White"}
+          onClick={() => navigate("/signupemployer/signupendemployer")}
+        />
+      </div>
+    </InterestContainer>
   );
 }
+const Info = styled.div`
+  padding: 0 20px;
+
+  > .Text1 {
+    margin: 30px 0;
+  }
+`;
 
 const InterestContainer = styled.div`
+  background-color: #fff;
   display: flex;
-  padding: 30px;
   flex-direction: column;
-  gap: 30px;
+  align-items: center;
   flex: 1 0 0;
   align-self: stretch;
 
@@ -73,6 +53,14 @@ const InterestContainer = styled.div`
     gap: 30px;
     align-self: stretch;
   }
+
+  > .Bottom {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-top: 1px solid #d9d9d9;
+    padding: 10px;
+  }
 `;
 const Footer = styled.div`
   display: flex;
@@ -82,7 +70,7 @@ const Footer = styled.div`
   padding: 10px;
 `;
 
-function Section({ onChange }) {
+function Section() {
   const rows = useMemo(
     () => [
       [
@@ -110,7 +98,6 @@ function Section({ onChange }) {
         { id: 12, label: "🔌전기·전자 수리" },
         { id: 13, label: "⚙️기계·금속 제작·수리" },
       ],
-      [{ id: 14, label: "💬기타" }],
     ],
     []
   );
@@ -124,7 +111,7 @@ function Section({ onChange }) {
   const [selected, setSelected] = useState(() => {
     try {
       const saved = JSON.parse(
-        sessionStorage.getItem("signup.interestIds") || "[]"
+        sessionStorage.getItem("employer.jobFieldIds") || "[]"
       );
       return new Set(saved);
     } catch {
@@ -148,9 +135,8 @@ function Section({ onChange }) {
   useEffect(() => {
     const ids = Array.from(selected);
     const labels = ids.map((id) => idToLabel[id]).filter(Boolean);
-    onChange(labels);
-    sessionStorage.setItem("signup.interestIds", JSON.stringify(ids));
-    sessionStorage.setItem("signup.interests", JSON.stringify(labels));
+    sessionStorage.setItem("employer.jobFieldIds", JSON.stringify(ids));
+    sessionStorage.setItem("employer.jobFields", JSON.stringify(labels));
   }, [selected, idToLabel]);
 
   return (

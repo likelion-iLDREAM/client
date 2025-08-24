@@ -1,6 +1,7 @@
 import Header from "../../../components/common/Header";
 import Button from "../../../components/common/Button";
 import Enter from "../../../components/common/Enter";
+import JobHistory from "../../../components/employer/JobHistory";
 import styled from "styled-components";
 import { Icons } from "../../../components/icons/index";
 import { IoIosArrowBack } from "react-icons/io";
@@ -77,9 +78,7 @@ const mockhistory = [
 export default function Resume() {
   const navigate = useNavigate("");
   const location = useLocation();
-
-  // 이전 페이지에서 받은 값
-  const applicationId = location.state || {};
+  const { applicationId, buttonText } = location.state || {};
   console.log("prevdata입니다.", applicationId);
 
   // 실제 API 사용 시 아래 fetch 로직 주석 해제 후 사용
@@ -123,9 +122,7 @@ export default function Resume() {
   const handleBack = () => {
     navigate("/employer/seekerlist/seekerlist"); //navigate("/employer/seekerlist/seekerlist/${joblist.id}");
   };
-  const savedCategory = "♥️돌봄"; // 예: 따로 저장해둔 정보
-  const currentFilter = ["♥️돌봄", "돌봄", "돌봄"]; // 예: 필터 안 내용
-
+  const savedCategory = "음식,서비스"; // 예: 따로 저장해둔 정보
   return (
     <>
       <Headersection>
@@ -174,74 +171,15 @@ export default function Resume() {
         <Submenu>
           지원자 이력
           <ItemWrapper>
-            <TextWrapper isCategoryMatch={savedCategory === currentFilter[0]}>
-              <span className="Information">
-                <div>{"업체명"}</div>
-                <div>
-                  <span className="title">{"직무 설명"}</span>
-                </div>
-                <div>{"서울특별시 00구 00로 00로"}</div>
-                <div>{"2020.01 ~ 2021.01 (1년 이상"}</div>
-              </span>
-
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "flex-end",
-                  gap: "5px",
-                }}
-              >
-                <Filter>{currentFilter[0]}</Filter>
-              </div>
-            </TextWrapper>
-            <TextWrapper isCategoryMatch={savedCategory === currentFilter[1]}>
-              <span className="Information">
-                <div>{"업체명"}</div>
-                <div>
-                  <span className="title">{"직무 설명"}</span>
-                </div>
-                <div>{"서울특별시 00구 00로 00로"}</div>
-                <div>{"2020.01 ~ 2021.01 (1년 이상"}</div>
-              </span>
-
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "flex-end",
-                  gap: "5px",
-                }}
-              >
-                <Filter>{currentFilter[1]}</Filter>
-              </div>
-            </TextWrapper>
-            <TextWrapper isCategoryMatch={savedCategory === currentFilter[2]}>
-              <span className="Information">
-                <div>{"업체명"}</div>
-                <div>
-                  <span className="title">{"직무 설명"}</span>
-                </div>
-                <div>{"서울특별시 00구 00로 00로"}</div>
-                <div>{"2020.01 ~ 2021.01 (1년 이상)"}</div>
-              </span>
-
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "flex-end",
-                  gap: "5px",
-                }}
-              >
-                <Filter>{currentFilter[2]}</Filter>
-              </div>
-            </TextWrapper>
+            <JobHistory
+              workerId={applicationData.workerId}
+              savedCategory={savedCategory}
+            />
           </ItemWrapper>
         </Submenu>
       </Menu>
       <Footer>
-        <Button text="전화 면접하기" type="White"></Button>
+        <Button text={buttonText} type="White"></Button>
       </Footer>
     </>
   );
@@ -381,68 +319,4 @@ const ItemWrapper = styled.div`
   align-self: stretch;
   border-radius: 7px;
   color: #fff;
-`;
-
-const Filter = styled.div`
-  display: flex;
-  padding: 2px 5px;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  border-radius: 5px;
-  border: ${(props) =>
-    props.isCategoryMatch
-      ? "1px solid var(--Foundation-Green-Normal, #fff)"
-      : "1px solid var(--Foundation-Black-black-13, #000)"};
-  // border: 1px solid var(--Foundation-surface-White);
-  background: var(--Foundation-Green-Light);
-  color: var(--Foundation-Black-black-13, #000);
-  text-align: center;
-  font-family: "Pretendard Variable";
-  font-size: 15px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: normal;
-  letter-spacing: 0.15px;
-`;
-
-const TextWrapper = styled.div`
-  display: flex;
-  padding: 15px 20px;
-  align-items: flex-start;
-  gap: 5px;
-  align-self: stretch;
-  border-radius: 8px;
-  // background: var(--Foundation-Green-Normal, #2baf66);
-  background: ${(props) =>
-    props.isCategoryMatch
-      ? "var(--Foundation-Green-Normal, #2baf66)"
-      : "var(--Foundation-Green-Light, #EAF7F0)"};
-
-  .Information {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px; /* gap 줄임 (기존 10px → 6px) */
-    flex: 1 0 0;
-    font-weight: 400;
-
-    /* 업체명, 주소, 기간 등 일반 텍스트 */
-    > div:not(.title) {
-      font-family: "Pretendard Variable";
-      font-size: 15px; /* 폰트 사이즈 작게 */
-      line-height: normal;
-      color: ${(props) =>
-        props.isCategoryMatch
-          ? "#fff"
-          : "var(--Foundation-Black-black-13, #000)"};
-    }
-
-    /* 직무 설명 (title 클래스) */
-    .title {
-      font-weight: 700;
-      font-size: 20px; /* 기존 크기 유지 또는 약간 크게 */
-      // color: #fff;
-    }
-  }
 `;

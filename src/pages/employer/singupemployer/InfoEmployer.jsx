@@ -10,27 +10,51 @@ import { useNavigate } from "react-router-dom";
 
 export default function InfoEmployer() {
   const navigate = useNavigate();
-  const [phone] = useState(() => sessionStorage.getItem("signup.phone") || "");
 
-  // 상태값 선언
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    bossName: "",
-    phoneNumber: { phone },
-    companyName: "",
-    companyLocation: "",
-    companyNumber: "",
-    jobFields: [],
-  });
-  // 변경 핸들러
-  const handleChange = (key, value) => {
-    console.log(value);
+  // formData 상태를 하나의 객체로 관리, sessionStorage에서 초기값 불러오기
+  const [formData, setFormData] = useState(() => ({
+    name: sessionStorage.getItem("employer.name") || "",
+    email: sessionStorage.getItem("employer.email") || "",
+    bossName: sessionStorage.getItem("employer.bossName") || "",
+    phone: sessionStorage.getItem("signup.phone") || "",
+    companyName: sessionStorage.getItem("employer.companyName") || "",
+    address: sessionStorage.getItem("signup.address") || "",
+    addressDetail: sessionStorage.getItem("signup.addressDetail") || "",
+    companyNumber: sessionStorage.getItem("employer.companyNumber") || "",
+    jobFields: (() => {
+      try {
+        return JSON.parse(sessionStorage.getItem("employer.jobFields")) || [];
+      } catch {
+        return [];
+      }
+    })(),
+  }));
+
+  // formData 각 필드별 sessionStorage 동기화
+  useEffect(() => {
+    sessionStorage.setItem("employer.name", formData.name);
+    sessionStorage.setItem("employer.email", formData.email);
+    sessionStorage.setItem("employer.bossName", formData.bossName);
+    sessionStorage.setItem("signup.phone", formData.phone);
+    sessionStorage.setItem("employer.companyName", formData.companyName);
+    sessionStorage.setItem("signup.address", formData.address);
+    sessionStorage.setItem("signup.addressDetail", formData.addressDetail);
+    sessionStorage.setItem("employer.companyNumber", formData.companyNumber);
+    sessionStorage.setItem(
+      "employer.jobFields",
+      JSON.stringify(formData.jobFields)
+    );
+  }, [formData]);
+
+  // 변경 핸들러, 필드 이름과 값 받아서 상태 갱신
+  const handleChange = (field, value) => {
     setFormData((prev) => ({
       ...prev,
-      [key]: value,
+      [field]: value,
     }));
   };
+
+  // 다음 단계로 이동, formData를 상태로 넘겨줌
   const handleNext = () => {
     console.log(formData, "formData입니다!!");
     navigate("/signupemployer/hiringfields", { state: formData });
@@ -59,9 +83,9 @@ export default function InfoEmployer() {
             <EnterWrapper>
               <input
                 readOnly
-                placeholder={phone}
-                value={phone}
-                onChange={(e) => handleChange("phoneNumber", e.target.value)}
+                placeholder={formData.phone}
+                value={formData.phone}
+                onChange={(e) => handleChange("phone", e.target.value)}
               />
             </EnterWrapper>
           </SubWrapper>
@@ -90,8 +114,12 @@ export default function InfoEmployer() {
             />
           </SubWrapper>
           <Section
-            address={formData.companyLocation}
-            onAddressChange={(addr) => handleChange("companyLocation", addr)}
+            address={formData.address}
+            addressDetail={formData.addressDetail}
+            onAddressChange={(addr) => handleChange("address", addr)}
+            onAddressDetailChange={(detail) =>
+              handleChange("addressDetail", detail)
+            }
           />
 
           <SubWrapper>
@@ -144,24 +172,6 @@ const Footer = styled.div`
   border-top: 1px solid #d9d9d9;
   padding: 10px;
 `;
-const Inputdate = styled.input`
-  display: flex;
-  padding: 10px;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  // align-self: stretch;
-  border-radius: 7px;
-  border: 1px solid var(--Foundation-Black-black-6, #bfbfbf);
-  background: var(--Foundation-surface-White, #fff);
-`;
-
-const Period = styled.div`
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  align-items: center;
-`;
 
 const SubWrapper = styled.div`
   display: flex;
@@ -173,20 +183,6 @@ const SubWrapper = styled.div`
     color: #ff5858;
     font-size: 15px;
   }
-`;
-
-const InputWrapper = styled.div`
-  display: flex;
-  padding: 7px;
-  gap: 10px;
-  border-radius: 7px;
-  border: 1px solid var(--Foundation-Black-black-6, #bfbfbf);
-  background: var(--Foundation-surface-White, #fff);
-  width: 100%; /* 화면 너비(부모) 100%로 채움 */
-  box-sizing: border-box; /* 패딩/보더 포함 너비 계산 */
-  height: 46px;
-  align-items: center;
-  margin-top: 10px;
 `;
 
 const Inputtitle = styled.input`
@@ -209,23 +205,6 @@ const Inputtitle = styled.input`
   align-items: center;
 `;
 
-const Inputaddress = styled.div`
-  border-radius: 7px;
-  background: var(--Foundation-surface-White, #fff);
-  font-size: 1rem;
-  border: none;
-  outline: none;
-  flex: 1 0 0;
-  align-self: stretch;
-  color: var(--Foundation-Black-black-7, #8c8c8c);
-  font-size: 20px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: normal;
-  align-items: center;
-  justify-content: center;
-`;
-
 const EnterWrapper = styled.div`
   display: flex;
   width: 294px;
@@ -236,35 +215,38 @@ const EnterWrapper = styled.div`
   border: 1px solid #bfbfbf;
   background: #e9e9e9;
   margin-top: 10px;
-
+  width: 95%;
   > input {
     border: none;
     font-size: 20px;
     font-weight: 400;
     pointerevent: none;
-    width: 100%;
     background: #e9e9e9;
     color: #6a6a6a;
     cursor: not-allowed;
+    width: 100%;
 
+    padding: 0 10px;
     &:focus {
       outline: none;
     }
   }
 `;
 
-function Section({ address, onAddressChange }) {
+function Section({
+  address,
+  addressDetail,
+  onAddressChange,
+  onAddressDetailChange,
+}) {
   const sectionInfoRef = useRef(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  // const [address, setAddress] = useState(
-  //   () => sessionStorage.getItem("signup.address") || ""
-  // );
-  // 주소 변경 시 부모 호출
+
   const handleSelect = (addr) => {
-    // setAddress(addr); // 상태 삭제 후 부모에 전달만
     onAddressChange(addr);
     setIsSearchOpen(false);
   };
+
   const SEOUL_GU = [
     "강남구",
     "강동구",
@@ -304,26 +286,22 @@ function Section({ address, onAddressChange }) {
     return () => icon.removeEventListener("click", open);
   }, []);
 
-  useEffect(() => {
-    if (!sectionInfoRef.current) return;
-    const inputs = sectionInfoRef.current.querySelectorAll("input");
-    if (inputs && inputs[0]) {
-      inputs[0].placeholder = address || "아이콘으로 주소 검색하기";
-    }
-  }, [address]);
-
-  useEffect(() => {
-    sessionStorage.setItem("signup.address", address);
-  }, [address]);
-
   return (
     <SectionContainer>
       <p className="p">주소입력</p>
 
       <SectionInfo ref={sectionInfoRef}>
-        <Enter text={"아이콘으로 주소 검색하기"} />
+        {/* 대표주소 입력 필드, 읽기 전용 또는 클릭 시 주소검색 */}
+        <Enter text={address || "아이콘으로 주소 검색하기"} readOnly />
         <BiSolidMap />
-        <Enter text={"상세 주소"} />
+
+        {/* 상세주소 입력 필드 (수정 가능) */}
+        <Inputtitle
+          type="text"
+          placeholder="상세 주소를 입력해주세요"
+          value={addressDetail}
+          onChange={(e) => onAddressDetailChange(e.target.value)}
+        />
       </SectionInfo>
 
       <p className="limit">아직은 서울특별시에서만 이용 가능해요.🥺</p>
