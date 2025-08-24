@@ -5,15 +5,27 @@ import ProgressBar from "../../../components/common/Progressbar";
 import styled from "styled-components";
 import { Icons } from "../../../components/icons/index";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { IoIosArrowBack } from "react-icons/io";
 import Alert_post from "../../../components/employer/Alert_post";
 
 export default function RequirementType() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const prevState = location.state || {};
+  console.log("prevState입니다. ", prevState);
+
   const handleNext = () => {
-    navigate("/employer/postjobs/WorkingRest");
+    navigate("/employer/postjobs/WorkingRest", {
+      state: {
+        ...prevState, // 이전 단계까지 누적된 데이터 유지
+        careerRequirement: selectedCareer === "경력필요", // true/false로 변환 가능
+        educationRequirement: selectedEducation || "",
+        employmentType: selectedEmployment || "",
+      },
+    });
   };
+
   const [selectedCareer, setSelectedCareer] = useState(null);
   const [selectedEducation, setSelectedEducation] = useState(null);
   const [selectedEmployment, setSelectedEmployment] = useState(null);

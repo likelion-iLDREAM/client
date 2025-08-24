@@ -1,13 +1,40 @@
-// pages/terms/Interests.jsx
 import { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import Header from "../../../components/common/Header";
 import ProgressBar from "../../../components/common/Progressbar";
 import Button from "../../../components/common/Button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
-export default function Interests() {
+export default function HiringFields() {
   const navigate = useNavigate();
+  const location = useLocation();
+  // ✅ InfoEmployer에서 넘어온 formData 불러오기
+  const prevFormData = location.state || {};
+  // console.log(" prevFormData:", prevFormData);
+  // ✅ 다음 단계로 formData 전달
+
+  const handleNext = () => {
+    // ✅ Section에서 sessionStorage에 자동 저장된 값 불러오기
+    const jobFieldIds = JSON.parse(
+      sessionStorage.getItem("employer.jobFieldIds") || "[]"
+    );
+    const jobFields = JSON.parse(
+      sessionStorage.getItem("employer.jobFields") || "[]"
+    );
+
+    // ✅ formData에 jobFields 합쳐서 최종 상태 만들기
+    const updatedFormData = {
+      ...prevFormData,
+      jobFieldIds,
+      jobFields,
+    };
+
+    console.log("최종 formData:", updatedFormData);
+
+    // ✅ 다음 단계로 넘김
+    navigate("/signupemployer/signupendemployer", { state: updatedFormData });
+  };
+
   return (
     <InterestContainer>
       <Header text={"회원가입"} />
@@ -21,11 +48,7 @@ export default function Interests() {
         <Section />
       </Info>
       <div className="Bottom">
-        <Button
-          text={"다음"}
-          type={"White"}
-          onClick={() => navigate("/signupemployer/signupendemployer")}
-        />
+        <Button text={"다음"} type={"White"} onClick={handleNext} />
       </div>
     </InterestContainer>
   );

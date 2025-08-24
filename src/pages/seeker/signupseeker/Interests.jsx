@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function Interests() {
   const navigate = useNavigate();
+  console.log("설마 이거니");
   return (
     <InterestContainer>
       <Header text={"회원가입"} />

@@ -1,22 +1,60 @@
 import { useState } from "react";
 import styled from "styled-components";
 
-export default function TimeRangePicker() {
-  const [startHour, setStartHour] = useState("0");
-  const [startMinute, setStartMinute] = useState("0");
-  const [endHour, setEndHour] = useState("0");
-  const [endMinute, setEndMinute] = useState("0");
+export default function TimeRangePicker({ value, onChange }) {
+  // props로부터 시간 문자열 분리: "HH:mm"
+  const [startHour, startMinute] = (value?.start || "00:00").split(":");
+  const [endHour, endMinute] = (value?.end || "00:00").split(":");
+  // console.log(startHour, startMinute, endHour, endMinute);
 
-  const hours = Array.from({ length: 24 }, (_, i) => i.toString());
+  const hours = Array.from({ length: 24 }, (_, i) =>
+    i.toString().padStart(2, "0")
+  );
+
+  // option 표시할 때도 문자열로 변환 후 padStart 적용
+  {
+    hours.map((h) => (
+      <option key={h} value={h.toString()}>
+        {h.toString().padStart(2, "0")}
+      </option>
+    ));
+  }
   const minutes = ["0", "15", "30", "45"];
 
+  // 시간 변경 핸들러
+
+  // 변경 핸들러 내에서도 padStart 하기 전 문자열화
+  const handleStartHourChange = (e) => {
+    const val = e.target.value.toString().padStart(2, "0");
+    const newStart = `${val}:${startMinute.toString().padStart(2, "0")}`;
+    onChange && onChange({ start: newStart, end: value.end });
+  };
+
+  const handleStartMinuteChange = (e) => {
+    const newStart = `${startHour.padStart(2, "0")}:${e.target.value.padStart(
+      2,
+      "0"
+    )}`;
+    onChange && onChange({ start: newStart, end: value.end });
+  };
+
+  const handleEndHourChange = (e) => {
+    const newEnd = `${e.target.value.padStart(2, "0")}:${endMinute}`;
+    onChange && onChange({ start: value.start, end: newEnd });
+  };
+
+  const handleEndMinuteChange = (e) => {
+    const newEnd = `${endHour.padStart(2, "0")}:${e.target.value.padStart(
+      2,
+      "0"
+    )}`;
+    onChange && onChange({ start: value.start, end: newEnd });
+  };
+  // console.log(startHour, endHour, startMinute, endMinute);
   return (
     <TimeRangeWrapper>
       <TimeSelectWrapper>
-        <select
-          value={startHour}
-          onChange={(e) => setStartHour(e.target.value)}
-        >
+        <select value={startHour} onChange={handleStartHourChange}>
           {hours.map((h) => (
             <option key={h} value={h}>
               {h.padStart(2, "0")}
@@ -24,10 +62,7 @@ export default function TimeRangePicker() {
           ))}
         </select>
         :
-        <select
-          value={startMinute}
-          onChange={(e) => setStartMinute(e.target.value)}
-        >
+        <select value={startMinute} onChange={handleStartMinuteChange}>
           {minutes.map((m) => (
             <option key={m} value={m}>
               {m.padStart(2, "0")}
@@ -39,7 +74,7 @@ export default function TimeRangePicker() {
       <span>~</span>
 
       <TimeSelectWrapper>
-        <select value={endHour} onChange={(e) => setEndHour(e.target.value)}>
+        <select value={endHour} onChange={handleEndHourChange}>
           {hours.map((h) => (
             <option key={h} value={h}>
               {h.padStart(2, "0")}
@@ -47,10 +82,7 @@ export default function TimeRangePicker() {
           ))}
         </select>
         :
-        <select
-          value={endMinute}
-          onChange={(e) => setEndMinute(e.target.value)}
-        >
+        <select value={endMinute} onChange={handleEndMinuteChange}>
           {minutes.map((m) => (
             <option key={m} value={m}>
               {m.padStart(2, "0")}
