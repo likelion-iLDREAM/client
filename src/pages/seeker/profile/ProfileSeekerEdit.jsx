@@ -15,7 +15,7 @@ const serverUrl = import.meta.env.VITE_ILDREAM_URL;
 const JOB_OPTIONS = [
   { id: 1, label: "🌱농사·원예·어업", api: "농사,원예,어업" },
   { id: 2, label: "🚚운전·배달", api: "운전,배달" },
-  { id: 3, label: "🥬식품·옷·환경 가공", api: "식품,옷,환경가공" },
+  { id: 3, label: "🥬식품·옷·환경 가공", api: "식품,옷,환경 가공" },
   { id: 4, label: "📄사무·금융", api: "사무,금융" },
   { id: 5, label: "🛒판매", api: "판매" },
   { id: 6, label: "❤️돌봄", api: "돌봄" },
@@ -23,9 +23,9 @@ const JOB_OPTIONS = [
   { id: 8, label: "🍲음식·서비스", api: "음식,서비스" },
   { id: 9, label: "🪚목공·공예·제조", api: "목공,공예,제조" },
   { id: 10, label: "🎨문화·연구·기술", api: "문화,연구,기술" },
-  { id: 11, label: "🏗️건설·시설 관리", api: "건설,시설관리" },
-  { id: 12, label: "🔌전기·전자 수리", api: "전기,전자수리" },
-  { id: 13, label: "⚙️기계·금속 제작·수리", api: "기계,금속제작,수리" },
+  { id: 11, label: "🏗️건설·시설 관리", api: "건설,시설 관리" },
+  { id: 12, label: "🔌전기·전자 수리", api: "전기,전자 수리" },
+  { id: 13, label: "⚙️기계·금속 제작·수리", api: "기계,금속 제작,수리" },
 ];
 
 // 빠른 탐색용 맵
