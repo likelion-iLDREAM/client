@@ -23,10 +23,6 @@ export default function CareerGuide() {
           title="관공서 구인 공고"
           onClick={() => navigate("/homeseeker/guide/gov")}
         />
-        <Guide
-          title="자격증 총정리편"
-          onClick={() => navigate("/homeseeker/guide/cert")}
-        />
       </List>
       <Homebar></Homebar>
     </GuideContainer>

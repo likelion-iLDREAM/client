@@ -1,13 +1,21 @@
+// pages/seeker/quickapply/QuickApplyEnd.jsx
 import styled from "styled-components";
 import Header from "../../../components/common/Header";
 import Employername from "../../../components/employer/Employername";
 import EmployerTitle from "../../../components/employer/EmployTitle";
 import Button from "../../../components/common/Button";
 import { useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export default function QuickApplyEnd() {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // 상단 표시용(Question에서 state로 넘겨줌)
+  const employerName = location.state?.employerName || "구인업체명";
+  const region = location.state?.region || "서울";
+  const title = location.state?.title || "공고 제목";
+
   const name = useMemo(
     () => (sessionStorage.getItem("signup.name") || "").trim(),
     []
@@ -20,10 +28,10 @@ export default function QuickApplyEnd() {
       <Section>
         <Content>
           <Name>
-            <Employername text={"구인업체명"} />
-            <EmployerTitle region={"서울"} title={"일로오세요"} />
+            <Employername text={employerName} />
+            <EmployerTitle region={region} title={title} />
           </Name>
-          <p>간편 지원중이에요.</p>
+          <p>간편 지원을 제출했어요.</p>
         </Content>
         <End>
           <p>
@@ -85,7 +93,6 @@ const End = styled.div`
   justify-content: left;
   flex-direction: column;
   padding: 0 10px;
-
   p {
     font-size: 30px;
     font-weight: 700;
@@ -93,7 +100,6 @@ const End = styled.div`
     white-space: pre-line;
     overflow-wrap: anywhere;
     word-break: break-word;
-    white-space: pre-line;
   }
 `;
 
