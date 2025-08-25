@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
 const employerToken = import.meta.env.VITE_EMPLOYER_TOKEN;
+// const employerToken = sessionStorage.getItem('authToken');
 const serverUrl = import.meta.env.VITE_ILDREAM_URL;
 
 export default function QuestionList() {

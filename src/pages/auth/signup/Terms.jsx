@@ -3,7 +3,7 @@ import Header from "../../../components/common/Header";
 import Button from "../../../components/common/Button";
 import { IoCheckboxOutline, IoCheckbox } from "react-icons/io5";
 import { IoIosArrowForward } from "react-icons/io";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useState, useMemo } from "react";
 
 const HEADER_H = 56; // 헤더 높이(필요 시 실제 높이로 조정)
@@ -11,6 +11,8 @@ const BOTTOM_H = 90; // 하단 고정 영역 높이
 
 export default function Terms() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { phone } = location.state || {}; // 값 받기
 
   // 각 항목 동의 상태
   const [agreeTerms, setAgreeTerms] = useState(false); // (필수) 이용 약관 동의
@@ -38,7 +40,7 @@ export default function Terms() {
   // 다음 단계 이동
   const handleNext = () => {
     if (isNextEnabled) {
-      navigate("/terms/selectrole");
+      navigate("/terms/selectrole", { state: { phone } });
     }
   };
 

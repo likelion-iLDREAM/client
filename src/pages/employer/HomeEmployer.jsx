@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import styled from "styled-components";
 
 const employerToken = import.meta.env.VITE_EMPLOYER_TOKEN;
+// const employerToken = sessionStorage.getItem('authToken');
 const serverUrl = import.meta.env.VITE_ILDREAM_URL;
 
 export default function HomeEmployer() {

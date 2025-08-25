@@ -2,10 +2,13 @@ import styled from "styled-components";
 import Header from "../../../components/common/Header";
 import { BsBuilding } from "react-icons/bs";
 import { IoPeople } from "react-icons/io5";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
+const serverUrl = import.meta.env.VITE_ILDREAM_URL;
 export default function SelectRole() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { phone } = location.state || {}; // 값 받기
   return (
     <SelectRoleContainer>
       <Header text={"회원가입"} />
@@ -19,12 +22,33 @@ export default function SelectRole() {
       </div>
 
       <div className="Select">
-        <div className="select1" onClick={() => navigate("/signupemployer")}>
+        <div
+          className="select1"
+          onClick={async () => {
+            try {
+              const token = await getToken(phone, "EMPLOYER");
+              // sessionStorage.setItem("authToken", token);
+              navigate("/signupemployer", { state: { token } });
+            } catch (e) {
+              console.error(e);
+            }
+          }}
+        >
           <BsBuilding size="100" color="#0F3D24" />
           <div className="text1">기업</div>
           <div>구인공고를 올리고 싶어요</div>
         </div>
-        <div className="select2" onClick={() => navigate("/terms/namebirth")}>
+        <div
+          className="select2"
+          onClick={async () => {
+            try {
+              await getToken(phone, "WORKER");
+            } catch (e) {
+              console.error(e);
+            }
+            navigate("/terms/namebirth");
+          }}
+        >
           <IoPeople size="100" color="#0F3D24" />
           <div className="text2">구직자</div>
           <div>원하는 기업에 취직하고 싶어요</div>
@@ -32,6 +56,24 @@ export default function SelectRole() {
       </div>
     </SelectRoleContainer>
   );
+}
+
+async function getToken(phone, role) {
+  try {
+    const response = await fetch(`${serverUrl}/auth/signup-token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        phone,
+        userType: role,
+      }), // 임의 값 222222
+    });
+    console.log(await response.json());
+    const data = await response.json();
+    return await data.data.signupToken;
+  } catch (e) {
+    throw new Error(e);
+  }
 }
 
 const SelectRoleContainer = styled.div`

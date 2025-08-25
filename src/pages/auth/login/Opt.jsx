@@ -12,6 +12,7 @@ import { useEffect, useRef, useState } from "react";
 */
 
 const BOTTOM_H = 110; // 하단 고정 영역 높이(두 개 버튼 세로 배치 기준)
+const serverUrl = import.meta.env.VITE_ILDREAM_URL;
 
 export default function Opt() {
   const navigate = useNavigate();
@@ -80,6 +81,47 @@ export default function Opt() {
     }
   };
 
+  // 수정된 부분: verifyCode 호출 + 토큰 sessionStorage 저장 + 성공 시 navigate
+  const handleVerify = async () => {
+    const code = phoneFromState === "01012345678" ? "111111" : "222222";
+    try {
+      const response = await fetch(`${serverUrl}/auth/verify-code`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone: formatPhone(phoneFromState),
+          code,
+        }), // 임의 값 222222
+      });
+
+      if (!response.ok) {
+        throw new Error("Verification failed");
+      }
+
+      const data = await response.json();
+      const token = data.token;
+      console.log(data);
+      if (data.success) {
+        if (data.data.isNewbie) {
+          navigate("/terms");
+        } else {
+          if (!data.data.accessToken) {
+            throw new Error("no accessToken");
+          }
+          sessionStorage.setItem("authToken", data.data.accessToken);
+        }
+      } else {
+        throw new Error("incorrect code");
+      }
+      sessionStorage.setItem("authToken", token);
+
+      console.log("Received token:", token);
+      navigate("/terms", { state: { phone: formatPhone(phoneFromState) } });
+    } catch (error) {
+      console.error("Verification error:", error);
+      alert("인증에 실패했습니다.");
+    }
+  };
   const mm = String(Math.floor(remaining / 60)).padStart(2, "0");
   const ss = String(remaining % 60).padStart(2, "0");
 
@@ -113,11 +155,26 @@ export default function Opt() {
           <Button text={"재전송하기"} type={"White"} onClick={handleResend} />
         </div>
         <div>
-          <Button text={"인증하기"} onClick={() => navigate("/terms")} />
+          <Button text={"인증하기"} onClick={() => handleVerify()} />
         </div>
       </BottomFixed>
     </OptContainer>
   );
+}
+
+function formatPhone(phone) {
+  if (!phone) return "";
+
+  // 이미 +82 로 시작하면 그대로 리턴
+  if (phone.startsWith("+82")) return phone;
+
+  // 전화번호가 0으로 시작하면 0을 빼고 +82 붙임
+  if (phone.startsWith("0")) {
+    return "+82" + phone.slice(1);
+  }
+
+  // 그 외는 그냥 +82 붙임
+  return "+82" + phone;
 }
 
 const TimeSection = styled.div`

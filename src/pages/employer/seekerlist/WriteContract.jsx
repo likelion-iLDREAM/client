@@ -5,6 +5,7 @@ import { Icons } from "../../../components/icons/index";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 const employerToken = import.meta.env.VITE_EMPLOYER_TOKEN;
+// const employerToken = sessionStorage.getItem('authToken');
 const serverUrl = import.meta.env.VITE_ILDREAM_URL;
 
 const mockData = {
@@ -146,7 +147,7 @@ export default function WriteContract() {
   }, [applicationId]);
 
   const handleBack = () => {
-    navigate(-1);
+    navigate(-1), { state: { applicationId } };
   };
 
   const formatDate = (dateStr) =>
