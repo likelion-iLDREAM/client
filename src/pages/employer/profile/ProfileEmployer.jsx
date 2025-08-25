@@ -185,12 +185,12 @@ export default function ProfileEmployer() {
           </TopRight>
         </TopCard>
         <Menu>
-          <Submenu onClick={() => navigate("/employer/checkreview")}>
+          {/* <Submenu onClick={() => navigate("/employer/checkreview")}>
             <div>
               기업 후기<span>{reviewCount}회</span>
             </div>
             <Icons.ArrowForward size={24} />
-          </Submenu>
+          </Submenu> */}
           <Submenu onClick={goToQuestionList}>
             <div>저장된 추가 질문</div>
             <Icons.ArrowForward size={24} />

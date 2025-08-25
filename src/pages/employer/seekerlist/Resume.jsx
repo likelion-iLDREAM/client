@@ -8,94 +8,49 @@ import { IoIosArrowBack } from "react-icons/io";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 
-const mockData = {
-  applicationId: 2,
-  jobPostId: 2,
-  workerId: 1,
-  status: "임시저장",
-  submissionTime: "2025-08-23T21:05:05.084545",
-  applyMethod: "간편지원",
-  workerName: "이현서",
-  workerBirthDate: "2025-08-22",
-  workerGender: "여성",
-  workerPhoneNumber: "+821012345678",
-  workerAddress: "서강대학교",
-  answers: [
-    {
-      questionId: 2,
-      text: "이것은 답변입니다",
-      optionIds: null,
-    },
-    {
-      questionId: 1,
-      text: "이것은 답변입니다",
-      optionIds: null,
-    },
-  ],
-  question: [
-    {
-      id: 1,
-      text: "이름이 뭐에요",
-      type: "예/아니요",
-      options: ["예", "아니요"],
-    },
-    {
-      id: 2,
-      text: "전화번호 뭐에요",
-      type: "서술형",
-      options: [],
-    },
-  ],
-};
-
-const mockhistory = [
-  {
-    id: 2,
-    workerId: 1,
-    title: "근무이력",
-    companyName: "회사이름",
-    startDate: "2025-08-11",
-    endDate: "2025-08-22",
-    workplace: "마포",
-    mainDuties: "일한내용",
-    isOpening: true,
-    jobField: "음식,서비스",
-  },
-  {
-    id: 3,
-    workerId: 1,
-    title: "22근무이력",
-    companyName: "회사이름",
-    startDate: "2025-08-11",
-    endDate: "2025-10-30",
-    workplace: "용산",
-    mainDuties: "일한내용",
-    isOpening: true,
-    jobField: "판매",
-  },
-];
+const employerToken = import.meta.env.VITE_EMPLOYER_TOKEN;
+const serverUrl = import.meta.env.VITE_ILDREAM_URL;
 
 export default function Resume() {
   const navigate = useNavigate("");
   const location = useLocation();
   const { applicationId, buttonText } = location.state || {};
+  const [disabled_button, setDisabled_button] = useState(false);
   console.log("prevdata입니다.", applicationId);
-
+  console.log("button", buttonText);
   // 실제 API 사용 시 아래 fetch 로직 주석 해제 후 사용
-  const [applicationData, setApplicationData] = useState(mockData);
+  const [applicationData, setApplicationData] = useState([]);
 
-  // useEffect(() => {
-  //   if (!applicationId) return;
-  //   fetch(`/api/applications/${applicationId}`)
-  //     .then((res) => res.json())
-  //     .then((data) => {
-  //       if (data.success) {
-  //         setApplicationData(data.data);
-  //       }
-  //     })
-  //     .catch((error) => console.error(error));
-  // }, [applicationId]);
+  useEffect(() => {
+    if (!applicationId) return;
 
+    async function fetchApplication() {
+      try {
+        const res = await fetch(`${serverUrl}/applications/${applicationId}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            token: `${employerToken}`,
+            // 필요한 경우 인증 헤더 추가
+            // "Authorization": `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok) {
+          throw new Error(`Error: ${res.status} ${res.statusText}`);
+        }
+
+        const data = await res.json();
+        setApplicationData(data.data);
+        console.log("data...", data);
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    fetchApplication();
+  }, [applicationId]);
+  console.log("applicationData입니다ㅣ", applicationData);
   // 날짜 포맷팅 (예: 생년월일)
   const birthDateFormatted = new Date(
     applicationData.workerBirthDate
@@ -108,11 +63,11 @@ export default function Resume() {
   function formatPhoneNumber(phone) {
     // +82로 시작하는 경우 0으로 시작하도록 변환
     // +821012345678 → 01012345678
-    let num = phone.startsWith("+82") ? "0" + phone.slice(3) : phone;
+    let num = phone?.startsWith("+82") ? "0" + phone.slice(3) : phone;
 
     // 일반적인 010-1234-5678 형태로 변환
     // 0으로 시작하는 11자리 번호 포맷팅 예제
-    const match = num.match(/^(\d{3})(\d{4})(\d{4})$/);
+    const match = num?.match(/^(\d{3})(\d{4})(\d{4})$/);
     if (match) {
       return `${match[1]}-${match[2]}-${match[3]}`;
     }
@@ -123,6 +78,72 @@ export default function Resume() {
     navigate("/employer/seekerlist/seekerlist"); //navigate("/employer/seekerlist/seekerlist/${joblist.id}");
   };
   const savedCategory = "음식,서비스"; // 예: 따로 저장해둔 정보
+
+  const handleViewContract = async (e) => {
+    e.stopPropagation();
+
+    try {
+      if (
+        buttonText === "계약서 작성하기" ||
+        buttonText === "계약서 확인하기"
+      ) {
+        navigate("/employer/seekerlist/writecontract", {
+          state: { applicationId, buttonText },
+        });
+      } else if (buttonText === "전화 면접하기") {
+        const phoneNumber = applicationData.workerPhoneNumber || "";
+
+        // 3. 상태 "보류"로 변경 PATCH 요청
+        const patchRes = await fetch(
+          `${serverUrl}/applications/${applicationId}`,
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              token: `${employerToken}`,
+            },
+            body: JSON.stringify({ newStatus: "보류" }),
+          }
+        );
+
+        if (!patchRes.ok) throw new Error("상태 변경 실패");
+        if (phoneNumber) {
+          // 2. 클립보드에 전화번호 복사
+          await navigator.clipboard.writeText(
+            applicationData.workerPhoneNumber
+          );
+          alert(
+            "전화번호가 복사되었습니다: " + applicationData.workerPhoneNumber
+          );
+          setDisabled_button(true);
+        } else {
+          alert("전화번호가 없습니다.");
+        }
+        // alert("상태가 '보류'로 변경되었습니다.");
+      } else if (buttonText === "채용 확정하기") {
+        // "채용 확정하기" 버튼 클릭 시 상태를 "승인"으로 변경
+        const patchRes = await fetch(
+          `${serverUrl}/applications/${applicationId}`,
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              token: `${employerToken}`,
+            },
+            body: JSON.stringify({ newStatus: "승인" }),
+          }
+        );
+
+        if (!patchRes.ok) throw new Error("상태 변경 실패");
+
+        alert("상태가 '승인'으로 변경되었습니다.");
+        setDisabled_button(true);
+      }
+    } catch (error) {
+      alert("작업 중 오류 발생: " + error.message);
+    }
+  };
+
   return (
     <>
       <Headersection>
@@ -151,24 +172,32 @@ export default function Resume() {
         </Submenu>
         <Submenu>
           추가질문
-          {applicationData.question.map((q, idx) => (
-            <div className="singlequestion" key={q.id}>
-              <span>
-                {idx + 1}. {q.text}
-              </span>
-              <EnterWrapper>
-                <input
-                  readOnly
-                  placeholder={
-                    applicationData.answers.find((a) => a.questionId === q.id)
-                      ?.text || ""
-                  }
-                />
-              </EnterWrapper>
-            </div>
-          ))}
+          {applicationData.question?.map((q, idx) => {
+            const answer = applicationData.answers.find(
+              (a) => a.questionId === q.id
+            );
+            const displayText =
+              typeof answer?.optionIds === "string" &&
+              answer.optionIds !== "null"
+                ? answer.optionIds
+                : answer?.text || "";
+
+            return (
+              <div className="singlequestion" key={q.id}>
+                <span>
+                  {idx + 1}. {q.text}
+                </span>
+                <EnterWrapper>
+                  <textarea
+                    readOnly
+                    placeholder={displayText || q.text || ""}
+                  />
+                </EnterWrapper>
+              </div>
+            );
+          })}
         </Submenu>
-        <Submenu>
+        {/* <Submenu>
           지원자 이력
           <ItemWrapper>
             <JobHistory
@@ -176,10 +205,17 @@ export default function Resume() {
               savedCategory={savedCategory}
             />
           </ItemWrapper>
-        </Submenu>
+        </Submenu> */}
       </Menu>
       <Footer>
-        <Button text={buttonText} type="White"></Button>
+        {buttonText ? (
+          <Button
+            text={buttonText}
+            type="White"
+            onClick={handleViewContract}
+            disabled={disabled_button}
+          ></Button>
+        ) : null}
       </Footer>
     </>
   );
@@ -294,22 +330,50 @@ const EnterWrapper = styled.div`
   align-self: stretch;
   border-radius: 6px;
   border: 1px solid #000;
+  width: 340px;
+  // box-sizing: border-box; /* 추가 */
 
-  > input {
-    flex: 1 0 0;
+  > textarea {
+    flex: 1 0 0; /* 수정: flex-shrink 허용, flex-grow 유지 */
+    min-width: 150px; /* 추가: 최소 넓이 지정 */
     color: #000;
-    font-family: "Pretendard Variable";
     font-size: 18px;
     font-style: normal;
     font-weight: 400;
     line-height: normal;
     border: none;
-
+    resize: none;
     &:focus {
       outline: none;
     }
   }
 `;
+
+// const EnterWrapper = styled.div`
+//   display: flex;
+//   padding: 10px;
+//   justify-content: center;
+//   align-items: center;
+//   gap: 10px;
+//   align-self: stretch;
+//   border-radius: 6px;
+//   border: 1px solid #000;
+//   width: 100%;
+//   > input {
+//     flex: 1 0 0;
+//     color: #000;
+//     font-family: "Pretendard Variable";
+//     font-size: 18px;
+//     font-style: normal;
+//     font-weight: 400;
+//     line-height: normal;
+//     border: none;
+
+//     &:focus {
+//       outline: none;
+//     }
+//   }
+// `;
 
 const ItemWrapper = styled.div`
   display: flex;

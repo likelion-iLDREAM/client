@@ -1,20 +1,20 @@
 import styled from "styled-components";
 
-export default function FilterTab({ currentTab, setCurrentTab }) {
+export default function FilterTab({ currentTab, setCurrentTab, jobPostId }) {
   const TABS = [
-    { label: "지원 완료" },
-    { label: "면접 진행" },
-    { label: "채용 확정" },
-    { label: "최종 합격" },
+    { key: "면접 전", label: "지원 완료" },
+    { key: "보류", label: "면접 진행" },
+    { key: "승인", label: "합격" },
+    { key: "고용", label: "채용 확정" },
   ];
 
   return (
     <TabMenu>
       {TABS.map((tab) => (
         <TabItem
-          key={tab.label}
-          active={tab.label === currentTab}
-          onClick={() => setCurrentTab(tab.label)}
+          key={tab.key}
+          active={tab.key === currentTab}
+          onClick={() => setCurrentTab(tab.key)}
         >
           {tab.label}
         </TabItem>

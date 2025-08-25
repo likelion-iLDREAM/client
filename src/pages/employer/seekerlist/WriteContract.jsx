@@ -4,6 +4,8 @@ import styled from "styled-components";
 import { Icons } from "../../../components/icons/index";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+const employerToken = import.meta.env.VITE_EMPLOYER_TOKEN;
+const serverUrl = import.meta.env.VITE_ILDREAM_URL;
 
 const mockData = {
   applicationId: 2,
@@ -44,14 +46,6 @@ const mockData = {
     },
   ],
 };
-const mockApplicationData = {
-  applicationId: 2,
-  workerName: "홍길동",
-  workerBirthDate: "1970-01-20",
-  workerGender: "남성",
-  workerPhoneNumber: "010-2345-6789",
-  workerAddress: "서울특별시 00구 00동 00로",
-};
 
 const mockWorkContractData = {
   id: 1,
@@ -67,6 +61,7 @@ export default function WriteContract() {
   const location = useLocation();
   const navigate = useNavigate();
   const { applicationId, buttonText } = location.state || {};
+  console.log("applicationData입니다", applicationId);
 
   const isWriteMode = buttonText === "계약서 작성하기";
   const headerTitle = isWriteMode ? "계약서 작성" : "계약서";
@@ -82,11 +77,13 @@ export default function WriteContract() {
       근로계약서입니다.
     </>
   );
-
   const footerButtonText = isWriteMode ? "계약서 전달하기" : "확인";
-  const [applicationData, setApplicationData] = useState(mockApplicationData);
-  const [workContractData, setWorkContractData] =
-    useState(mockWorkContractData);
+
+  const [applicationData, setApplicationData] = useState(null);
+  const [jobPostData, setJobPostData] = useState(null);
+  const [workContractData, setWorkContractData] = useState(null);
+  // const [footerBtnText, setFooterBtnText] = useState(footerButtonText);
+
   // 실제 API 호출 예시 (주석 처리)
   /*
   useEffect(() => {
@@ -106,6 +103,48 @@ export default function WriteContract() {
       .catch(console.error);
   }, [applicationId]);
   */
+  useEffect(() => {
+    if (!applicationId) return;
+
+    async function fetchApplicationAndJobPost() {
+      try {
+        // 1. 지원서 데이터 조회
+        const resApp = await fetch(
+          `${serverUrl}/applications/${applicationId}`,
+          {
+            method: "GET",
+            headers: {
+              // "Content-Type": "application/json",
+              token: `${employerToken}`,
+            },
+          }
+        );
+        if (!resApp.ok) throw new Error("지원서 조회 실패");
+        const appData = await resApp.json();
+        setApplicationData(appData.data);
+        console.log("appData입니다", appData);
+        // 2. 공고 데이터 조회
+        const jobPostId = appData.jobPostId;
+        if (jobPostId) {
+          const resJob = await fetch(`${serverUrl}/jobPosts/${jobPostId}`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              token: `${employerToken}`,
+            },
+          });
+          if (!resJob.ok) throw new Error("공고 조회 실패");
+          const jobPost = await resJob.json();
+          setJobPostData(jobPost);
+        }
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    fetchApplicationAndJobPost();
+  }, [applicationId]);
+
   const handleBack = () => {
     navigate(-1);
   };
@@ -136,18 +175,18 @@ export default function WriteContract() {
         <div className="title">{contentText}</div>
         <Submenu>
           이름
-          <span>{applicationData.workerName}</span>
+          <span>{applicationData?.workerName}</span>
           생년월일
-          <span>{formatDate(applicationData.workerBirthDate)}</span>
+          <span>{formatDate(applicationData?.workerBirthDate)}</span>
           성별
-          <span>{applicationData.workerGender}</span>
+          <span>{applicationData?.workerGender}</span>
           전화번호
-          <span>{applicationData.workerPhoneNumber}</span>
+          <span>{formatPhoneNumber(applicationData?.workerPhoneNumber)}</span>
           주소
-          <span>{applicationData.workerAddress}</span>
+          <span>{applicationData?.workerAddress}</span>
           <div style={{ marginTop: "10px", fontWeight: "700" }}>근로계약서</div>
           <div>
-            {workContractData.contractCore ||
+            {workContractData?.contractCore ||
               (isWriteMode
                 ? "첨부된 계약서가 없습니다."
                 : "계약서가 없습니다.")}
@@ -176,6 +215,20 @@ export default function WriteContract() {
       </Footer>
     </>
   );
+}
+
+function formatPhoneNumber(phone) {
+  // +82로 시작하는 경우 0으로 시작하도록 변환
+  // +821012345678 → 01012345678
+  let num = phone?.startsWith("+82") ? "0" + phone.slice(3) : phone;
+
+  // 일반적인 010-1234-5678 형태로 변환
+  // 0으로 시작하는 11자리 번호 포맷팅 예제
+  const match = num?.match(/^(\d{3})(\d{4})(\d{4})$/);
+  if (match) {
+    return `${match[1]}-${match[2]}-${match[3]}`;
+  }
+  return phone; // 포맷에 맞지 않으면 원본 반환
 }
 
 const Headersection = styled.div`

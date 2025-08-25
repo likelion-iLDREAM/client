@@ -39,7 +39,7 @@ export default function AddQuestions() {
 
   const handleNext = async () => {
     try {
-      const jobPostId = prevState?.jobPostId;
+      const jobPostId = await prevState?.jobPostId;
       console.log("prevState:", prevState);
       console.log("jobPostId:", prevState?.jobPostId);
 
