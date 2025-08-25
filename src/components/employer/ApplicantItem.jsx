@@ -4,6 +4,9 @@ import { useNavigate } from "react-router-dom";
 import { Icons } from "../icons/index";
 import Button from "../common/Button";
 
+const employerToken = import.meta.env.VITE_EMPLOYER_TOKEN;
+const serverUrl = import.meta.env.VITE_ILDREAM_URL;
+
 export default function ApplicantItem({
   applicationId,
   name,
@@ -22,16 +25,89 @@ export default function ApplicantItem({
   };
   // const handleViewApplicants = () => navigate("/employer/seekerlist/resume"); //navigate("../resume/${resume.id}")
 
-  const isButtonDisabled =
-    isClosed &&
-    !(buttonText === "계약서 작성하기" || buttonText === "계약서 확인하기");
+  const isButtonDisabled = isClosed && !(buttonText === "계약서 작성하기");
 
-  const handleViewContract = (e) => {
-    e.stopPropagation(); // 부모 onClick 이벤트 전파 차단
-    if (buttonText === "계약서 작성하기" || buttonText === "계약서 확인하기") {
-      navigate("/employer/seekerlist/writecontract", {
-        state: { applicationId, buttonText },
-      });
+  // const handleViewContract = (e) => {
+  //   e.stopPropagation(); // 부모 onClick 이벤트 전파 차단
+  //   if (buttonText === "계약서 작성하기" || buttonText === "계약서 확인하기") {
+  //     navigate("/employer/seekerlist/writecontract", {
+  //       state: { applicationId, buttonText },
+  //     });
+  //   } else if (buttonText === "전화 면접하기") {
+  //   } else {
+  //     // "채용 확정하기"
+  //   }
+  // };
+  const handleViewContract = async (e) => {
+    e.stopPropagation();
+
+    try {
+      if (buttonText === "계약서 작성하기") {
+        navigate("/employer/seekerlist/writecontract", {
+          state: { applicationId, buttonText },
+        });
+      } else if (buttonText === "전화 면접하기") {
+        // 1. application/{id}에서 workerPhoneNumber 조회
+        const res = await fetch(`${serverUrl}/applications/${applicationId}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            token: employerToken,
+          },
+        });
+
+        if (!res.ok) throw new Error("전화번호 조회 실패");
+
+        const data = await res.json();
+
+        const phoneNumber = data.workerPhoneNumber || "";
+
+        if (phoneNumber) {
+          // 2. 클립보드에 전화번호 복사
+          await navigator.clipboard.writeText(phoneNumber);
+          alert("전화번호가 복사되었습니다: " + phoneNumber);
+        } else {
+          alert("전화번호가 없습니다.");
+        }
+
+        // 3. 상태 "보류"로 변경 PATCH 요청
+        const patchRes = await fetch(
+          `${serverUrl}/applications/${applicationId}`,
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              token: employerToken,
+            },
+            body: JSON.stringify({ status: "보류" }),
+          }
+        );
+
+        if (!patchRes.ok) throw new Error("상태 변경 실패");
+
+        alert("상태가 '보류'로 변경되었습니다.");
+      } else if (buttonText === "채용 확정하기") {
+        // "채용 확정하기" 버튼 클릭 시 상태를 "승인"으로 변경
+        const patchRes = await fetch(
+          `${serverUrl}/applications/${applicationId}`,
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              token: employerToken,
+            },
+            body: JSON.stringify({ status: "승인" }),
+          }
+        );
+
+        if (!patchRes.ok) throw new Error("상태 변경 실패");
+
+        alert("상태가 '승인'으로 변경되었습니다.");
+      } else {
+        console.log("합격");
+      }
+    } catch (error) {
+      alert("작업 중 오류 발생: " + error.message);
     }
   };
 
@@ -48,11 +124,13 @@ export default function ApplicantItem({
         </InfoBlock>
         <Icons.ArrowForward size={32} />
       </NameRow>
-      <Button
-        text={buttonText}
-        disabled={isButtonDisabled}
-        onClick={handleViewContract}
-      />
+      {buttonText ? (
+        <Button
+          text={buttonText}
+          disabled={isButtonDisabled}
+          onClick={handleViewContract}
+        />
+      ) : null}
     </ApplicantCard>
   );
 }
