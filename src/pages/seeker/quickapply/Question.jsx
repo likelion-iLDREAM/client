@@ -7,7 +7,7 @@ import Button from "../../../components/common/Button";
 import Voice from "../../../components/seeker/quickapply/Voice";
 import Choice from "../../../components/seeker/quickapply/Choice";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 /** ===== ENV ===== */
 const serverUrl = import.meta.env.VITE_ILDREAM_URL;
@@ -39,87 +39,110 @@ export default function Question() {
   const params = useParams();
   const location = useLocation();
 
-  // /homeseeker/quickapply/:applicationId (가정)
+  // applicationId 확보(라우트 파라미터 → state)
   const applicationId =
-    params.applicationId || location.state?.applicationId || 1;
-  console.log("params", params);
-  console.log("params.applicationId", params.applicationId);
-  console.log("location", location);
+    params.applicationId || location.state?.applicationId || null;
 
-  console.log("location", location.state);
-  console.log("location", location.state.applicationId);
-  // 질문 목록은 이전 단계에서 넘겨주는 구조를 권장
+  // 질문 목록(QuickApply/JobsDetails에서 state로 전달된 포맷 사용)
   const questions = useMemo(() => {
-    // 예시 폴백
-    return Array.isArray(location.state?.questions)
+    const fromState = Array.isArray(location.state?.questions)
       ? location.state.questions
-      : [
-          {
-            id: 1,
-            type: "TEXT",
-            title: "요양보호사 경력이 있으시면 말씀해주세요.",
-          },
-          {
-            id: 2,
-            type: "CHOICE",
-            title: "(준)고령자(50세 이상)을 만족하시나요?",
-            options: [
-              { id: 1, label: "네" },
-              { id: 2, label: "아니요" },
-            ],
-            multiple: false,
-          },
-        ];
+      : [];
+    // 옵션이 문자열 배열인 경우도 방어
+    return fromState.map((q, i) => {
+      const isChoice = q.type === "CHOICE";
+      const opts = Array.isArray(q.options) ? q.options : [];
+      const normalized =
+        isChoice && typeof opts[0] === "string"
+          ? opts.map((label, idx) => ({ id: idx + 1, label }))
+          : opts;
+      return {
+        id: Number(q.id ?? i + 1),
+        type: q.type === "CHOICE" ? "CHOICE" : "TEXT",
+        title: q.title ?? q.text ?? "",
+        options: isChoice ? normalized : [],
+        multiple: !!q.multiple,
+      };
+    });
   }, [location.state]);
 
   const employerName = location.state?.employerName || "구인업체명";
   const postRegion = location.state?.region || "서울";
-  const postTitle = location.state?.title || "일로오세요";
+  const postTitle = location.state?.title || "공고 제목";
 
+  // 진행/답변 상태
   const [idx, setIdx] = useState(0); // 현재 질문 인덱스
   const [isCareerIncluding, setIsCareerIncluding] = useState(true);
 
-  // 제어 상태(현재 질문용)
-  const [textAnswer, setTextAnswer] = useState(""); // TEXT 답변
-  const [selectedIds, setSelectedIds] = useState([]); // CHOICE 답변 (id 배열)
+  // 질문별 임시 저장된 답변(로컬). { [questionId]: { text, optionIds:number[] } }
+  const [answers, setAnswers] = useState({});
 
+  // 현재 질문용 제어 상태
   const q = questions[idx];
+  const [textAnswer, setTextAnswer] = useState("");
+  const [selectedIds, setSelectedIds] = useState([]);
+
+  // 인덱스가 바뀔 때, 로컬에 저장된 답변을 입력창에 복원
+  useEffect(() => {
+    if (!q) return;
+    const saved = answers[q.id];
+    if (saved) {
+      setTextAnswer(saved.text ?? "");
+      setSelectedIds(Array.isArray(saved.optionIds) ? saved.optionIds : []);
+    } else {
+      setTextAnswer("");
+      setSelectedIds([]);
+    }
+  }, [idx, q, answers]);
+
+  const total = questions.length;
+  const isLast = idx === total - 1;
+
+  const handlePrev = useCallback(() => {
+    setIdx((n) => Math.max(0, n - 1));
+  }, []);
 
   const handleNext = useCallback(async () => {
-    if (!q) return;
+    if (!q || !applicationId) return;
 
-    const body =
-      q.type === "TEXT"
-        ? {
-            isCareerIncluding,
-            answer: {
-              questionId: q.id,
-              text: textAnswer || "",
-              optionIds: null,
-            },
-          }
-        : {
-            isCareerIncluding,
-            answer: {
-              questionId: q.id,
-              text: null,
-              optionIds: (selectedIds || []).join(","), // "1,3"
-            },
-          };
+    // 현재 질문 답변 구성
+    const isText = q.type === "TEXT";
+    const body = isText
+      ? {
+          isCareerIncluding,
+          answer: {
+            questionId: q.id,
+            text: textAnswer || "",
+            optionIds: null,
+          },
+        }
+      : {
+          isCareerIncluding,
+          answer: {
+            questionId: q.id,
+            text: null,
+            optionIds: (selectedIds || []).join(","), // "1,3"
+          },
+        };
 
     try {
+      // 서버 임시 저장(덮어쓰기)
       await patchAnswer({ applicationId, body });
 
-      // 다음 질문으로 이동
-      const hasNext = idx + 1 < questions.length;
-      if (hasNext) {
-        setIdx((n) => n + 1);
-        // 다음 질문을 위해 상태 초기화
-        setTextAnswer("");
-        setSelectedIds([]);
+      // 로컬에도 반영(수정 반영)
+      setAnswers((prev) => ({
+        ...prev,
+        [q.id]: {
+          text: isText ? textAnswer || "" : "",
+          optionIds: isText ? [] : selectedIds || [],
+        },
+      }));
+
+      // 다음 단계 이동
+      if (isLast) {
+        navigate("/homeseeker/quickapply/end", { replace: true });
       } else {
-        // 마지막 질문이면 완료 페이지로
-        navigate("/homeseeker/quickapply/done", { replace: true });
+        setIdx((n) => n + 1);
       }
     } catch (err) {
       alert(`답변 저장에 실패했습니다.\n${err?.message || err}`);
@@ -127,17 +150,34 @@ export default function Question() {
     }
   }, [
     q,
-    idx,
+    isLast,
     textAnswer,
     selectedIds,
     isCareerIncluding,
     applicationId,
-    questions.length,
     navigate,
   ]);
 
+  // applicationId/질문 없음 방어 렌더링(훅 호출 뒤 조건부 반환이므로 안전)
+  if (!applicationId) {
+    return (
+      <div style={{ padding: 20 }}>
+        <p>지원서를 찾을 수 없습니다. 처음부터 다시 시도해주세요.</p>
+        <button onClick={() => navigate(-1)}>뒤로가기</button>
+      </div>
+    );
+  }
+  if (!questions.length) {
+    return (
+      <div style={{ padding: 20 }}>
+        <p>표시할 질문이 없습니다.</p>
+        <button onClick={() => navigate(-1)}>뒤로가기</button>
+      </div>
+    );
+  }
+
   return (
-    <QuickApplyEndContainer>
+    <QuickApplyContainer>
       <Header text={"간편 지원"} showBack />
 
       <Section>
@@ -146,15 +186,17 @@ export default function Question() {
             <Employername text={employerName} />
             <EmployerTitle region={postRegion} title={postTitle} />
           </Name>
-          <p>간편 지원중이에요.</p>
+          <p style={{ marginTop: 6, fontSize: 16 }}>
+            질문 {idx + 1} / {total}
+          </p>
         </Content>
 
-        {/* 질문 제목은 여기서 공통으로 표시 */}
-        <End>
+        {/* 질문 제목 */}
+        <QuestionTitle>
           <p>{q?.title || ""}</p>
-        </End>
+        </QuestionTitle>
 
-        {/* 경력 포함 여부 (필요없으면 제거 가능) */}
+        {/* 경력 포함 여부 */}
         <CareerRow>
           <label>
             <input
@@ -166,6 +208,7 @@ export default function Question() {
           </label>
         </CareerRow>
 
+        {/* 질문 입력 */}
         <QuestionBox>
           {q?.type === "TEXT" && (
             <Voice
@@ -186,31 +229,36 @@ export default function Question() {
         </QuestionBox>
       </Section>
 
-      <Tap>
+      <Footer>
         <Button
-          type={"White"}
-          text={idx + 1 < questions.length ? "다음" : "제출"}
+          type="White"
+          text="이전"
+          onClick={handlePrev}
+          disabled={idx === 0}
+        />
+        <Button
+          type="White"
+          text={isLast ? "제출" : "다음"}
           onClick={handleNext}
         />
-      </Tap>
-    </QuickApplyEndContainer>
+      </Footer>
+    </QuickApplyContainer>
   );
 }
 
 /** ===== 스타일 ===== */
-const QuickApplyEndContainer = styled.div``;
+const QuickApplyContainer = styled.div``;
 
 const Section = styled.section`
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 18px;
   padding: 10px 20px;
 `;
 
 const Content = styled.div`
-  padding: 10px 10px;
+  padding: 10px 10px 0;
   > p {
-    font-size: 30px;
     margin: 0;
   }
 `;
@@ -226,16 +274,14 @@ const Name = styled.div`
   }
 `;
 
-const End = styled.div`
+const QuestionTitle = styled.div`
   display: flex;
-  justify-content: left;
   flex-direction: column;
   padding: 0 10px;
-
   p {
-    font-size: 30px;
+    font-size: 26px;
     font-weight: 700;
-    margin: 0 0;
+    margin: 0;
     overflow-wrap: anywhere;
     word-break: break-word;
     white-space: pre-line;
@@ -252,13 +298,17 @@ const CareerRow = styled.div`
   }
 `;
 
-const Tap = styled.div`
+const QuestionBox = styled.div``;
+
+const Footer = styled.div`
   border-top: 1px solid #bbb;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
   align-items: center;
   padding: 10px 20px;
-  gap: 10px 0;
-`;
 
-const QuestionBox = styled.div``;
+  Button {
+    width: 100%;
+  }
+`;
