@@ -43,7 +43,6 @@ export default function Jobs() {
       setErrMsg("서버 주소가 설정되지 않았습니다.");
       return;
     }
-
     setLoading(true);
     setErrMsg("");
 
@@ -90,7 +89,6 @@ export default function Jobs() {
       setLoading(false);
     }
   }, []);
-
   return (
     <JobsContainer>
       <HeaderImg />

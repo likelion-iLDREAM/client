@@ -10,6 +10,9 @@ import Alert_emp from "../../../components/employer/Alert_emp";
 import { useNavigate, useLocation } from "react-router-dom";
 import ApplicantItem from "../../../components/employer/ApplicantItem";
 
+const employerToken = import.meta.env.VITE_EMPLOYER_TOKEN;
+const serverUrl = import.meta.env.VITE_ILDREAM_URL;
+
 const mockData = [
   {
     applicationId: 1,
@@ -52,36 +55,68 @@ const tabButtonTextMap = {
 export default function SeekerList() {
   // 탭 상태
   const location = useLocation();
-  const prevState = location.state || {};
-  console.log("prevState입니다. ", prevState);
+  const jobPostId = location.state?.id;
+  console.log("prevState(jobPostId)입니다. ", jobPostId);
 
   const [currentTab, setCurrentTab] = useState("지원 완료"); // 기본값
   const [backAlertOpen, setBackAlertOpen] = useState(false);
   const [isClosed, setIsClosed] = useState(false);
-  const [applicants, setApplicants] = useState(mockData);
+  const [applicants, setApplicants] = useState([]);
   const buttonText = tabButtonTextMap[currentTab] || tabButtonTextMap.default;
 
   const handleBack = () => {
     navigate("/employer"); //navigate("/employer/seekerlist/seekerlist/${joblist.id}");
   };
 
+  // useEffect(() => {
+  //   async function fetchApplicants() {
+  //     try {
+  //       const res = await fetch("/jobPosts/{id}/applications"); // 실제 jobId 전달
+  //       const json = await res.json();
+  //       if (json.success) {
+  //         setApplicants(json.data);
+  //       }
+  //     } catch (error) {
+  //       console.error("지원자 목록 불러오기 실패", error);
+  //     }
+  //   }
+  //   fetchApplicants();
+  // }, []);
   useEffect(() => {
+    if (!jobPostId) return; // id 없으면 요청하지 않음
+
     async function fetchApplicants() {
       try {
-        const res = await fetch("/jobPosts/{id}/applications"); // 실제 jobId 전달
+        console.log(jobPostId);
+        const res = await fetch(
+          `${serverUrl}/jobPosts/${jobPostId}/applications`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              // 필요 시 인증 토큰도 추가
+              // "Authorization": `Bearer ${token}`
+              token: `${employerToken}`,
+            },
+          }
+        );
+        if (!res.ok) throw new Error("네트워크 응답 실패");
         const json = await res.json();
         if (json.success) {
           setApplicants(json.data);
+          console.log("json.data입니당 ", json.data);
+        } else {
+          console.error("API 에러", json.message);
         }
       } catch (error) {
         console.error("지원자 목록 불러오기 실패", error);
       }
     }
     fetchApplicants();
-  }, []);
+  }, [jobPostId]);
 
   // 1) 총 지원자 수
-  const totalApplicants = mockData.length;
+  const totalApplicants = applicants.length;
 
   // 2) 성별 인원 수 구하기
   const genderCounts = applicants.reduce((acc, cur) => {
@@ -131,6 +166,7 @@ export default function SeekerList() {
       <Alert_emp
         open={backAlertOpen}
         onConfirm={() => {
+          handleRecruitmentClose(jobPostId);
           setBackAlertOpen(false);
           setIsClosed(true);
         }}
@@ -172,6 +208,41 @@ export default function SeekerList() {
       </Footer>
     </>
   );
+}
+
+async function handleRecruitmentClose(jobPostId) {
+  try {
+    console.log(jobPostId);
+    const res = await fetch(`/jobPosts/${jobPostId}/end`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "모집 마감" }),
+    });
+    // 먼저 status만 확인
+    if (!res.ok) {
+      alert("서버 오류: " + res.statusText);
+      return;
+    }
+
+    // Content-Type 확인
+    const contentType = res.headers.get("content-type");
+    let json;
+    // JSON 응답일 경우에만 파싱
+    if (contentType && contentType.indexOf("application/json") !== -1) {
+      json = await res.json();
+    } else {
+      // 서버가 빈 응답 혹은 텍스트 등 반환
+      json = {};
+    }
+
+    if (json.success || res.ok) {
+      console.log("채용 마감 완료!!!");
+    } else {
+      alert("채용 마감 실패");
+    }
+  } catch (error) {
+    console.error("채용 마감 처리 실패", error);
+  }
 }
 
 // 변경: position 추가

@@ -33,7 +33,7 @@ export default function QuestionList() {
   const toggleItem = () => setSave((prev) => !prev);
 
   const [newQuestion, setNewQuestion] = useState("");
-  const [questions, setQuestions] = useState([]);
+  // const [questions, setQuestions] = useState([]);
 
   // 질문 삭제
   const handleDelete = (idx) => {
@@ -54,6 +54,73 @@ export default function QuestionList() {
       return [];
     }
   });
+
+  const [jobPosts, setJobPosts] = useState([]);
+
+  const [questions, setQuestions] = useState([]);
+
+  useEffect(() => {
+    async function fetchJobPosts() {
+      try {
+        const res = await fetch(`${serverUrl}/employers/me/jobPosts`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            token: employerToken,
+          },
+        });
+
+        if (!res.ok)
+          throw new Error(`고용주 공고 조회 실패: ${res.statusText}`);
+
+        const data = await res.json();
+
+        if (!data.success) throw new Error(`API 에러: ${data.message}`);
+
+        // saveQuestionList가 true인 공고만 필터링
+        const savedJobPosts = data.data.filter(
+          (jobPost) => jobPost.saveQuestionList
+        );
+        console.log("savedJobposts입니다.", savedJobPosts);
+
+        if (savedJobPosts.length === 0) {
+          setQuestions(null);
+          return;
+        }
+
+        // 가장 최근 생성된 공고 선택 (createdAt 기준 내림차순)
+        savedJobPosts.sort(
+          (a, b) => new Date(a.startDate) - new Date(b.startDate)
+        );
+        const latestJobPost = savedJobPosts[0];
+
+        // 해당 공고의 questionList 조회
+        const qRes = await fetch(`${serverUrl}/jobPosts/${latestJobPost.id}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            token: employerToken,
+          },
+        });
+
+        if (!qRes.ok)
+          throw new Error(`질문 리스트 조회 실패: ${qRes.statusText}`);
+
+        const qData = await qRes.json();
+
+        if (!qData.success) throw new Error(`API 에러: ${qData.message}`);
+
+        setQuestions(qData.data.questionList.items); // questionList 저장
+      } catch (err) {
+        alert("error", err);
+      }
+    }
+
+    fetchJobPosts();
+  }, []);
+
+  if (!questions) return <div>저장된 질문 리스트가 존재하지 않습니다.</div>;
+  console.log(questions);
   // useEffect(() => {
   //   const jobPostId = id;
   //   if (!jobPostId) {
@@ -115,7 +182,7 @@ export default function QuestionList() {
 
   return (
     <>
-      <Header text="기업 후기" showBack />
+      <Header text="추가 질문 리스트" showBack />
       <ProfileWrapper>
         <ProfileImage>
           <Icons.Building color="var(--Foundation-Green-Normal)" size={55} />
@@ -136,7 +203,7 @@ export default function QuestionList() {
         </ContentWrapper>
       </ProfileWrapper>
       <Process>
-        <QuestionProcess questions={questionList} setQuestions={setQuestions} />
+        <QuestionProcess questions={questions} setQuestions={setQuestions} />
       </Process>
       <Footer>
         <Button text="저장하기" type="White" />
@@ -193,7 +260,7 @@ const ProfileImage = styled.div`
 
 const ContentWrapper = styled.div`
   display: flex;
-  width: 220px;
+  // width: 220px;
   flex-direction: column;
   align-items: flex-start;
   gap: 8px;
