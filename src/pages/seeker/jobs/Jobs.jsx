@@ -75,7 +75,7 @@ export default function Jobs() {
       }
 
       const list = Array.isArray(json)
-        ? json
+        ? (json, console.log(json))
         : Array.isArray(json?.data)
         ? json.data
         : [];

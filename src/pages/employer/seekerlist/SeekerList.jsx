@@ -13,44 +13,20 @@ import ApplicantItem from "../../../components/employer/ApplicantItem";
 const employerToken = import.meta.env.VITE_EMPLOYER_TOKEN;
 const serverUrl = import.meta.env.VITE_ILDREAM_URL;
 
-const mockData = [
-  {
-    applicationId: 1,
-    workerName: "이현서",
-    workerGender: "여성",
-    workerAge: 70,
-    workerAddress: "마포구",
-    workplace: null,
-    applicationStatus: "거부",
-  },
-  {
-    applicationId: 2,
-    workerName: "강길동",
-    workerGender: "남성",
-    workerAge: 50,
-    workerAddress: "서대문구",
-    workplace: null,
-    applicationStatus: "승인",
-  },
-  {
-    applicationId: 4,
-    workerName: "오서현",
-    workerGender: "여성",
-    workerAge: 60,
-    workerAddress: "중구",
-    workplace: null,
-    applicationStatus: "거부",
-  },
+const TABS = [
+  { key: "면접 전", label: "지원 완료" },
+  { key: "보류", label: "면접 진행" },
+  { key: "승인", label: "합격" },
+  { key: "고용", label: "채용 확정" },
 ];
 
-// 탭 상태별 버튼 텍스트 매핑 예시
 const tabButtonTextMap = {
-  "지원 완료": "전화 면접하기",
-  "면접 진행": "채용 확정하기",
-  "채용 확정": "계약서 작성하기",
-  "최종 합격": "계약서 확인하기",
-  default: "전화 면접하기",
+  "면접 전": "전화 면접하기",
+  보류: "채용 확정하기",
+  승인: "",
+  고용: "계약서 전달하기",
 };
+// const buttonText = tabButtonTextMap[currentTab] || tabButtonTextMap.default;
 
 export default function SeekerList() {
   // 탭 상태
@@ -58,12 +34,13 @@ export default function SeekerList() {
   const jobPostId = location.state?.id;
   console.log("prevState(jobPostId)입니다. ", jobPostId);
 
-  const [currentTab, setCurrentTab] = useState("지원 완료"); // 기본값
+  const [currentTab, setCurrentTab] = useState("면접 전"); // 기본값
   const [backAlertOpen, setBackAlertOpen] = useState(false);
   const [isClosed, setIsClosed] = useState(false);
   const [applicants, setApplicants] = useState([]);
-  const buttonText = tabButtonTextMap[currentTab] || tabButtonTextMap.default;
-
+  // const buttonText = tabButtonTextMap[currentTab] || tabButtonTextMap.default;
+  console.log("applicants입니당", applicants);
+  console.log("prevstate???", jobPostId);
   const handleBack = () => {
     navigate("/employer"); //navigate("/employer/seekerlist/seekerlist/${joblist.id}");
   };
@@ -123,7 +100,7 @@ export default function SeekerList() {
     acc[cur.workerGender] = (acc[cur.workerGender] || 0) + 1;
     return acc;
   }, {});
-  console.log(genderCounts);
+  // console.log(genderCounts);
   // 3) 연령대별 인원 수 구하기
   // 예: 50대, 60대, 70대, 80대 이상
   const ageGroups = {
@@ -187,19 +164,23 @@ export default function SeekerList() {
       <FilterTab_SeekerList
         currentTab={currentTab}
         setCurrentTab={setCurrentTab}
+        jobPostId={jobPostId}
       />
       <List>
-        {applicants.map((applicant) => (
-          <ApplicantItem
-            applicationId={applicant.applicationId}
-            name={applicant.workerName}
-            gender={applicant.workerGender}
-            age={applicant.workerAge}
-            district={applicant.workerAddress}
-            buttonText={buttonText}
-            isClosed={isClosed}
-          />
-        ))}
+        {applicants
+          .filter((applicant) => applicant.applicationStatus === currentTab)
+          .map((applicant) => (
+            <ApplicantItem
+              key={applicant.applicationId}
+              applicationId={applicant.applicationId}
+              name={applicant.workerName}
+              gender={applicant.workerGender}
+              age={(applicant.workerAge % 10).toString() + "0"}
+              district={applicant.workerAddress.split(" ")[0]}
+              buttonText={tabButtonTextMap[currentTab]}
+              isClosed={isClosed}
+            />
+          ))}
       </List>
       <Footer>
         <ConfirmBtn disabled={isClosed} onClick={() => setBackAlertOpen(true)}>
@@ -213,11 +194,15 @@ export default function SeekerList() {
 async function handleRecruitmentClose(jobPostId) {
   try {
     console.log(jobPostId);
-    const res = await fetch(`/jobPosts/${jobPostId}/end`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+    const res = await fetch(`${serverUrl}/jobPosts/${jobPostId}/end`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        token: `${employerToken}`,
+      },
       body: JSON.stringify({ status: "모집 마감" }),
     });
+
     // 먼저 status만 확인
     if (!res.ok) {
       alert("서버 오류: " + res.statusText);
