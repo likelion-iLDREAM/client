@@ -1,5 +1,5 @@
 // pages/seeker/jobs/Jobs.jsx
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import ildream from "../../../assets/ildream.svg";
 import styled from "styled-components";
 import TapBarSeeker from "../../../components/common/TapBarSeeker";
@@ -14,7 +14,8 @@ function mapJob(item) {
   return {
     JobPostId: item.jobPostId ?? item.id,
     companyName: item.companyName || "구인업체명",
-    workPlace: item.workPlace ?? null,
+    workPlace:
+      item.workPlace ?? item.workplace ?? item.location?.split(" ")[0] ?? null,
     title: item.title || "[지역] 구인공고명",
     location: item.location || "주소 정보 없음",
     applyMethods: Array.isArray(item.applyMethods) ? item.applyMethods : [],
@@ -29,66 +30,117 @@ export default function Jobs() {
   const [loading, setLoading] = useState(false);
   const [errMsg, setErrMsg] = useState("");
 
-  const fetchFilter = useCallback(async (raw) => {
-    const keyword = (raw ?? "").trim();
-
-    // 빈 검색어면 호출하지 않고 UI만 리셋
-    if (!keyword) {
-      setErrMsg("");
-      setJobs([]);
-      return;
-    }
-
+  /** 목록 조회: GET /jobPosts */
+  const fetchJobs = useCallback(async () => {
     if (!serverUrl) {
       setErrMsg("서버 주소가 설정되지 않았습니다.");
       return;
     }
     setLoading(true);
     setErrMsg("");
-
     try {
-      const url = `${serverUrl}/api/jobPosts/search?keyword=${encodeURIComponent(
-        keyword
-      )}`;
-      const headers = {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        ...(workerToken ? { token: `${workerToken}` } : {}),
-      };
-
-      const res = await fetch(url, {
-        method: "POST",
-        headers,
-        body: JSON.stringify({ q: keyword }),
+      const res = await fetch(`${serverUrl}/jobPosts`, {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          ...(workerToken ? { token: `${workerToken}` } : {}),
+        },
+        mode: "cors",
       });
 
       const text = await res.text();
       const json = text ? JSON.parse(text) : {};
 
-      if (!res.ok) {
-        if (json?.code === "E404" || res.status === 404) {
-          setJobs([]);
-          setErrMsg("");
-          return;
-        }
-        throw new Error(json?.message || `HTTP_${res.status}`);
+      if (res.ok && json?.success) {
+        const list = Array.isArray(json.data) ? json.data : [];
+        setJobs(list.map(mapJob));
+        return;
       }
 
-      const list = Array.isArray(json)
-        ? json
-        : Array.isArray(json?.data)
-        ? json.data
-        : [];
-      setJobs(list.map(mapJob));
-      console.log(json.data);
+      // 목록 없음
+      if (res.status === 404 || json?.code === "E404") {
+        setJobs([]);
+        setErrMsg("");
+        return;
+      }
+
+      throw new Error(json?.message || `HTTP_${res.status}`);
     } catch (e) {
-      console.error("[POST /api/jobPosts/search] 실패:", e);
-      setErrMsg(e?.message || "검색 중 오류가 발생했습니다.");
+      setErrMsg(e?.message || "목록 조회 중 오류가 발생했습니다.");
       setJobs([]);
     } finally {
       setLoading(false);
     }
   }, []);
+
+  /** 검색: (기존 기능 유지). 빈 검색어면 목록 조회로 대체 */
+  const fetchFilter = useCallback(
+    async (raw) => {
+      const keyword = (raw ?? "").trim();
+
+      if (!keyword) {
+        // 검색어 없으면 전체 목록
+        fetchJobs();
+        return;
+      }
+
+      if (!serverUrl) {
+        setErrMsg("서버 주소가 설정되지 않았습니다.");
+        return;
+      }
+      setLoading(true);
+      setErrMsg("");
+
+      try {
+        const url = `${serverUrl}/api/jobPosts/search?keyword=${encodeURIComponent(
+          keyword
+        )}`;
+        const headers = {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          ...(workerToken ? { token: `${workerToken}` } : {}),
+        };
+
+        const res = await fetch(url, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ q: keyword }),
+        });
+
+        const text = await res.text();
+        const json = text ? JSON.parse(text) : {};
+
+        if (!res.ok) {
+          if (json?.code === "E404" || res.status === 404) {
+            setJobs([]);
+            setErrMsg("");
+            return;
+          }
+          throw new Error(json?.message || `HTTP_${res.status}`);
+        }
+
+        const list = Array.isArray(json)
+          ? json
+          : Array.isArray(json?.data)
+          ? json.data
+          : [];
+        setJobs(list.map(mapJob));
+      } catch (e) {
+        console.error("[POST /api/jobPosts/search] 실패:", e);
+        setErrMsg(e?.message || "검색 중 오류가 발생했습니다.");
+        setJobs([]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [fetchJobs]
+  );
+
+  /** 최초 진입 시 전체 목록 로드 */
+  useEffect(() => {
+    fetchJobs();
+  }, [fetchJobs]);
+
   return (
     <JobsContainer>
       <HeaderImg />
@@ -96,11 +148,13 @@ export default function Jobs() {
 
       <List>
         {loading && <p>불러오는 중…</p>}
+
         {!loading && errMsg && (
           <p style={{ color: "crimson" }}>
             공고 목록을 불러오지 못했어요. {errMsg}
           </p>
         )}
+
         {!loading && !errMsg && jobs.length === 0 && (
           <p>표시할 공고가 없어요.</p>
         )}

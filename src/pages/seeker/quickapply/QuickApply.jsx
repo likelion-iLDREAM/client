@@ -3,13 +3,25 @@ import Header from "../../../components/common/Header";
 import Employername from "../../../components/employer/Employername";
 import EmployerTitle from "../../../components/employer/EmployTitle";
 import Button from "../../../components/common/Button";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { IoCheckboxOutline } from "react-icons/io5";
 import { IoCheckbox } from "react-icons/io5";
 
 export default function QuickApply() {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // JobList.jsx에서 navi할 때 넘긴 값들
+  const {
+    applicationId,
+    jobPostId,
+    companyName = "구인업체명",
+    region = "서울",
+    title = "일ㄹ오세요",
+    questions,
+  } = location.state || {};
+
   const [includeResume, setIncludeResume] = useState(true);
 
   // ✅ NameBirth / Phonenum 에서 저장한 값 불러오기
@@ -58,8 +70,8 @@ export default function QuickApply() {
 
       <Content>
         <Name>
-          <Employername text={"구인업체명"} />
-          <EmployerTitle region={"서울"} title={"일로오세요"} />
+          <Employername text={companyName} />
+          <EmployerTitle region={region} title={title} />
           <p>간편 지원중이에요.</p>
         </Name>
       </Content>
@@ -126,7 +138,19 @@ export default function QuickApply() {
         <Button
           type={"White"}
           text={"다음"}
-          onClick={() => navigate("/homeseeker/quickapply/question")}
+          onClick={() => {
+            navigate("/homeseeker/quickapply/question", {
+              state: {
+                applicationId,
+                jobPostId,
+                companyName,
+                region,
+                title,
+                questions,
+                isCareerIncluding: includeResume,
+              },
+            });
+          }}
         />
       </Tap>
     </QuickApplyContainer>

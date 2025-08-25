@@ -82,18 +82,20 @@ const router = createBrowserRouter([
         path: "/homeseeker",
         children: [
           {
+            index: true,
             path: "",
             element: <Seeker.Jobs />,
           },
           {
-            path: "jobsdetail",
+            path: "jobsdetail/:id",
             element: <Seeker.JobsDetails />,
           },
           {
             path: "quickapply",
             children: [
               {
-                path: "",
+                index: true,
+                path: ":applicationId",
                 element: <Seeker.QuickApply />,
               },
               {

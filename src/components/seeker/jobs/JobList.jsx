@@ -1,8 +1,34 @@
+// JobList.jsx (drop-in)
+
 import styled from "styled-components";
 import { IoIosArrowForward } from "react-icons/io";
 import { useState } from "react";
 import Alert from "../quickapply/Alert";
 import { useNavigate } from "react-router-dom";
+
+const serverUrl = import.meta.env.VITE_ILDREAM_URL;
+const workerToken = import.meta.env.VITE_WORKER_TOKEN;
+
+/** 서버 응답의 questionList.items → UI용으로 변환 */
+function toUiQuestions(items = []) {
+  const TYPE_MAP = { 서술형: "TEXT", "예/아니요": "CHOICE", 객관식: "CHOICE" };
+  return (Array.isArray(items) ? items : []).map((q, i) => {
+    const uiType = TYPE_MAP[q?.type] || "TEXT";
+    const raw = Array.isArray(q?.options) ? q.options : [];
+    const ensured =
+      uiType === "CHOICE" && raw.length === 0 ? ["예", "아니요"] : raw;
+    return {
+      id: Number(q?.id ?? i + 1),
+      type: uiType,
+      title: q?.text ?? "",
+      options:
+        uiType === "CHOICE"
+          ? ensured.map((label, idx) => ({ id: idx + 1, label }))
+          : [],
+      multiple: false,
+    };
+  });
+}
 
 export default function JobList({
   JobPostId,
@@ -24,13 +50,79 @@ export default function JobList({
 
   const addr = location || "주소 정보 없음";
 
+  const handleQuickApply = async () => {
+    try {
+      // 1) 지원서 초안 생성
+      const res = await fetch(`${serverUrl}/applications/${JobPostId}/apply`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          token: workerToken,
+        },
+        body: JSON.stringify({
+          applyMethod: "간편지원",
+          isCareerIncluding: true,
+        }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || json?.success === false) {
+        throw new Error(json?.message || `HTTP_${res.status}`);
+      }
+      const applicationId =
+        json?.data?.applicationId ?? json?.data?.id ?? json?.data;
+      if (!applicationId) throw new Error("applicationId가 응답에 없습니다.");
+
+      // 2) 공고 상세 조회 (질문/고용주/지역 확보)
+      let detail = null;
+      try {
+        const r2 = await fetch(`${serverUrl}/jobPosts/${JobPostId}`, {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            ...(workerToken ? { token: workerToken } : {}),
+          },
+        });
+        const j2 = await r2.json().catch(() => ({}));
+        if (r2.ok && j2?.success) detail = j2.data;
+      } catch {
+        // 상세 조회 실패 시에도 최소 정보로 진행
+      }
+
+      const employerName = detail?.employerName ?? companyName;
+      const region =
+        detail?.workPlace ||
+        (detail?.location ? String(detail.location).split(" ")[0] : "") ||
+        workPlace ||
+        "";
+      const titleToUse = detail?.title ?? title;
+      const questionList = detail?.questionList ?? { items: [] };
+      const questions = toUiQuestions(questionList.items);
+
+      // 3) QuickApply로 이동 (JobsDetails와 동일한 payload)
+      navigate(`/homeseeker/quickapply/${applicationId}`, {
+        state: {
+          applicationId,
+          jobPostId: JobPostId,
+          employerName,
+          region,
+          title: titleToUse,
+          questionList, // 원본
+          questions, // UI용
+        },
+      });
+    } catch (e) {
+      alert(`간편 지원을 시작할 수 없습니다.\n${e?.message || e}`);
+    }
+  };
+
   return (
     <RecommendContainer>
       <div>
         <Section12>
           <div className="Section1">
             <div className="Text1">{companyName}</div>
-            <div className="Title">{`[${workPlace}] ${title}`}</div>
+            <div className="Title">{`[${workPlace ?? ""}] ${title}`}</div>
             <div className="Address">{addr}</div>
           </div>
           <Arrow
@@ -40,7 +132,6 @@ export default function JobList({
 
         <Section3>
           {expiryDate && <div className="Tag">~채용시마감</div>}
-
           {jobField && <div className="Tag">{jobField}</div>}
           {status && <div className="Tag">{status}</div>}
         </Section3>
@@ -55,10 +146,7 @@ export default function JobList({
             </button>
           )}
           {canQuick && (
-            <button
-              className="Simple"
-              onClick={() => navigate("/homeseeker/quickapply")}
-            >
+            <button className="Simple" onClick={handleQuickApply}>
               간편 지원
             </button>
           )}
