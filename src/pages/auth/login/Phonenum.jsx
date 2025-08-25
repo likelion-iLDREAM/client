@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 
 const BOTTOM_H = 90; // 하단 고정 영역 높이(필요시 조정)
+const serverUrl = import.meta.env.VITE_ILDREAM_URL; // 환경변수로 서버 주소 받아오기
 
 export default function Phonenum() {
   const navigate = useNavigate();
@@ -35,9 +36,56 @@ export default function Phonenum() {
     return () => input.removeEventListener("input", onInput);
   }, [phone]);
 
-  const goNext = () => {
-    // state로도 넘기고, 세션에도 저장되어 있어 Opt에서 둘 다 활용 가능
-    navigate("/opt", { state: { phone } });
+  useEffect(() => {
+    const input =
+      rootRef.current?.querySelector("input.Input_phone") ||
+      rootRef.current?.querySelector("input");
+    if (!input) return;
+
+    if (phone && input.value !== phone) input.value = phone;
+
+    const onInput = (e) => {
+      const v = e.target.value;
+      setPhone(v);
+      sessionStorage.setItem("signup.phone", v);
+    };
+    input.addEventListener("input", onInput);
+    return () => input.removeEventListener("input", onInput);
+  }, [phone]);
+
+  const sendCode = async () => {
+    if (!phone) {
+      alert("전화번호를 입력해주세요.");
+      return false;
+    }
+
+    try {
+      console.log(formatPhone(phone));
+      const response = await fetch(`${serverUrl}/auth/send-code`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: formatPhone(phone) }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to send code");
+      }
+
+      const data = await response.json();
+      console.log("Code sent:", data);
+      return true;
+    } catch (error) {
+      console.error("Error sending code:", error);
+      alert("인증 코드 전송에 실패했습니다.");
+      return false;
+    }
+  };
+
+  const goNext = async () => {
+    const success = await sendCode();
+    if (success) {
+      navigate("/opt", { state: { phone } });
+    }
   };
 
   return (
@@ -60,6 +108,20 @@ export default function Phonenum() {
       </BottomFixed>
     </PhonenumContainer>
   );
+}
+function formatPhone(phone) {
+  if (!phone) return "";
+
+  // 이미 +82 로 시작하면 그대로 리턴
+  if (phone.startsWith("+82")) return phone;
+
+  // 전화번호가 0으로 시작하면 0을 빼고 +82 붙임
+  if (phone.startsWith("0")) {
+    return "+82" + phone.slice(1);
+  }
+
+  // 그 외는 그냥 +82 붙임
+  return "+82" + phone;
 }
 
 const PhonenumContainer = styled.div`

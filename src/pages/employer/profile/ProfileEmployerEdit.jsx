@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const employerToken = import.meta.env.VITE_EMPLOYER_TOKEN;
+// const employerToken = sessionStorage.getItem('authToken');
 const serverUrl = import.meta.env.VITE_ILDREAM_URL;
 const categoryMap = [
   { keys: ["농사", "원예", "어업"], label: "🌱농사·원예·어업" },

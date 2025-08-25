@@ -7,25 +7,33 @@ import { Icons } from "../../../components/icons/index";
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
-const employerToken = import.meta.env.VITE_EMPLOYER_TOKEN;
+// const employerToken = import.meta.env.VITE_EMPLOYER_TOKEN;
+const serverUrl = import.meta.env.VITE_ILDREAM_URL;
 
 export default function SignupEndEmployer() {
+  const employerToken = sessionStorage.getItem("authToken")?.trim();
+
+  console.log("employer token: ", employerToken);
   const navigate = useNavigate();
   const location = useLocation();
 
-  const FinalData = location.state || {};
-  console.log("final data :", FinalData);
+  const FinalwithtokenData = location.state || {};
+  const { token, ...rest } = FinalwithtokenData;
+  const FinalData = rest;
+  console.log("final data :", transformFormData(FinalData));
 
-  const postDataToBackend = async (formData) => {
+  const postDataToBackend = async (formData, token) => {
     const payload = transformFormData(formData);
-
+    console.log(payload);
+    console.log(token);
     try {
-      const response = await fetch("/auth/employer/signup", {
+      const response = await fetch(`${serverUrl}/auth/employer/signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          token,
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(transformFormData(payload)),
       });
 
       if (!response.ok) {
@@ -44,16 +52,34 @@ export default function SignupEndEmployer() {
   // const handleNext = () => {
   //   navigate("/employer");
   // };
-
-  const handleSave = async () => {
+  const handleSave = async (token) => {
     try {
-      const result = await postDataToBackend(formData);
-      // 저장 성공 후 후속 처리 (예: 페이지 이동, 메시지 표시 등)
+      const dataToSend = transformFormData(FinalData);
+      console.log("보낼 데이터:", dataToSend);
+
+      const response = await fetch(`${serverUrl}/employers/signup`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          token,
+        },
+        body: JSON.stringify(dataToSend),
+      });
+
+      if (!response.ok) {
+        throw new Error(`서버 오류: ${response.status}`);
+      }
+
+      const responseData = await response.json();
+      console.log("저장 성공", responseData);
+
       navigate("/employer");
     } catch (error) {
-      // 오류 처리
+      console.error("저장 중 오류 발생", error);
+      alert("데이터 저장에 실패했습니다.");
     }
   };
+
   return (
     <>
       <Header text={"새 공고"} />
@@ -71,10 +97,25 @@ export default function SignupEndEmployer() {
         </Question>
       </ApplyWrapper>
       <Footer>
-        <Button text="확인" type="White" onClick={handleSave} />
+        <Button text="확인" type="White" onClick={handleSave(token)} />
       </Footer>
     </>
   );
+}
+
+function formatPhone(phone) {
+  if (!phone) return "";
+
+  // 이미 +82 로 시작하면 그대로 리턴
+  if (phone.startsWith("+82")) return phone;
+
+  // 전화번호가 0으로 시작하면 0을 빼고 +82 붙임
+  if (phone.startsWith("0")) {
+    return "+82" + phone.slice(1);
+  }
+
+  // 그 외는 그냥 +82 붙임
+  return "+82" + phone;
 }
 
 function transformFormData(formData) {
@@ -82,13 +123,19 @@ function transformFormData(formData) {
     name: formData.name || "",
     email: formData.email || "",
     bossName: formData.bossName || "",
-    phoneNumber: formData.phone || "", // 이름이 phoneNumber로 변경됨
+    phoneNumber: formatPhone(formData.phone) || "", // 이름이 phoneNumber로 변경됨
     companyName: formData.companyName || "",
     companyLocation: `${formData.address || ""} ${
       formData.addressDetail || ""
     }`.trim(),
     companyNumber: formData.companyNumber || "",
-    jobFields: (formData.jobFields || []).join(","),
+    jobFields: (formData.jobFields || []).map((field) => {
+      // 각 그룹 문자열을 쉼표로 분리 → 배열
+      const emojiRegex = /\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu;
+      const cleanedRest = field.replace(emojiRegex, "");
+
+      return cleanedRest.trim().split("·").join(",");
+    }),
     // 이미 배열이므로 그대로 사용; 필요시 문자열 변환 가능
   };
 }

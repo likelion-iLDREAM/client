@@ -9,6 +9,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 
 const employerToken = import.meta.env.VITE_EMPLOYER_TOKEN;
+// const employerToken = sessionStorage.getItem('authToken');
 const serverUrl = import.meta.env.VITE_ILDREAM_URL;
 
 export default function Resume() {
@@ -75,7 +76,7 @@ export default function Resume() {
   }
 
   const handleBack = () => {
-    navigate("/employer/seekerlist/seekerlist"); //navigate("/employer/seekerlist/seekerlist/${joblist.id}");
+    navigate("/employer/seekerlist/seekerlist", { state: { applicationId } }); //navigate("/employer/seekerlist/seekerlist/${joblist.id}");
   };
   const savedCategory = "음식,서비스"; // 예: 따로 저장해둔 정보
 

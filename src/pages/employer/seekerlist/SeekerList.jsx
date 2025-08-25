@@ -11,6 +11,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import ApplicantItem from "../../../components/employer/ApplicantItem";
 
 const employerToken = import.meta.env.VITE_EMPLOYER_TOKEN;
+// const employerToken = sessionStorage.getItem('authToken');
 const serverUrl = import.meta.env.VITE_ILDREAM_URL;
 
 const TABS = [

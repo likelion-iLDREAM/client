@@ -13,6 +13,7 @@ import { BsAspectRatio } from "react-icons/bs";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 
+// const employerToken = sessionStorage.getItem('authToken');
 const employerToken = import.meta.env.VITE_EMPLOYER_TOKEN;
 const serverUrl = import.meta.env.VITE_ILDREAM_URL;
 

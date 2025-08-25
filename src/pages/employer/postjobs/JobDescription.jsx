@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Alert_post from "../../../components/employer/Alert_post";
 
+// const employerToken = sessionStorage.getItem('authToken');
 const employerToken = import.meta.env.VITE_EMPLOYER_TOKEN;
 const serverUrl = import.meta.env.VITE_ILDREAM_URL;
 
