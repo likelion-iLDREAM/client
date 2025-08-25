@@ -22,7 +22,7 @@ export default function JobList({
   const canQuick = labels.includes("간편지원");
   const canPhone = labels.includes("전화지원");
 
-  const addr = workPlace || location || "주소 정보 없음";
+  const addr = location || "주소 정보 없음";
 
   return (
     <RecommendContainer>
@@ -30,7 +30,7 @@ export default function JobList({
         <Section12>
           <div className="Section1">
             <div className="Text1">{companyName}</div>
-            <div className="Title">{title}</div>
+            <div className="Title">{`[${workPlace}] ${title}`}</div>
             <div className="Address">{addr}</div>
           </div>
           <Arrow
@@ -40,8 +40,7 @@ export default function JobList({
 
         <Section3>
           {expiryDate && <div className="Tag">~채용시마감</div>}
-          {canQuick && <div className="Tag">간편지원</div>}
-          {canPhone && <div className="Tag">전화지원</div>}
+
           {jobField && <div className="Tag">{jobField}</div>}
           {status && <div className="Tag">{status}</div>}
         </Section3>

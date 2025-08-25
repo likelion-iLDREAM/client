@@ -1,16 +1,37 @@
+// components/seeker/jobs/Search.jsx
 import styled from "styled-components";
 import { IoSearch } from "react-icons/io5";
+import { useEffect, useState } from "react";
 
-export default function Search() {
+/**
+ * Props
+ * - onSearch?: (q: string) => void   // 검색 실행 콜백
+ * - initialValue?: string            // 초기 검색어
+ */
+export default function Search({ onSearch, initialValue = "" }) {
+  const [q, setQ] = useState(initialValue);
+
+  // 외부에서 initialValue가 바뀌면 동기화 (선택 사항)
+  useEffect(() => {
+    setQ(initialValue ?? "");
+  }, [initialValue]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSearch && onSearch(q.trim());
+  };
+
   return (
-    <SearchBar>
+    <SearchBar role="search" onSubmit={handleSubmit}>
       <Input
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
         placeholder="50대가 일하기 쉬운 업무...를 검색해보세요"
         aria-label="검색어 입력"
       />
-      <IconWrap>
+      <IconButton type="submit" aria-label="검색">
         <IconSearch />
-      </IconWrap>
+      </IconButton>
     </SearchBar>
   );
 }
@@ -20,7 +41,7 @@ const IconSearch = styled(IoSearch)`
   height: 24px;
 `;
 
-const SearchBar = styled.div`
+const SearchBar = styled.form`
   position: relative;
   display: flex;
   width: 360px; /* 기획 해상도 기준 */
@@ -47,12 +68,19 @@ const Input = styled.input`
   }
 `;
 
-const IconWrap = styled.span`
+/* 아이콘을 클릭 가능한 제출 버튼으로 변경 */
+const IconButton = styled.button`
   position: absolute;
-  right: 14px;
+  right: 6px;
   top: 50%;
   transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
   color: #20834d;
-  pointer-events: none; /* 아이콘 클릭해도 포커스가 input으로 */
+  cursor: pointer;
 `;
