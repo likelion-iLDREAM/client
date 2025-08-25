@@ -23,7 +23,7 @@ const Card = styled.button`
   gap: 10px;
   width: 100%;
   min-height: 77px;
-  padding: 10px 20px;
+  padding: 10px;
   border: 0;
   border-radius: 12px;
   background: var(--Foundation-Green-Light, #eaf7f0);
@@ -32,19 +32,7 @@ const Card = styled.button`
   text-align: left;
 `;
 
-const Thumb = styled.div`
-  width: 57px;
-  height: 57px;
-  border-radius: 6px;
-  background: #d9d9d9;
-  overflow: hidden;
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-`;
+const Thumb = styled.div``;
 
 const Title = styled.p`
   && {

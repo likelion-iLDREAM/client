@@ -65,7 +65,6 @@ export default function Jobs() {
       }
 
       throw new Error(json?.message || `HTTP_${res.status}`);
-
     } catch (e) {
       setErrMsg(e?.message || "목록 조회 중 오류가 발생했습니다.");
       setJobs([]);

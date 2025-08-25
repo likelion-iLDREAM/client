@@ -13,7 +13,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 const serverUrl = import.meta.env.VITE_ILDREAM_URL;
 const workerToken = import.meta.env.VITE_WORKER_TOKEN;
 
-/** ===== 공통 fetch 헬퍼 ===== */
+/** ===== API helpers ===== */
 async function patchAnswer({ applicationId, body }) {
   const url = `${serverUrl}/applications/${applicationId}/answers`;
   const res = await fetch(url, {
@@ -21,9 +21,26 @@ async function patchAnswer({ applicationId, body }) {
     headers: {
       "Content-Type": "application/json",
       Accept: "application/json",
-      token: workerToken, // 서버가 token 헤더 사용
+      token: workerToken,
     },
     body: JSON.stringify(body),
+    mode: "cors",
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok || json?.success === false) {
+    throw new Error(json?.message || `HTTP_${res.status}`);
+  }
+  return json;
+}
+
+async function submitApplication(applicationId) {
+  const url = `${serverUrl}/applications/${applicationId}/submit`;
+  const res = await fetch(url, {
+    method: "PATCH",
+    headers: {
+      Accept: "application/json",
+      token: workerToken,
+    },
     mode: "cors",
   });
   const json = await res.json().catch(() => ({}));
@@ -48,7 +65,6 @@ export default function Question() {
     const fromState = Array.isArray(location.state?.questions)
       ? location.state.questions
       : [];
-    // 옵션이 문자열 배열인 경우도 방어
     return fromState.map((q, i) => {
       const isChoice = q.type === "CHOICE";
       const opts = Array.isArray(q.options) ? q.options : [];
@@ -82,7 +98,7 @@ export default function Question() {
   const [textAnswer, setTextAnswer] = useState("");
   const [selectedIds, setSelectedIds] = useState([]);
 
-  // 인덱스가 바뀔 때, 로컬에 저장된 답변을 입력창에 복원
+  // 인덱스 변경 시 입력값 복원
   useEffect(() => {
     if (!q) return;
     const saved = answers[q.id];
@@ -138,14 +154,20 @@ export default function Question() {
         },
       }));
 
-      // 다음 단계 이동
       if (isLast) {
-        navigate("/homeseeker/quickapply/end", { replace: true });
+        // ✅ 마지막 질문이면 제출
+        await submitApplication(applicationId);
+        // 완료 페이지로 이동(뷰 헤더용 상태 전달)
+        navigate("/homeseeker/quickapply/end", {
+          replace: true,
+          state: { employerName, region: postRegion, title: postTitle },
+        });
       } else {
+        // 다음 질문
         setIdx((n) => n + 1);
       }
     } catch (err) {
-      alert(`답변 저장에 실패했습니다.\n${err?.message || err}`);
+      alert(`답변 저장 또는 제출에 실패했습니다.\n${err?.message || err}`);
       console.error(err);
     }
   }, [
@@ -155,10 +177,13 @@ export default function Question() {
     selectedIds,
     isCareerIncluding,
     applicationId,
+    employerName,
+    postRegion,
+    postTitle,
     navigate,
   ]);
 
-  // applicationId/질문 없음 방어 렌더링(훅 호출 뒤 조건부 반환이므로 안전)
+  // 방어 렌더링
   if (!applicationId) {
     return (
       <div style={{ padding: 20 }}>
@@ -217,7 +242,6 @@ export default function Question() {
               placeholder="이곳에 질문에 대한 답변을 남겨주세요."
             />
           )}
-
           {q?.type === "CHOICE" && (
             <Choice
               options={q.options || []}
