@@ -93,21 +93,43 @@ export default function Jobs() {
   const [loading, setLoading] = useState(true);
   const [errMsg, setErrMsg] = useState("");
 
+  // useEffect(() => {
+  //   (async () => {
+  //     try {
+  //       const json = await fetchJobPosts();
+  //       const list = Array.isArray(json.data) ? json.data.map(mapJob) : [];
+  //       setJobs(list);
+  //       setErrMsg("");
+  //     } catch (err) {
+  //       console.error("[/jobPosts] 실패:", err);
+  //       setErrMsg(err?.message || String(err));
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   })();
+  // }, []);
   useEffect(() => {
-    (async () => {
+    async function fetchJobPosts() {
       try {
-        const json = await fetchJobPosts();
-        const list = Array.isArray(json.data) ? json.data.map(mapJob) : [];
-        setJobs(list);
-        setErrMsg("");
-      } catch (err) {
-        console.error("[/jobPosts] 실패:", err);
-        setErrMsg(err?.message || String(err));
-      } finally {
-        setLoading(false);
+        const res = await fetch(`${serverUrl}/jobPosts`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            token: `${workerToken}`,
+          },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setJobs(data);
+        } else {
+          alert("모집공고를 불러오는데 실패했습니다.");
+        }
+      } catch (error) {
+        console.error("모집공고 목록 불러오기 오류", error);
       }
-    })();
-  }, []);
+    }
+    fetchJobPosts();
+  }, [serverUrl]);
 
   return (
     <JobsContainer>

@@ -2,8 +2,8 @@ import styled from "styled-components";
 import { useState } from "react";
 
 const TABS = [
-  { label: "채용 중 공고", value: "OPEN" },
-  { label: "마감된 공고", value: "CLOSED" },
+  { label: "채용 중 공고", value: "모집 중" },
+  { label: "마감된 공고", value: "모집 마감" },
 ];
 
 export default function FilterTab({ onChange }) {

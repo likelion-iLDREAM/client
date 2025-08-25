@@ -58,6 +58,7 @@ export default function AddQuestions() {
           },
           body: JSON.stringify({
             items: questions,
+            createdAt: new Date().toISOString(),
             saveQuestionList: IsSave, // 여기에 체크 상태 반영
           }),
         }

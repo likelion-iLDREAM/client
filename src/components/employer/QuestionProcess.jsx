@@ -82,6 +82,8 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 15px;
+  width: 90%;
+  padding: 10px;
 `;
 
 const SectionTitle = styled.div`

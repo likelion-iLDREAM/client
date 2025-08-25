@@ -44,17 +44,32 @@ export default function JobPostItem({
   const { name: employerName, companyName, companyLocation } = employer || {};
 
   const parts = location ? location.split(" ") : [];
-
   const today = new Date();
   const expiryDateObj = new Date(expiryDate);
-  const diffMs = expiryDateObj.getTime() - today.getTime();
-  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
   const ddayStr =
-    diffDays > 0
-      ? `D-${diffDays}`
-      : diffDays === 0
-      ? "D-day"
-      : `D+${Math.abs(diffDays)}`;
+    expiryDate === null
+      ? "채용시마감"
+      : (() => {
+          const diffMs = expiryDateObj.getTime() - today.getTime();
+          const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+          return diffDays > 0
+            ? `D-${diffDays}`
+            : diffDays === 0
+            ? "D-day"
+            : `D+${Math.abs(diffDays)}`;
+        })();
+
+  // const today = new Date();
+  // const expiryDateObj = new Date(expiryDate);
+  // const diffMs = expiryDateObj.getTime() - today.getTime();
+  // const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  // const ddayStr =
+  //   diffDays > 0
+  //     ? `D-${diffDays}`
+  //     : diffDays === 0
+  //     ? "D-day"
+  //     : `D+${Math.abs(diffDays)}`;
 
   const formattedExpiryDate = new Intl.DateTimeFormat("ko-KR", {
     year: "numeric",
@@ -91,7 +106,9 @@ export default function JobPostItem({
             </span>
           </div>
           <div>{location}</div>
-          <div>~{formattedExpiryDate} 마감</div>
+          <div>
+            ~{expiryDate === null ? "채용시 " : formattedExpiryDate} 마감
+          </div>
         </Information>
 
         <div

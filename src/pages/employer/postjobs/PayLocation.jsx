@@ -12,7 +12,7 @@ const paymentOptions = [
   { label: "시급", value: "HOURLY" },
   { label: "월급", value: "MONTHLY" },
   { label: "일급", value: "DAILY" },
-  { label: "건별", value: "PER_TASK" },
+  { label: "건당", value: "PER_TASK" },
 ];
 const extractGu = (location) => {
   if (!location) return "";
